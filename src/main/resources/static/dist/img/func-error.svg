@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44" role="img" aria-label="에러메시지">
+    <rect width="44" height="44" rx="9" fill="#DC2626"/>
+    <path d="M22 9.5 L35.5 33 H8.5 Z" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M22 18 V25" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="22" cy="29" r="1.6" fill="#ffffff"/>
+</svg>

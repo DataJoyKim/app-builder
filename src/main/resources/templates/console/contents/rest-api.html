@@ -1,0 +1,3663 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #rest-api-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #rest-api-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #rest-api-app .ds-list-panel,
+    #rest-api-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #rest-api-app .ds-list-panel {
+        flex: 0 0 360px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #rest-api-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #rest-api-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #rest-api-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #rest-api-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #rest-api-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #rest-api-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #rest-api-app .ds-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    #rest-api-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #rest-api-app .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #rest-api-app .ds-btn-danger {
+        color: #dc2626;
+    }
+
+    #rest-api-app .ds-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    #rest-api-app .ds-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #rest-api-app .ds-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #rest-api-app .ds-list-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #rest-api-app .ds-list-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #rest-api-app .ds-list-body {
+        max-height: 640px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #rest-api-app .ds-list-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #rest-api-app .ds-list-item:hover {
+        background: #fafbfc;
+    }
+
+    #rest-api-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #rest-api-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    #rest-api-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .ds-list-item.selected .ds-list-item-name {
+        color: #1d4ed8;
+    }
+
+    #rest-api-app .ds-list-item-endpoint {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    #rest-api-app .ds-list-item-path {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 11.5px;
+        color: #4b5563;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .ds-list-item-sub {
+        font-size: 10.5px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .ds-list-item-status {
+        flex: 0 0 auto;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
+    #rest-api-app .ds-list-item-status.on {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    #rest-api-app .ds-list-item-status.off {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    #rest-api-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #rest-api-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    /* HTTP 메소드 뱃지. 목록과 상세 호출주소에서 같이 쓴다. */
+    #rest-api-app .method-badge {
+        flex: 0 0 auto;
+        display: inline-block;
+        min-width: 50px;
+        text-align: center;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 5px;
+        letter-spacing: .02em;
+    }
+
+    #rest-api-app .method-badge.GET { background: #ecfdf5; color: #047857; }
+    #rest-api-app .method-badge.POST { background: #eff6ff; color: #1d4ed8; }
+    #rest-api-app .method-badge.PUT { background: #fffbeb; color: #b45309; }
+    #rest-api-app .method-badge.DELETE { background: #fef2f2; color: #b91c1c; }
+
+    #rest-api-app .endpoint-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #rest-api-app .endpoint-url {
+        flex: 1 1 260px;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    #rest-api-app .endpoint-url-text {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12.5px;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .endpoint-url-text .path-variable {
+        color: #b45309;
+        font-weight: 700;
+    }
+
+    #rest-api-app .ds-tabs {
+        display: flex;
+        gap: 2px;
+        padding: 8px 16px 0;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #rest-api-app .ds-tabs .nav-link {
+        border: none;
+        border-radius: 7px 7px 0 0;
+        padding: 8px 16px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #6b7280;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #rest-api-app .ds-tabs .nav-link.active {
+        background: #fff;
+        color: #1d4ed8;
+        box-shadow: inset 0 -2px 0 #4A90E2;
+    }
+
+    #rest-api-app .tab-count {
+        font-size: 10px;
+        font-weight: 700;
+        min-width: 18px;
+        padding: 1px 5px;
+        border-radius: 999px;
+        background: #eef0f2;
+        color: #6b7280;
+        text-align: center;
+    }
+
+    #rest-api-app .ds-tabs .nav-link.active .tab-count {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    #rest-api-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    #rest-api-app .ds-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    #rest-api-app .ds-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #rest-api-app label.field-label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #rest-api-app .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+        height: auto;
+    }
+
+    #rest-api-app .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #rest-api-app .form-control:disabled,
+    #rest-api-app .form-control[readonly] {
+        background: #f8fafc;
+        color: #6b7280;
+    }
+
+    #rest-api-app .input-prefix-group {
+        display: flex;
+        align-items: stretch;
+    }
+
+    #rest-api-app .input-prefix {
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        background: #f1f3f5;
+        border: 1px solid #d7dbe0;
+        border-right: none;
+        border-radius: 7px 0 0 7px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .input-prefix-group .form-control {
+        border-radius: 0 7px 7px 0;
+        font-family: "SFMono-Regular", Consolas, monospace;
+    }
+
+    #rest-api-app .picker-group {
+        display: flex;
+        gap: 6px;
+    }
+
+    #rest-api-app .field-help {
+        margin-top: 5px;
+        font-size: 11px;
+        color: #9199a3;
+        line-height: 1.5;
+    }
+
+    #rest-api-app .section {
+        margin-bottom: 20px;
+    }
+
+    #rest-api-app .section:last-child {
+        margin-bottom: 0;
+    }
+
+    #rest-api-app .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    #rest-api-app .section-title {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #rest-api-app .section-desc {
+        font-size: 11.5px;
+        color: #9199a3;
+        font-weight: 400;
+    }
+
+    /* 파라미터 편집 표. 행마다 입력칸이 있고, 본문은 들여쓰기로 트리를 보여준다. */
+    #rest-api-app .param-table-wrap {
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+
+    #rest-api-app .param-table {
+        width: 100%;
+        min-width: 980px;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    #rest-api-app .param-table th {
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        padding: 7px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .param-table td {
+        border-bottom: 1px solid #f1f3f5;
+        padding: 5px 6px;
+        vertical-align: middle;
+    }
+
+    #rest-api-app .param-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    #rest-api-app .param-table tr:hover td {
+        background: #fafbfc;
+    }
+
+    #rest-api-app .param-table .form-control {
+        font-size: 12px;
+        padding: 4px 7px;
+        border-radius: 6px;
+    }
+
+    #rest-api-app .param-table .col-check {
+        text-align: center;
+    }
+
+    #rest-api-app .param-table .col-actions {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .param-empty {
+        padding: 18px;
+        text-align: center;
+        color: #9199a3;
+        font-size: 12px;
+    }
+
+    #rest-api-app .tree-name {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    #rest-api-app .tree-indent {
+        flex: 0 0 auto;
+        color: #c0c4cc;
+        font-size: 11px;
+        text-align: right;
+    }
+
+    #rest-api-app .icon-btn {
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 6px;
+        width: 26px;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #374151;
+        font-size: 11px;
+        vertical-align: middle;
+    }
+
+    #rest-api-app .icon-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #rest-api-app .icon-btn.danger {
+        color: #dc2626;
+    }
+
+    #rest-api-app .icon-btn.danger:hover {
+        background: #fef2f2;
+    }
+
+    #rest-api-app .icon-btn:disabled {
+        opacity: .35;
+        cursor: not-allowed;
+    }
+
+    #rest-api-app .notice {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        font-size: 12px;
+        color: #4b5563;
+        line-height: 1.6;
+        margin-bottom: 14px;
+    }
+
+    #rest-api-app .notice i {
+        color: #4A90E2;
+        margin-top: 3px;
+    }
+
+    #rest-api-app .notice.warning {
+        background: #fffbeb;
+        border-color: #fde68a;
+        color: #92400e;
+    }
+
+    #rest-api-app .notice.warning i {
+        color: #d97706;
+    }
+
+    #rest-api-app .body-root {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px;
+        background: #fbfbfc;
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+
+    #rest-api-app .body-root .form-group {
+        margin-bottom: 0;
+    }
+
+    #rest-api-app .body-layout {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    #rest-api-app .body-layout .body-fields {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #rest-api-app .body-layout .body-example {
+        flex: 0 0 280px;
+        min-width: 0;
+    }
+
+    #rest-api-app .example-json {
+        margin: 0;
+        padding: 10px 12px;
+        background: #111418;
+        color: #c9d1d9;
+        border-radius: 8px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 11.5px;
+        line-height: 1.55;
+        white-space: pre;
+        overflow: auto;
+        max-height: 480px;
+    }
+
+    @media (max-width: 1400px) {
+        #rest-api-app .body-layout {
+            flex-direction: column;
+        }
+
+        #rest-api-app .body-layout .body-example {
+            flex: 1 1 auto;
+            width: 100%;
+        }
+    }
+
+    #rest-api-app .ds-tabs .ds-tabs-right {
+        margin-left: auto;
+    }
+
+    #rest-api-app .type-chip {
+        display: inline-block;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 10.5px;
+        font-weight: 600;
+        padding: 1px 7px;
+        border-radius: 4px;
+        background: #f1f3f5;
+        color: #4b5563;
+    }
+
+    #rest-api-app .status-chip {
+        display: inline-block;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 1px 8px;
+        border-radius: 5px;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .status-chip.success { background: #ecfdf5; color: #047857; }
+    #rest-api-app .status-chip.warning { background: #fffbeb; color: #b45309; }
+    #rest-api-app .status-chip.error { background: #fef2f2; color: #b91c1c; }
+    #rest-api-app .status-chip.pending { background: #eef2ff; color: #4338ca; }
+
+    /* ============ 테스트 호출 ============ */
+    #rest-api-app .test-layout {
+        display: flex;
+        gap: 14px;
+        align-items: stretch;
+    }
+
+    #rest-api-app .test-request {
+        flex: 1 1 50%;
+        min-width: 0;
+    }
+
+    #rest-api-app .test-response {
+        flex: 1 1 50%;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        background: #111418;
+        border-radius: 10px;
+        overflow: hidden;
+        min-height: 420px;
+        max-height: 760px;
+    }
+
+    @media (max-width: 1400px) {
+        #rest-api-app .test-layout {
+            flex-direction: column;
+        }
+    }
+
+    #rest-api-app .test-url-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border: 1px solid #e5e7eb;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    #rest-api-app .test-url {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .test-block {
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+    #rest-api-app .test-block-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 7px 10px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-size: 12px;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    #rest-api-app .test-block-title .section-desc {
+        margin-right: auto;
+    }
+
+    #rest-api-app .test-block-tools {
+        display: flex;
+        gap: 6px;
+    }
+
+    #rest-api-app .test-param-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    #rest-api-app .test-param-table td {
+        padding: 5px 10px;
+        border-bottom: 1px solid #f1f3f5;
+        vertical-align: middle;
+        font-size: 12px;
+    }
+
+    #rest-api-app .test-param-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    #rest-api-app .test-param-table .form-control {
+        font-size: 12px;
+        padding: 4px 7px;
+        border-radius: 6px;
+    }
+
+    #rest-api-app .test-param-name {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .required-mark {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    #rest-api-app .test-empty {
+        padding: 10px;
+        font-size: 12px;
+        color: #9199a3;
+    }
+
+    #rest-api-app .test-body {
+        border: none;
+        border-radius: 0;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        resize: vertical;
+    }
+
+    #rest-api-app .test-body:focus {
+        box-shadow: inset 0 0 0 2px rgba(74, 144, 226, .35);
+    }
+
+    #rest-api-app .test-response-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 7px 10px 7px 14px;
+        background: #181c21;
+        border-bottom: 1px solid #262b31;
+        color: #8b949e;
+        font-size: 11.5px;
+    }
+
+    #rest-api-app .test-response-title {
+        font-weight: 600;
+    }
+
+    #rest-api-app .test-response-btn {
+        border: none;
+        background: transparent;
+        color: #8b949e;
+        font-size: 11.5px;
+        padding: 3px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #rest-api-app .test-response-btn:hover {
+        background: #262b31;
+        color: #e6edf3;
+    }
+
+    #rest-api-app .test-response-btn:disabled {
+        opacity: .4;
+        cursor: not-allowed;
+    }
+
+    #rest-api-app .test-response-summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #262b31;
+        background: #14181d;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        color: #c9d1d9;
+    }
+
+    #rest-api-app .result-code { color: #d2a8ff; }
+    #rest-api-app .result-message { color: #c9d1d9; word-break: break-all; }
+    #rest-api-app .result-muted { color: #8b949e; }
+
+    #rest-api-app .result-meta {
+        margin-left: auto;
+        color: #6e7681;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .test-response-body {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+    }
+
+    #rest-api-app .result-json {
+        margin: 0;
+        padding: 12px 14px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        color: #c9d1d9;
+        white-space: pre;
+        background: transparent;
+        border: none;
+    }
+
+    #rest-api-app .result-empty {
+        padding: 12px 14px;
+        color: #6e7681;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+    }
+
+    #rest-api-app .json-key { color: #79c0ff; }
+    #rest-api-app .json-string { color: #a5d6ff; }
+    #rest-api-app .json-number { color: #ffa657; }
+    #rest-api-app .json-boolean { color: #ff7b72; }
+    #rest-api-app .json-null { color: #8b949e; }
+
+    /* ============ Response 설정 ============ */
+    #rest-api-app .result-file {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 14px;
+        padding: 14px 16px;
+        border: 1px solid #262b31;
+        border-radius: 10px;
+        background: #181c21;
+    }
+
+    #rest-api-app .result-file-icon {
+        font-size: 26px;
+        color: #58a6ff;
+    }
+
+    #rest-api-app .result-file-info {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #rest-api-app .result-file-name {
+        color: #e6edf3;
+        font-weight: 600;
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .result-file-meta {
+        color: #8b949e;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 11.5px;
+        margin-top: 2px;
+    }
+
+    /* ============ API 문서 ============ */
+    #rest-api-app #docView {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #rest-api-app .doc-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #rest-api-app .doc-toolbar h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #rest-api-app .doc-toolbar h3 i {
+        color: #4A90E2;
+    }
+
+    #rest-api-app .doc-toolbar-tools {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    #rest-api-app .doc-search {
+        position: relative;
+    }
+
+    #rest-api-app .doc-search i {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+    }
+
+    #rest-api-app .doc-search input {
+        width: 240px;
+        padding: 5px 10px 5px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #rest-api-app .doc-toggle {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #4b5563;
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    #rest-api-app .doc-layout {
+        display: flex;
+        height: calc(100vh - 110px);
+        min-height: 480px;
+    }
+
+    #rest-api-app .doc-nav {
+        flex: 0 0 280px;
+        border-right: 1px solid #eef0f2;
+        overflow-y: auto;
+        padding: 8px 0;
+        background: #fcfcfd;
+    }
+
+    #rest-api-app .doc-nav-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 14px;
+        color: #374151;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    #rest-api-app .doc-nav-item:hover {
+        background: #f1f5f9;
+        text-decoration: none;
+    }
+
+    #rest-api-app .doc-nav-item.disabled {
+        opacity: .55;
+    }
+
+    #rest-api-app .doc-nav-overview {
+        font-size: 12.5px;
+        font-weight: 600;
+        align-items: center;
+        border-bottom: 1px solid #eef0f2;
+        margin-bottom: 4px;
+    }
+
+    #rest-api-app .doc-nav-text {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    #rest-api-app .doc-nav-name {
+        font-size: 12.5px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .doc-nav-path {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 11px;
+        color: #6b7280;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .doc-content {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-y: auto;
+        padding: 8px 28px 40px 28px;
+        position: relative;
+    }
+
+    #rest-api-app .doc-section {
+        padding: 22px 0 26px 0;
+        border-bottom: 1px solid #eef0f2;
+        max-width: 1100px;
+    }
+
+    #rest-api-app .doc-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+    }
+
+    #rest-api-app .doc-api-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    #rest-api-app .doc-endpoint {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    #rest-api-app .doc-endpoint .method-badge {
+        font-size: 12px;
+        padding: 3px 8px;
+        min-width: 62px;
+    }
+
+    #rest-api-app .doc-endpoint-path {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+        word-break: break-all;
+    }
+
+    #rest-api-app .doc-endpoint-path .path-variable {
+        color: #b45309;
+    }
+
+    #rest-api-app .doc-api-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #rest-api-app .doc-badge.off {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    #rest-api-app .doc-api-name {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 12px 0 4px 0;
+    }
+
+    #rest-api-app .doc-subtitle {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 20px 0 8px 0;
+    }
+
+    #rest-api-app .doc-desc {
+        font-size: 13px;
+        color: #4b5563;
+        line-height: 1.7;
+        margin: 0 0 8px 0;
+    }
+
+    #rest-api-app .doc-note {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    #rest-api-app .doc-warning {
+        color: #b45309;
+    }
+
+    #rest-api-app .doc-meta {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 16px;
+        margin: 10px 0 0 0;
+        font-size: 12.5px;
+    }
+
+    #rest-api-app .doc-meta dt {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    #rest-api-app .doc-meta dd {
+        margin: 0;
+        color: #1f2937;
+    }
+
+    #rest-api-app .doc-content code {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        color: #1f2937;
+        background: #f3f4f6;
+        padding: 1px 5px;
+        border-radius: 4px;
+    }
+
+    #rest-api-app .doc-table-wrap {
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+
+    #rest-api-app .doc-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+    #rest-api-app .doc-table th {
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        padding: 7px 10px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    #rest-api-app .doc-table td {
+        border-bottom: 1px solid #f1f3f5;
+        padding: 7px 10px;
+        color: #374151;
+        vertical-align: top;
+    }
+
+    #rest-api-app .doc-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    #rest-api-app .doc-required {
+        color: #dc2626;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    #rest-api-app .doc-muted {
+        color: #9ca3af;
+    }
+
+    #rest-api-app .doc-example-label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin: 12px 0 6px 0;
+    }
+
+    #rest-api-app .doc-json {
+        margin: 0;
+        padding: 12px 14px;
+        background: #111418;
+        color: #c9d1d9;
+        border-radius: 8px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre;
+        overflow-x: auto;
+    }
+
+    #rest-api-app .doc-empty {
+        padding: 40px 0;
+        color: #9199a3;
+        font-size: 13px;
+    }
+
+    /* 인쇄할 때는 문서 본문만 펼쳐서 출력한다. */
+    @media print {
+        #rest-api-app { padding: 0; background: #fff; }
+        #rest-api-app #editorView,
+        #rest-api-app .doc-toolbar,
+        #rest-api-app .doc-nav,
+        #rest-api-app .doc-api-tools { display: none !important; }
+        #rest-api-app #docView { border: none; }
+        #rest-api-app .doc-layout { display: block; height: auto; }
+        #rest-api-app .doc-content { overflow: visible; padding: 0; }
+        #rest-api-app .doc-section { page-break-inside: avoid; }
+    }
+</style>
+<script th:fragment="script">
+    const REST_API_URL_PREFIX = '/rest';
+    const SCALAR_TYPES = ['STRING', 'INTEGER', 'NUMBER', 'BOOLEAN'];
+    const ALL_TYPES = ['STRING', 'INTEGER', 'NUMBER', 'BOOLEAN', 'OBJECT', 'ARRAY'];
+
+    let REST_API_LIST = [];
+    let SELECTED_API_ID = null;
+    let WORKFLOW_NAME_MAP = {};
+
+    /* 편집 중인 API 의 파라미터 정의. 화면에서 고친 내용은 전부 여기에 모았다가 저장할 때 한 번에 보낸다.
+       {paramKey, parentKey, paramIn, name, dataType, required, defaultValue, messageId, mappingKey, description}
+       본문 필드의 트리는 parentKey 로 잇고, 배열 순서가 곧 형제 사이의 순서다. */
+    let PARAMS = [];
+    let PARAM_KEY_SEQ = 0;
+
+    let IS_DIRTY = false;           // 불러온 뒤 저장하지 않은 변경이 있는지
+    let SUPPRESS_DIRTY = false;     // 불러오는 동안의 다시 그리기는 변경으로 치지 않는다
+    let TEST_STATE = {values: {}, extraHeaders: [], body: null, result: null};
+    let DOCUMENT_DATA = null;
+    let LOADED_API_ID = null;
+    let WORKFLOW_RESPONSE_MESSAGE_IDS = null;   // 선택한 워크플로우가 응답에 담을 수 있는 메시지ID. 아직 불러오지 않았으면 null
+
+    $( document ).ready(function() {
+        init();
+    });
+
+    function init() {
+        $("#pathPrefix").text(REST_API_URL_PREFIX);
+
+        // 테스트 탭은 열 때마다 지금 정의(경로/파라미터)에 맞춰 입력칸을 다시 만든다.
+        $('#rest-api-tab a[href="#rest-api-test"]').on('shown.bs.tab', renderTestPanel);
+
+        // 설정 탭의 입력은 모두 저장 전 변경이다. 테스트 탭의 입력값은 정의가 아니므로 제외한다.
+        $(document).on('input change', '#editorView .ds-detail-panel .tab-pane:not(#rest-api-test) :input', function() {
+            setDirty(true);
+        });
+
+        getWorkflowNames();
+        getList();
+        newContent();
+
+        App.modalPopup.receiveParam('WORKFLOW_PICKER_RESULT', function(data){
+            if(!data || !data.workflowCode) return;
+
+            WORKFLOW_NAME_MAP[data.workflowCode] = data.displayName;
+            setWorkflow(data.workflowCode);
+        });
+    }
+
+    function isEmpty(v) {
+        return (v === undefined || v === null || v === '');
+    }
+
+    function errorMessage(error, fallback) {
+        return (error && error.responseJSON && error.responseJSON.message) ? error.responseJSON.message : fallback;
+    }
+
+    /* ================= 목록 ================= */
+
+    function getWorkflowNames() {
+        httpClient.get(`/console/api/workflow`, {},
+            function(response){
+                WORKFLOW_NAME_MAP = {};
+                for(const item of (response || [])) {
+                    WORKFLOW_NAME_MAP[item.workflowCode] = item.displayName;
+                }
+                setWorkflow($("#workflowCode").val());
+                renderApiList($("#apiSearch").val());
+            },
+            function(error){}
+        );
+    }
+
+    function getList(selectId) {
+        httpClient.get(`/console/api/rest-api`, {},
+            function(response){
+                REST_API_LIST = response || [];
+                renderApiList($("#apiSearch").val());
+
+                if(selectId) {
+                    selectApi(selectId);
+                }
+            },
+            function(error){
+                alert('조회하는데 실패하였습니다.');
+            }
+        );
+    }
+
+    function renderApiList(keyword) {
+        const kw = (keyword || '').trim().toLowerCase();
+        const filtered = REST_API_LIST.filter(function(item) {
+            if(!kw) return true;
+            return (item.apiCode || '').toLowerCase().includes(kw)
+                || (item.displayName || '').toLowerCase().includes(kw)
+                || (item.path || '').toLowerCase().includes(kw)
+                || (item.workflowCode || '').toLowerCase().includes(kw);
+        });
+
+        const $body = $("#apiListBody");
+        $body.empty();
+
+        if(filtered.length === 0) {
+            const $empty = $(`
+                <div class="ds-list-empty">
+                    <i class="fas fa-inbox"></i>
+                    <span></span>
+                </div>
+            `);
+            $empty.find('span').text(REST_API_LIST.length === 0 ? '등록된 Rest API 가 없습니다.' : '검색 결과가 없습니다.');
+            $body.append($empty);
+            return;
+        }
+
+        const sorted = filtered.slice().sort((a, b) => (a.path || '').localeCompare(b.path || '') || (a.httpMethod || '').localeCompare(b.httpMethod || ''));
+
+        for(const item of sorted) {
+            const $item = $(`
+                <div class="ds-list-item">
+                    <div class="ds-list-item-main">
+                        <span class="ds-list-item-name"></span>
+                        <span class="ds-list-item-endpoint">
+                            <span class="method-badge"></span>
+                            <span class="ds-list-item-path"></span>
+                        </span>
+                        <span class="ds-list-item-sub"></span>
+                    </div>
+                    <span class="ds-list-item-status"></span>
+                </div>
+            `);
+
+            $item.attr('data-id', item.id);
+            $item.find('.ds-list-item-name').text(item.displayName || item.apiCode);
+            $item.find('.method-badge').addClass(item.httpMethod).text(item.httpMethod);
+            $item.find('.ds-list-item-path').text(REST_API_URL_PREFIX + item.path);
+
+            const workflowName = WORKFLOW_NAME_MAP[item.workflowCode];
+            $item.find('.ds-list-item-sub').text(`${item.apiCode} · 워크플로우: ${workflowName ? workflowName + ' (' + item.workflowCode + ')' : item.workflowCode}`);
+            $item.find('.ds-list-item-status').addClass(item.enabled ? 'on' : 'off').text(item.enabled ? '활성' : '중지');
+
+            if(String(item.id) === String(SELECTED_API_ID)) {
+                $item.addClass('selected');
+            }
+
+            $item.on('click', function() {
+                selectApi(item.id);
+            });
+
+            $body.append($item);
+        }
+    }
+
+    function selectApi(id, openTestTab) {
+        httpClient.get(`/console/api/rest-api/${id}`, {},
+            function(response){
+                SELECTED_API_ID = id;
+                $("#apiListBody .ds-list-item").removeClass('selected');
+                $(`#apiListBody .ds-list-item[data-id="${id}"]`).addClass('selected');
+
+                setContent(response.restApi, response.parameters || []);
+
+                if(openTestTab) {
+                    $('#rest-api-tab a[href="#rest-api-test"]').tab('show');
+                }
+            },
+            function(error){
+                alert('조회하는데 실패하였습니다.');
+            }
+        );
+    }
+
+    /* ================= 기본정보 ================= */
+
+    function newContent() {
+        SELECTED_API_ID = null;
+        $("#apiListBody .ds-list-item").removeClass('selected');
+
+        setContent({
+            id: '',
+            apiCode: '',
+            displayName: '',
+            httpMethod: 'GET',
+            path: '/',
+            workflowCode: '',
+            bodyDataType: null,
+            bodyMessageId: '',
+            description: '',
+            enabled: true
+        }, []);
+
+        $('#rest-api-tab a[href="#rest-api-basic"]').tab('show');
+    }
+
+    function setContent(restApi, parameters) {
+        $("#id").val(restApi.id);
+        $("#apiCode").val(restApi.apiCode);
+        $("#displayName").val(restApi.displayName);
+        $("#httpMethod").val(restApi.httpMethod || 'GET');
+        $("#path").val(restApi.path || '/');
+        $("#description").val(restApi.description);
+        $("#enabled").prop('checked', restApi.enabled !== false);
+        $("#bodyDataType").val(restApi.bodyDataType || '').data('previous', restApi.bodyDataType || '');
+        $("#bodyMessageId").val(restApi.bodyMessageId || '');
+        const previousResponseMessageId = restApi.responseMessageId;
+        parameters = migrateLegacyResponse(restApi, (parameters || []).map(p => Object.assign({}, p)));
+        const migratedLegacyResponse = isEmpty(previousResponseMessageId) && !isEmpty(restApi.responseMessageId);
+
+        $("#responseType").val(restApi.responseType || 'JSON').data('previous', restApi.responseType || 'JSON');
+        $("#responseMessageId").val(restApi.responseMessageId || '').data('hasValue', !isEmpty(restApi.responseMessageId));
+        $("#responseDataType").val(restApi.responseDataType === 'OBJECT' ? 'OBJECT' : 'ARRAY');
+        $("#fileMessageId").val(restApi.fileMessageId || '');
+        $("#fileContentKey").val(restApi.fileContentKey || '');
+        $("#fileContentEncoding").val(restApi.fileContentEncoding || 'BASE64');
+        $("#fileNameKey").val(restApi.fileNameKey || '');
+        $("#fileName").val(restApi.fileName || '');
+        $("#fileContentTypeKey").val(restApi.fileContentTypeKey || '');
+        setWorkflow(restApi.workflowCode);
+
+        PARAMS = (parameters || []).map(function(p) {
+            return {
+                paramKey: p.paramKey,
+                parentKey: p.parentKey || null,
+                paramIn: p.paramIn,
+                name: p.name || '',
+                dataType: p.dataType || 'STRING',
+                required: p.required === true,
+                defaultValue: p.defaultValue || '',
+                messageId: p.messageId || '',
+                mappingKey: p.mappingKey || '',
+                description: p.description || ''
+            };
+        });
+
+        PARAM_KEY_SEQ = 0;
+        for(const p of PARAMS) {
+            const matched = /^p(\d+)$/.exec(p.paramKey || '');
+            if(matched) {
+                PARAM_KEY_SEQ = Math.max(PARAM_KEY_SEQ, Number(matched[1]));
+            }
+        }
+
+        $("#btnDelete").prop('disabled', isEmpty(restApi.id));
+        $("#btnOpenApiDoc").prop('disabled', isEmpty(restApi.id));
+
+        // 저장 후 같은 API 를 다시 불러올 때는 테스트 입력값을 그대로 둔다. 다른 API 로 바꿀 때만 비운다.
+        if(String(restApi.id || '') !== String(LOADED_API_ID || '') || isEmpty(restApi.id)) {
+            resetTestState();
+        }
+        LOADED_API_ID = restApi.id;
+
+        SUPPRESS_DIRTY = true;
+        syncPathVariables();
+        renderAll();
+        SUPPRESS_DIRTY = false;
+        // 예전 구조의 응답 설정을 바꿔서 불러왔으면 저장해야 반영되므로 변경으로 표시한다.
+        setDirty(migratedLegacyResponse);
+
+        if($("#rest-api-test").hasClass('active')) {
+            renderTestPanel();
+        }
+    }
+
+    function getContent() {
+        const bodyDataType = $("#bodyDataType").val();
+
+        return {
+            id: $("#id").val(),
+            apiCode: $("#apiCode").val(),
+            displayName: $("#displayName").val(),
+            httpMethod: $("#httpMethod").val(),
+            path: $("#path").val(),
+            workflowCode: $("#workflowCode").val(),
+            bodyDataType: bodyDataType || null,
+            bodyMessageId: bodyDataType ? $("#bodyMessageId").val() : '',
+            description: $("#description").val(),
+            enabled: $("#enabled").is(':checked'),
+            responseType: $("#responseType").val(),
+            fileMessageId: $("#fileMessageId").val(),
+            fileContentKey: $("#fileContentKey").val(),
+            fileContentEncoding: $("#fileContentEncoding").val(),
+            fileNameKey: $("#fileNameKey").val(),
+            fileName: $("#fileName").val(),
+            fileContentTypeKey: $("#fileContentTypeKey").val(),
+            responseMessageId: ($("#responseMessageId").val() || '').trim(),
+            responseDataType: $("#responseDataType").val()
+        };
+    }
+
+    function setWorkflow(workflowCode) {
+        const changed = ($("#workflowCode").val() || '') !== (workflowCode || '') || WORKFLOW_RESPONSE_MESSAGE_IDS === null;
+        $("#workflowCode").val(workflowCode || '');
+
+        if(changed) {
+            loadWorkflowResponseMessageIds(workflowCode);
+        }
+
+        if(isEmpty(workflowCode)) {
+            $("#workflowDisplay").val('');
+            return;
+        }
+
+        const name = WORKFLOW_NAME_MAP[workflowCode];
+        $("#workflowDisplay").val(name ? `${name} (${workflowCode})` : workflowCode);
+    }
+
+    function openWorkflowPicker() {
+        App.modalPopup.open('/console/workflow-picker', {title:'워크플로우 검색', messageId:'WORKFLOW_PICKER_REQUEST'});
+    }
+
+    function onMethodChange() {
+        const method = $("#httpMethod").val();
+        const hasBody = !isEmpty($("#bodyDataType").val()) || PARAMS.some(p => p.paramIn === 'BODY');
+
+        // GET 은 본문을 받지 않는다. 이미 본문을 정의해뒀으면 지워도 되는지 묻는다.
+        if(method === 'GET' && hasBody) {
+            if(!confirm('GET 메소드는 Request Body 를 받을 수 없습니다. 정의한 본문을 지우고 바꾸시겠습니까?')) {
+                $("#httpMethod").val($("#httpMethod").data('previous') || 'POST');
+                return;
+            }
+
+            $("#bodyDataType").val('');
+            $("#bodyMessageId").val('');
+            PARAMS = PARAMS.filter(p => p.paramIn !== 'BODY');
+        }
+
+        renderAll();
+    }
+
+    function onPathInput() {
+        syncPathVariables();
+        renderEndpoint();
+        renderPathParams();
+        renderTabCounts();
+    }
+
+    function onBasicFieldInput() {
+        renderEndpoint();
+    }
+
+    /* 경로의 {name} 과 Path Variable 정의를 맞춘다. 새로 생긴 변수는 추가하고, 경로에서 빠진 변수는 지운다. */
+    function syncPathVariables() {
+        const names = pathVariablesOf($("#path").val());
+        const existing = PARAMS.filter(p => p.paramIn === 'PATH');
+        const others = PARAMS.filter(p => p.paramIn !== 'PATH');
+
+        const pathParams = names.map(function(name) {
+            const found = existing.find(p => p.name === name);
+            return found || newParam('PATH', {name: name, required: true});
+        });
+
+        PARAMS = pathParams.concat(others);
+    }
+
+    function pathVariablesOf(path) {
+        const names = [];
+        const pattern = /\{([^}/]+)}/g;
+        let matched;
+
+        while((matched = pattern.exec(path || '')) !== null) {
+            if(!names.includes(matched[1])) {
+                names.push(matched[1]);
+            }
+        }
+
+        return names;
+    }
+
+    function normalizedPath() {
+        let path = ($("#path").val() || '').trim();
+        if(!path.startsWith('/')) path = '/' + path;
+        while(path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+        return path;
+    }
+
+    function renderEndpoint() {
+        const method = $("#httpMethod").val();
+        const path = normalizedPath();
+
+        $("#httpMethod").data('previous', method);
+        $("#endpointMethod").attr('class', 'method-badge ' + method).text(method);
+
+        const $url = $("#endpointUrl").empty();
+        $url.append(document.createTextNode(location.origin + REST_API_URL_PREFIX));
+
+        // 경로변수 자리는 색으로 구분해서 보여준다.
+        let lastIndex = 0;
+        const pattern = /\{[^}/]+}/g;
+        let matched;
+
+        while((matched = pattern.exec(path)) !== null) {
+            $url.append(document.createTextNode(path.slice(lastIndex, matched.index)));
+            $url.append($('<span class="path-variable"></span>').text(matched[0]));
+            lastIndex = pattern.lastIndex;
+        }
+
+        $url.append(document.createTextNode(path.slice(lastIndex)));
+    }
+
+    function copyEndpoint() {
+        copyText($("#httpMethod").val() + ' ' + location.origin + REST_API_URL_PREFIX + normalizedPath());
+    }
+
+    /* ================= 저장 / 삭제 ================= */
+
+    function save() {
+        const restApi = getContent();
+
+        httpClient.post(`/console/api/rest-api/save`, {},
+            {
+                restApi: restApi,
+                parameters: collectParameters()
+            },
+            function(response){
+                alert('저장완료되었습니다.');
+                getList(response.id);
+            },
+            function(error){
+                alert(errorMessage(error, '저장에 실패했습니다.'));
+            }
+        );
+    }
+
+    // 본문/응답 항목은 트리 순서(부모 다음에 자식)로 펼쳐서 보낸다. 서버는 이 순서를 orderNum 으로 저장한다.
+    function collectParameters() {
+        const result = [];
+        const pushParam = function(p) {
+            result.push({
+                paramKey: p.paramKey,
+                parentKey: p.parentKey,
+                paramIn: p.paramIn,
+                name: p.name,
+                dataType: p.dataType,
+                required: p.required,
+                defaultValue: p.defaultValue,
+                messageId: p.messageId,
+                mappingKey: p.mappingKey,
+                description: p.description
+            });
+        };
+
+        PARAMS.filter(p => p.paramIn !== 'BODY' && p.paramIn !== 'RESPONSE').forEach(pushParam);
+        bodyTreeRows().forEach(row => pushParam(row.param));
+
+        // 파일 다운로드 응답은 응답메시지/응답스키마를 쓰지 않는다.
+        if($("#responseType").val() !== 'FILE') {
+            treeRowsIn('RESPONSE', PARAMS).forEach(row => pushParam(row.param));
+        }
+
+        return result;
+    }
+
+    function deleteContent() {
+        const id = $("#id").val();
+        if(isEmpty(id)) return;
+
+        if(!confirm('삭제하시겠습니까? 이 API 로 들어오는 요청은 더 이상 처리되지 않습니다.')) return;
+
+        httpClient.delete(`/console/api/rest-api/${id}`, {},
+            function(response){
+                alert('삭제 처리 완료되었습니다.');
+                newContent();
+                getList();
+            },
+            function(error){
+                alert('삭제에 실패했습니다.');
+            }
+        );
+    }
+
+    /* ================= 파라미터 공통 ================= */
+
+    function newParam(paramIn, values) {
+        return Object.assign({
+            paramKey: 'p' + (++PARAM_KEY_SEQ),
+            parentKey: null,
+            paramIn: paramIn,
+            name: '',
+            dataType: 'STRING',
+            required: false,
+            defaultValue: '',
+            messageId: '',
+            mappingKey: '',
+            description: ''
+        }, values || {});
+    }
+
+    function findParam(paramKey) {
+        return PARAMS.find(p => p.paramKey === paramKey);
+    }
+
+    function renderAll() {
+        renderEndpoint();
+        renderPathParams();
+        renderFlatParams('QUERY', '#queryParamBody');
+        renderFlatParams('HEADER', '#headerParamBody');
+        renderBody();
+        renderResponse();
+        renderTabCounts();
+    }
+
+    // 파라미터 추가/삭제/타입 변경처럼 모델이 바뀌면 항상 이 함수로 개수를 다시 그리므로, 여기서 변경으로 표시한다.
+    function renderTabCounts() {
+        setDirty(true);
+
+        $("#queryTabCount").text(PARAMS.filter(p => p.paramIn === 'PATH' || p.paramIn === 'QUERY').length);
+        $("#headerTabCount").text(PARAMS.filter(p => p.paramIn === 'HEADER').length);
+        $("#bodyTabCount").text(PARAMS.filter(p => p.paramIn === 'BODY').length);
+        $("#responseTabCount").text($("#responseType").val() === 'FILE'
+            ? 'FILE'
+            : (isEmpty(($("#responseMessageId").val() || '').trim()) ? '전체' : PARAMS.filter(p => p.paramIn === 'RESPONSE').length));
+    }
+
+    function typeSelect(types, value) {
+        const $select = $('<select class="form-control"></select>');
+        for(const type of types) {
+            $select.append($('<option></option>').val(type).text(type));
+        }
+        $select.val(value);
+        return $select;
+    }
+
+    // 입력할 때마다 표 전체를 다시 그리면 커서가 끊기므로 모델만 고친다. 다른 칸의 모양이 바뀌는 변경만 다시 그린다.
+    function bindText($input, param, field, onChange) {
+        $input.val(param[field] || '').on('input', function() {
+            param[field] = this.value;
+            if(onChange) onChange();
+        });
+        return $input;
+    }
+
+    function textInput(placeholder) {
+        return $('<input type="text" class="form-control" autocomplete="off">').attr('placeholder', placeholder || '');
+    }
+
+    /* ================= Path Variable / Request Param / Request Header ================= */
+
+    function renderPathParams() {
+        const $body = $("#pathParamBody").empty();
+        const pathParams = PARAMS.filter(p => p.paramIn === 'PATH');
+
+        $("#pathParamSection").toggle(pathParams.length > 0);
+
+        for(const param of pathParams) {
+            const $row = $('<tr></tr>');
+
+            $row.append($('<td></td>').append(textInput().val(param.name).prop('readonly', true)));
+            $row.append($('<td></td>').append(typeSelect(SCALAR_TYPES, param.dataType).on('change', function() {
+                param.dataType = this.value;
+            })));
+            $row.append($('<td class="col-check"></td>').append('<input type="checkbox" checked disabled title="경로변수는 항상 필수입니다">'));
+            $row.append($('<td></td>').append(bindText(textInput('요청메시지ID'), param, 'messageId')));
+            $row.append($('<td></td>').append(bindText(textInput(param.name), param, 'mappingKey')));
+            $row.append($('<td></td>').append(bindText(textInput('설명'), param, 'description')));
+
+            $body.append($row);
+        }
+    }
+
+    function renderFlatParams(paramIn, bodySelector) {
+        const $body = $(bodySelector).empty();
+        const params = PARAMS.filter(p => p.paramIn === paramIn);
+
+        if(params.length === 0) {
+            $body.append(`<tr><td colspan="8" class="param-empty">정의된 ${paramIn === 'QUERY' ? 'Request Param' : 'Request Header'} 이 없습니다.</td></tr>`);
+            return;
+        }
+
+        for(const param of params) {
+            const $row = $('<tr></tr>');
+
+            $row.append($('<td></td>').append(bindText(textInput(paramIn === 'QUERY' ? '파라미터명' : '헤더명'), param, 'name', function() {
+                $row.find('.mapping-key').attr('placeholder', param.name);
+            })));
+            $row.append($('<td></td>').append(typeSelect(SCALAR_TYPES, param.dataType).on('change', function() {
+                param.dataType = this.value;
+            })));
+            $row.append($('<td class="col-check"></td>').append($('<input type="checkbox">').prop('checked', param.required).on('change', function() {
+                param.required = this.checked;
+            })));
+            $row.append($('<td></td>').append(bindText(textInput('기본값'), param, 'defaultValue')));
+            $row.append($('<td></td>').append(bindText(textInput('요청메시지ID'), param, 'messageId')));
+            $row.append($('<td></td>').append(bindText(textInput(param.name).addClass('mapping-key'), param, 'mappingKey')));
+            $row.append($('<td></td>').append(bindText(textInput('설명'), param, 'description')));
+            $row.append($('<td class="col-actions"></td>').append(
+                $('<button type="button" class="icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>').on('click', function() {
+                    PARAMS = PARAMS.filter(p => p !== param);
+                    renderFlatParams(paramIn, bodySelector);
+                    renderTabCounts();
+                })
+            ));
+
+            $body.append($row);
+        }
+    }
+
+    function addFlatParam(paramIn) {
+        const param = newParam(paramIn, {messageId: lastMessageIdOf(paramIn)});
+        PARAMS.push(param);
+
+        renderFlatParams(paramIn, paramIn === 'QUERY' ? '#queryParamBody' : '#headerParamBody');
+        renderTabCounts();
+
+        $(paramIn === 'QUERY' ? '#queryParamBody' : '#headerParamBody').find('tr:last input[type="text"]').first().trigger('focus');
+    }
+
+    // 같은 위치의 파라미터는 보통 같은 요청메시지로 모으므로, 직전에 적은 요청메시지ID 를 미리 채워준다.
+    function lastMessageIdOf(paramIn) {
+        const same = PARAMS.filter(p => p.paramIn === paramIn && !isEmpty(p.messageId));
+        if(same.length > 0) return same[same.length - 1].messageId;
+
+        const any = PARAMS.filter(p => p.paramIn !== 'BODY' && !isEmpty(p.messageId));
+        return any.length > 0 ? any[any.length - 1].messageId : '';
+    }
+
+    /* ================= Request Body ================= */
+
+    // 본문 필드를 트리 순서(부모 -> 자식)로 펼친 목록. depth 는 들여쓰기 단계.
+    function bodyTreeRows() {
+        const bodyParams = PARAMS.filter(p => p.paramIn === 'BODY');
+        const rows = [];
+        const visited = new Set();
+
+        const walk = function(parentKey, depth) {
+            for(const param of bodyParams) {
+                if((param.parentKey || null) !== parentKey || visited.has(param.paramKey)) continue;
+
+                visited.add(param.paramKey);
+                rows.push({param: param, depth: depth});
+
+                if(param.dataType === 'OBJECT' || param.dataType === 'ARRAY') {
+                    walk(param.paramKey, depth + 1);
+                }
+            }
+        };
+
+        walk(null, 0);
+
+        return rows;
+    }
+
+    function childrenOf(paramKey) {
+        return PARAMS.filter(p => p.paramIn === 'BODY' && p.parentKey === paramKey);
+    }
+
+    function descendantKeysOf(paramKey) {
+        const keys = [];
+        for(const child of childrenOf(paramKey)) {
+            keys.push(child.paramKey);
+            keys.push(...descendantKeysOf(child.paramKey));
+        }
+        return keys;
+    }
+
+    function renderBody() {
+        const method = $("#httpMethod").val();
+        const bodyDataType = $("#bodyDataType").val();
+        const allowsBody = method !== 'GET';
+
+        $("#bodyGetNotice").toggle(!allowsBody);
+        $("#bodyRoot").toggle(allowsBody);
+        $("#bodyLayout").toggle(allowsBody && !isEmpty(bodyDataType));
+        $("#bodyNoneNotice").toggle(allowsBody && isEmpty(bodyDataType));
+        $("#bodyMessageIdGroup").toggle(!isEmpty(bodyDataType));
+        $("#bodyRootTypeLabel").text(bodyDataType === 'ARRAY' ? '배열 원소(객체)의 필드' : '본문 객체의 필드');
+
+        const $body = $("#bodyParamBody").empty();
+        const rows = bodyTreeRows();
+
+        if(rows.length === 0) {
+            $body.append(`<tr><td colspan="8" class="param-empty">정의된 필드가 없습니다. 필드를 정의하지 않으면 본문을 들어온 그대로 요청메시지에 담습니다.</td></tr>`);
+        }
+
+        for(const row of rows) {
+            $body.append(renderBodyRow(row.param, row.depth));
+        }
+
+        renderBodyExample();
+    }
+
+    function renderBodyRow(param, depth) {
+        const isContainer = param.dataType === 'OBJECT' || param.dataType === 'ARRAY';
+        const $row = $('<tr></tr>').attr('data-param-key', param.paramKey);
+
+        const $name = $('<div class="tree-name"></div>');
+        if(depth > 0) {
+            $name.append($('<span class="tree-indent"></span>').css('width', (depth * 16) + 'px').html('<i class="fas fa-level-up-alt fa-rotate-90"></i>'));
+        }
+        $name.append(bindText(textInput('필드명'), param, 'name', function() {
+            $row.find('.mapping-key').attr('placeholder', param.name);
+            renderBodyExample();
+        }));
+        $row.append($('<td></td>').append($name));
+
+        $row.append($('<td></td>').append(typeSelect(ALL_TYPES, param.dataType).on('change', function() {
+            changeBodyFieldType(param, this.value, $(this));
+        })));
+
+        $row.append($('<td class="col-check"></td>').append($('<input type="checkbox">').prop('checked', param.required).on('change', function() {
+            param.required = this.checked;
+        })));
+
+        // 기본값은 기본 타입만, 별도 요청메시지ID 는 OBJECT/ARRAY 만 쓸 수 있다.
+        $row.append($('<td></td>').append(bindText(textInput(isContainer ? '-' : '기본값'), param, 'defaultValue', renderBodyExample).prop('disabled', isContainer)));
+        $row.append($('<td></td>').append(bindText(textInput(isContainer ? '(상위 행에 중첩)' : '-'), param, 'messageId').prop('disabled', !isContainer)
+            .attr('title', isContainer ? '비워두면 상위 행에 중첩된 값으로, 적으면 이 필드가 별도 요청메시지가 됩니다.' : '')));
+        $row.append($('<td></td>').append(bindText(textInput(param.name).addClass('mapping-key'), param, 'mappingKey')));
+        $row.append($('<td></td>').append(bindText(textInput('설명'), param, 'description')));
+
+        const $actions = $('<td class="col-actions"></td>');
+        $actions.append($('<button type="button" class="icon-btn" title="하위 필드 추가"><i class="fas fa-plus"></i></button>')
+            .prop('disabled', !isContainer)
+            .on('click', function() {
+                addBodyField(param.paramKey);
+            }));
+        $actions.append(' ');
+        $actions.append($('<button type="button" class="icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>').on('click', function() {
+            removeBodyField(param);
+        }));
+        $row.append($actions);
+
+        return $row;
+    }
+
+    function changeBodyFieldType(param, nextType, $select) {
+        const willBeContainer = nextType === 'OBJECT' || nextType === 'ARRAY';
+        const descendants = descendantKeysOf(param.paramKey);
+
+        if(!willBeContainer && descendants.length > 0) {
+            if(!confirm('기본 타입으로 바꾸면 하위 필드가 모두 지워집니다. 바꾸시겠습니까?')) {
+                $select.val(param.dataType);
+                return;
+            }
+
+            PARAMS = PARAMS.filter(p => !descendants.includes(p.paramKey));
+        }
+
+        param.dataType = nextType;
+
+        if(willBeContainer) {
+            param.defaultValue = '';
+        }
+        else {
+            param.messageId = '';
+        }
+
+        renderBody();
+        renderTabCounts();
+    }
+
+    function addBodyField(parentKey) {
+        if(isEmpty($("#bodyDataType").val())) {
+            alert('먼저 본문 타입(OBJECT / ARRAY)을 선택해주세요.');
+            return;
+        }
+
+        const param = newParam('BODY', {parentKey: parentKey || null});
+
+        // 트리는 부모별로 배열 순서대로 그리므로 끝에 넣으면 그 부모의 마지막 자식으로 보인다.
+        PARAMS.push(param);
+
+        renderBody();
+        renderTabCounts();
+
+        $(`#bodyParamBody tr[data-param-key="${param.paramKey}"] input[type="text"]`).first().trigger('focus');
+    }
+
+    function removeBodyField(param) {
+        const descendants = descendantKeysOf(param.paramKey);
+
+        if(descendants.length > 0 && !confirm('하위 필드도 함께 지워집니다. 삭제하시겠습니까?')) {
+            return;
+        }
+
+        PARAMS = PARAMS.filter(p => p !== param && !descendants.includes(p.paramKey));
+
+        renderBody();
+        renderTabCounts();
+    }
+
+    function onBodyDataTypeChange() {
+        const bodyDataType = $("#bodyDataType").val();
+        const bodyParams = PARAMS.filter(p => p.paramIn === 'BODY');
+
+        if(isEmpty(bodyDataType) && bodyParams.length > 0) {
+            if(!confirm('본문을 받지 않으면 정의한 본문 필드가 모두 지워집니다. 바꾸시겠습니까?')) {
+                $("#bodyDataType").val($("#bodyDataType").data('previous') || 'OBJECT');
+                return;
+            }
+
+            PARAMS = PARAMS.filter(p => p.paramIn !== 'BODY');
+            $("#bodyMessageId").val('');
+        }
+
+        $("#bodyDataType").data('previous', bodyDataType);
+
+        renderBody();
+        renderTabCounts();
+    }
+
+    function renderBodyExample() {
+        const bodyDataType = $("#bodyDataType").val();
+        $("#bodyExample").text(isEmpty(bodyDataType) ? '' : buildBodyExampleJson(bodyDataType, PARAMS));
+    }
+
+    // 정의한 스키마로 보낼 본문의 예시를 만든다. 기본값이 있으면 그 값을 쓴다. 편집 화면, 테스트 호출, 문서에서 같이 쓴다.
+    function buildBodyExampleJson(bodyDataType, params) {
+        const root = sampleObjectIn(params, 'BODY', null);
+        return JSON.stringify(bodyDataType === 'ARRAY' ? [root] : root, null, 2);
+    }
+
+    // paramIn(BODY/RESPONSE) 트리에서 parentKey 아래 필드들로 예시 객체를 만든다. 기본값이 있으면 그 값을 쓴다.
+    function sampleObjectIn(params, paramIn, parentKey) {
+        const items = (params || []).filter(p => p.paramIn === paramIn);
+        const childrenOfKey = key => items.filter(p => (p.parentKey || null) === key);
+
+        const buildObject = function(key) {
+            const result = {};
+            for(const child of childrenOfKey(key)) {
+                if(isEmpty(child.name)) continue;
+                result[child.name] = sampleOf(child);
+            }
+            return result;
+        };
+
+        const sampleOf = function(param) {
+            switch(param.dataType) {
+                case 'OBJECT': return buildObject(param.paramKey);
+                case 'ARRAY': {
+                    const children = childrenOfKey(param.paramKey);
+                    return children.length > 0 ? [buildObject(param.paramKey)] : ['...'];
+                }
+                case 'INTEGER': return isEmpty(param.defaultValue) ? 0 : Number(param.defaultValue);
+                case 'NUMBER': return isEmpty(param.defaultValue) ? 0.0 : Number(param.defaultValue);
+                case 'BOOLEAN': return isEmpty(param.defaultValue) ? true : param.defaultValue === 'true';
+                default: return isEmpty(param.defaultValue) ? 'string' : param.defaultValue;
+            }
+        };
+
+        return buildObject(parentKey);
+    }
+
+    // JSON 응답 예시. 응답메시지ID 를 지정했으면 그 메시지 내용(목록/한 건)만, 없으면 워크플로우가 만들 수 있는 응답메시지 전체로 보여준다.
+    function buildResponseExampleJson(responseSetting, params, workflowResponseMessageIds) {
+        let contents;
+
+        if(isEmpty(((responseSetting && responseSetting.responseMessageId) || '').trim())) {
+            contents = {};
+            for(const messageId of (workflowResponseMessageIds || [])) {
+                contents[messageId] = [{}];
+            }
+        }
+        else {
+            const row = sampleObjectIn(params, 'RESPONSE', null);
+            contents = responseSetting.responseDataType === 'OBJECT' ? row : [row];
+        }
+
+        return JSON.stringify({
+            contents: contents,
+            status: 200,
+            message: '처리완료 되었습니다.',
+            code: 'S001',
+            resultType: 'SUCCESS'
+        }, null, 2);
+    }
+
+    // 본문 필드를 트리 순서로 펼치면서 호출하는 쪽이 읽는 경로 표기(goals[].goalId)를 붙인다.
+    function bodyFieldPaths(bodyDataType, params) {
+        return fieldPathsIn(params, 'BODY', bodyDataType === 'ARRAY' ? '[].' : '');
+    }
+
+    // 응답스키마는 contents 에 담기는 행의 필드다. 목록이면 contents[].goalId, 한 건이면 contents.goalId 처럼 표기한다.
+    function responseFieldPaths(params, responseDataType) {
+        return fieldPathsIn(params, 'RESPONSE', responseDataType === 'OBJECT' ? 'contents.' : 'contents[].');
+    }
+
+    function fieldPathsIn(params, paramIn, rootPrefix) {
+        const items = (params || []).filter(p => p.paramIn === paramIn);
+        const rows = [];
+        const visited = new Set();
+
+        const walk = function(parentKey, prefix, depth) {
+            for(const param of items) {
+                if((param.parentKey || null) !== parentKey || visited.has(param.paramKey)) continue;
+
+                visited.add(param.paramKey);
+                const path = prefix + param.name;
+                rows.push({param: param, depth: depth, path: path});
+
+                if(param.dataType === 'OBJECT') walk(param.paramKey, path + '.', depth + 1);
+                if(param.dataType === 'ARRAY') walk(param.paramKey, path + '[].', depth + 1);
+            }
+        };
+
+        walk(null, rootPrefix, 0);
+
+        return rows;
+    }
+
+    // paramIn(BODY/RESPONSE) 트리를 부모 -> 자식 순서로 펼친다.
+    function treeRowsIn(paramIn, params) {
+        return fieldPathsIn(params, paramIn, '');
+    }
+
+    /* ================= Response ================= */
+
+    function loadWorkflowResponseMessageIds(workflowCode) {
+        WORKFLOW_RESPONSE_MESSAGE_IDS = [];
+        renderWorkflowResponseMessageIds();
+
+        if(isEmpty(workflowCode)) return;
+
+        httpClient.get(`/console/api/rest-api/workflow-response-message-ids`, {workflowCode: workflowCode},
+            function(response){
+                // 기다리는 사이 다른 워크플로우를 골랐으면 버린다.
+                if($("#workflowCode").val() !== workflowCode) return;
+
+                WORKFLOW_RESPONSE_MESSAGE_IDS = response || [];
+                renderWorkflowResponseMessageIds();
+                renderResponseExample();
+            },
+            function(error){}
+        );
+    }
+
+    function renderWorkflowResponseMessageIds() {
+        const ids = WORKFLOW_RESPONSE_MESSAGE_IDS || [];
+        const $list = $("#workflowResponseMessageIdList").empty();
+
+        for(const id of ids) {
+            $list.append($('<option></option>').val(id));
+        }
+
+        $("#workflowResponseMessageHint, #workflowResponseMessageHintFile").text(isEmpty($("#workflowCode").val())
+            ? '워크플로우를 선택하면 응답에 담을 수 있는 메시지ID 를 보여줍니다.'
+            : (ids.length > 0 ? `워크플로우 응답메시지: ${ids.join(', ')}` : '워크플로우에서 찾은 응답메시지가 없습니다.'));
+    }
+
+    function onResponseTypeChange() {
+        const responseType = $("#responseType").val();
+        const items = PARAMS.filter(p => p.paramIn === 'RESPONSE');
+
+        if(responseType === 'FILE' && items.length > 0) {
+            if(!confirm('파일 다운로드로 바꾸면 설정한 응답메시지/응답스키마가 지워집니다. 바꾸시겠습니까?')) {
+                $("#responseType").val($("#responseType").data('previous') || 'JSON');
+                return;
+            }
+
+            PARAMS = PARAMS.filter(p => p.paramIn !== 'RESPONSE');
+        }
+
+        $("#responseType").data('previous', responseType);
+
+        renderResponse();
+        renderTabCounts();
+    }
+
+    function renderResponse() {
+        const isFile = $("#responseType").val() === 'FILE';
+        const hasMessageId = !isEmpty(($("#responseMessageId").val() || '').trim());
+
+        $("#responseJsonSection").toggle(!isFile);
+        $("#responseFileSection").toggle(isFile);
+
+        // 응답스키마는 지정한 메시지 행의 필드라서, 응답메시지ID 가 없으면 쓸 수 없다.
+        $("#responseDataTypeGroup").toggle(hasMessageId);
+        $("#btnAddResponseField").prop('disabled', !hasMessageId);
+        $("#responseSchemaDesc").text(hasMessageId ? '응답메시지 행의 필드' : '응답메시지ID 를 지정하면 쓸 수 있습니다.');
+
+        const $body = $("#responseParamBody").empty();
+        const rows = treeRowsIn('RESPONSE', PARAMS);
+
+        if(rows.length === 0) {
+            $body.append(hasMessageId
+                ? `<tr><td colspan="6" class="param-empty">정의한 필드가 없습니다. 응답메시지의 행을 그대로 돌려줍니다.</td></tr>`
+                : `<tr><td colspan="6" class="param-empty">응답메시지ID 를 지정하지 않아 워크플로우 응답 전체(contents)를 그대로 돌려줍니다.</td></tr>`);
+        }
+
+        for(const row of rows) {
+            $body.append(renderResponseRow(row.param, row.depth));
+        }
+
+        renderWorkflowResponseMessageIds();
+        renderResponseExample();
+    }
+
+    function onResponseMessageIdInput() {
+        const hadMessageId = $("#responseMessageId").data('hasValue') === true;
+        const hasMessageId = !isEmpty(($("#responseMessageId").val() || '').trim());
+
+        $("#responseMessageId").data('hasValue', hasMessageId);
+
+        // 비었다 채워지는 순간만 다시 그린다. 입력할 때마다 다시 그리면 커서가 끊긴다.
+        if(hadMessageId !== hasMessageId) {
+            renderResponse();
+            renderTabCounts();
+        }
+        else {
+            renderResponseExample();
+        }
+    }
+
+    function renderResponseRow(param, depth) {
+        const isContainer = param.dataType === 'OBJECT' || param.dataType === 'ARRAY';
+        const $row = $('<tr></tr>').attr('data-param-key', param.paramKey);
+
+        const $name = $('<div class="tree-name"></div>');
+        if(depth > 0) {
+            $name.append($('<span class="tree-indent"></span>').css('width', (depth * 16) + 'px').html('<i class="fas fa-level-up-alt fa-rotate-90"></i>'));
+        }
+
+        $name.append(bindText(textInput('필드명'), param, 'name', function() {
+            $row.find('.mapping-key').attr('placeholder', param.name || '원본 컬럼');
+            renderResponseExample();
+        }));
+        $row.append($('<td></td>').append($name));
+
+        $row.append($('<td></td>').append(typeSelect(ALL_TYPES, param.dataType).on('change', function() {
+            changeResponseItemType(param, this.value, $(this));
+        })));
+
+        $row.append($('<td></td>').append(bindText(textInput(isContainer ? '-' : '기본값'), param, 'defaultValue', renderResponseExample).prop('disabled', isContainer)));
+
+        const $mapping = bindText(textInput(param.name || '원본 컬럼').addClass('mapping-key'), param, 'mappingKey')
+            .attr('title', '원본 행의 컬럼명. 비우면 필드명과 같은 컬럼을 씁니다.');
+        $row.append($('<td></td>').append($mapping));
+
+        $row.append($('<td></td>').append(bindText(textInput('설명'), param, 'description')));
+
+        const $actions = $('<td class="col-actions"></td>');
+        $actions.append($('<button type="button" class="icon-btn" title="필드 추가"><i class="fas fa-plus"></i></button>')
+            .prop('disabled', !isContainer)
+            .on('click', function() {
+                addResponseField(param.paramKey);
+            }));
+        $actions.append(' ');
+        $actions.append($('<button type="button" class="icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>').on('click', function() {
+            removeResponseItem(param);
+        }));
+        $row.append($actions);
+
+        return $row;
+    }
+
+    function responseDescendantKeysOf(paramKey) {
+        const keys = [];
+        for(const child of PARAMS.filter(p => p.paramIn === 'RESPONSE' && p.parentKey === paramKey)) {
+            keys.push(child.paramKey);
+            keys.push(...responseDescendantKeysOf(child.paramKey));
+        }
+        return keys;
+    }
+
+    function addResponseField(parentKey) {
+        if(isEmpty(($("#responseMessageId").val() || '').trim())) {
+            alert('먼저 응답메시지ID 를 지정해주세요.');
+            return;
+        }
+
+        const param = newParam('RESPONSE', {parentKey: parentKey || null});
+        PARAMS.push(param);
+
+        renderResponse();
+        renderTabCounts();
+
+        $(`#responseParamBody tr[data-param-key="${param.paramKey}"] input[type="text"]`).first().trigger('focus');
+    }
+
+    function removeResponseItem(param) {
+        const descendants = responseDescendantKeysOf(param.paramKey);
+
+        if(descendants.length > 0 && !confirm('하위 필드도 함께 지워집니다. 삭제하시겠습니까?')) {
+            return;
+        }
+
+        PARAMS = PARAMS.filter(p => p !== param && !descendants.includes(p.paramKey));
+
+        renderResponse();
+        renderTabCounts();
+    }
+
+    function changeResponseItemType(param, nextType, $select) {
+        const willBeContainer = nextType === 'OBJECT' || nextType === 'ARRAY';
+        const descendants = responseDescendantKeysOf(param.paramKey);
+
+        if(!willBeContainer && descendants.length > 0) {
+            if(!confirm('기본 타입으로 바꾸면 하위 필드가 모두 지워집니다. 바꾸시겠습니까?')) {
+                $select.val(param.dataType);
+                return;
+            }
+
+            PARAMS = PARAMS.filter(p => !descendants.includes(p.paramKey));
+        }
+
+        param.dataType = nextType;
+        if(willBeContainer) {
+            param.defaultValue = '';
+        }
+
+        renderResponse();
+        renderTabCounts();
+    }
+
+    function renderResponseExample() {
+        $("#responseExample").html(highlightJson(buildResponseExampleJson(
+            {responseMessageId: $("#responseMessageId").val(), responseDataType: $("#responseDataType").val()},
+            PARAMS,
+            WORKFLOW_RESPONSE_MESSAGE_IDS
+        )));
+    }
+
+    /* 응답메시지ID 가 생기기 전 구조(최상위 RESPONSE 항목 = 응답할 메시지, 그 아래 = 필드)로 저장된 설정을 지금 구조로 바꾼다.
+       첫 번째 메시지를 응답메시지ID/응답 형태로 옮기고 그 아래 필드를 응답스키마로 올린다. 나머지 메시지는 버린다. 저장해야 반영된다. */
+    function migrateLegacyResponse(restApi, params) {
+        const roots = params.filter(p => p.paramIn === 'RESPONSE' && !p.parentKey);
+        const isLegacy = isEmpty(restApi.responseMessageId)
+            && roots.length > 0
+            && roots.every(p => p.dataType === 'ARRAY' || p.dataType === 'OBJECT');
+
+        if(!isLegacy) {
+            return params;
+        }
+
+        const first = roots[0];
+        restApi.responseMessageId = isEmpty(first.mappingKey) ? first.name : first.mappingKey;
+        restApi.responseDataType = first.dataType;
+
+        const keepKeys = new Set();
+        const collect = function(parentKey) {
+            for(const child of params.filter(p => p.paramIn === 'RESPONSE' && p.parentKey === parentKey)) {
+                keepKeys.add(child.paramKey);
+                collect(child.paramKey);
+            }
+        };
+        collect(first.paramKey);
+
+        return params
+            .filter(p => p.paramIn !== 'RESPONSE' || keepKeys.has(p.paramKey))
+            .map(p => (p.paramIn === 'RESPONSE' && p.parentKey === first.paramKey) ? Object.assign(p, {parentKey: null}) : p);
+    }
+
+    function escapeHtml(text) {
+        return String(text == null ? '' : text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // 키/문자열/숫자/불리언/null 에 색을 입힌다. 토큰을 먼저 나누고 조각마다 이스케이프한다.
+    function highlightJson(json) {
+        const text = json == null ? '' : String(json);
+        const tokenPattern = /("(?:\\.|[^"\\])*")(\s*:)?|\b(?:true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g;
+
+        let html = '';
+        let lastIndex = 0;
+        let matched;
+
+        while((matched = tokenPattern.exec(text)) !== null) {
+            html += escapeHtml(text.slice(lastIndex, matched.index));
+
+            const token = matched[0];
+            if(matched[1]) {
+                html += `<span class="${matched[2] ? 'json-key' : 'json-string'}">${escapeHtml(matched[1])}</span>${matched[2] || ''}`;
+            }
+            else {
+                let className = 'json-number';
+                if(token === 'true' || token === 'false') className = 'json-boolean';
+                else if(token === 'null') className = 'json-null';
+
+                html += `<span class="${className}">${escapeHtml(token)}</span>`;
+            }
+
+            lastIndex = tokenPattern.lastIndex;
+        }
+
+        return html + escapeHtml(text.slice(lastIndex));
+    }
+
+    function copyText(text) {
+        if(navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text);
+            return;
+        }
+
+        const $textarea = $('<textarea style="position:fixed;left:-9999px;"></textarea>').val(text).appendTo('body');
+        $textarea.trigger('select');
+        document.execCommand('copy');
+        $textarea.remove();
+    }
+
+    /* ================= 변경 여부 ================= */
+
+    // 테스트 호출은 서버에 저장된 정의로 동작한다. 저장하지 않은 변경이 있으면 테스트 화면에서 알려준다.
+    function setDirty(dirty) {
+        if(SUPPRESS_DIRTY) return;
+
+        IS_DIRTY = dirty;
+        $("#testDirtyNotice").toggle(IS_DIRTY && !isEmpty($("#id").val()));
+    }
+
+    /* ================= 테스트 호출 ================= */
+
+    function resetTestState() {
+        TEST_STATE = {values: {}, extraHeaders: [], body: null, result: null};
+    }
+
+    function renderTestPanel() {
+        const hasSaved = !isEmpty($("#id").val());
+
+        $("#testUnsavedNotice").toggle(!hasSaved);
+        $("#testForm").toggle(hasSaved);
+        $("#testDirtyNotice").toggle(IS_DIRTY && hasSaved);
+
+        if(!hasSaved) return;
+
+        const method = $("#httpMethod").val();
+        const bodyDataType = $("#bodyDataType").val();
+        const hasBody = method !== 'GET' && !isEmpty(bodyDataType);
+
+        renderTestParamRows('#testPathBody', '#testPathSection', PARAMS.filter(p => p.paramIn === 'PATH'));
+        renderTestParamRows('#testQueryBody', '#testQuerySection', PARAMS.filter(p => p.paramIn === 'QUERY'));
+        renderTestParamRows('#testHeaderBody', null, PARAMS.filter(p => p.paramIn === 'HEADER'));
+        renderTestExtraHeaders();
+
+        $("#testBodySection").toggle(hasBody);
+        if(hasBody) {
+            if(TEST_STATE.body === null) {
+                TEST_STATE.body = buildBodyExampleJson(bodyDataType, PARAMS);
+            }
+            $("#testBody").val(TEST_STATE.body);
+        }
+
+        $("#testMethod").attr('class', 'method-badge ' + method).text(method);
+        updateTestUrl();
+        renderTestResult();
+    }
+
+    function renderTestParamRows(bodySelector, sectionSelector, params) {
+        const $body = $(bodySelector).empty();
+
+        if(sectionSelector) {
+            $(sectionSelector).toggle(params.length > 0);
+        }
+
+        for(const param of params) {
+            const $row = $('<tr></tr>');
+            const $name = $('<td class="test-param-name"></td>').text(param.name);
+            if(param.required) {
+                $name.append(' <span class="required-mark" title="필수">*</span>');
+            }
+
+            const placeholder = !isEmpty(param.defaultValue)
+                ? '기본값: ' + param.defaultValue
+                : (param.description || '');
+
+            const $input = textInput(placeholder)
+                .val(TEST_STATE.values[param.paramKey] || '')
+                .on('input', function() {
+                    TEST_STATE.values[param.paramKey] = this.value;
+                    updateTestUrl();
+                });
+
+            $row.append($name);
+            $row.append($('<td></td>').append($('<span class="type-chip"></span>').text(param.dataType)));
+            $row.append($('<td></td>').append($input));
+            $body.append($row);
+        }
+    }
+
+    function renderTestExtraHeaders() {
+        const $body = $("#testExtraHeaderBody").empty();
+
+        TEST_STATE.extraHeaders.forEach(function(header, index) {
+            const $row = $('<tr></tr>');
+
+            $row.append($('<td></td>').append(textInput('헤더명').val(header.name).on('input', function() {
+                header.name = this.value;
+            })));
+            $row.append($('<td></td>').append(textInput('값').val(header.value).on('input', function() {
+                header.value = this.value;
+            })));
+            $row.append($('<td class="col-actions"></td>').append(
+                $('<button type="button" class="icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>').on('click', function() {
+                    TEST_STATE.extraHeaders.splice(index, 1);
+                    renderTestExtraHeaders();
+                })
+            ));
+
+            $body.append($row);
+        });
+
+        const definedHeaderCount = PARAMS.filter(p => p.paramIn === 'HEADER').length;
+        $("#testHeaderEmpty").toggle(definedHeaderCount === 0 && TEST_STATE.extraHeaders.length === 0);
+        $("#testDefinedHeaderTable").toggle(definedHeaderCount > 0);
+        $("#testExtraHeaderTable").toggle(TEST_STATE.extraHeaders.length > 0);
+    }
+
+    function addTestExtraHeader() {
+        TEST_STATE.extraHeaders.push({name: '', value: ''});
+        renderTestExtraHeaders();
+        $("#testExtraHeaderBody tr:last input").first().trigger('focus');
+    }
+
+    function fillTestBodyExample() {
+        TEST_STATE.body = buildBodyExampleJson($("#bodyDataType").val(), PARAMS);
+        $("#testBody").val(TEST_STATE.body);
+    }
+
+    function formatTestBody() {
+        try {
+            TEST_STATE.body = JSON.stringify(JSON.parse($("#testBody").val()), null, 2);
+            $("#testBody").val(TEST_STATE.body);
+        }
+        catch(e) {
+            alert('JSON 형식이 올바르지 않아 정렬할 수 없습니다.');
+        }
+    }
+
+    // 입력한 값으로 실제 보낼 요청을 만든다. 경로변수는 인코딩해서 자리에 넣고, 값을 적은 파라미터/헤더만 보낸다.
+    function buildTestRequest() {
+        const method = $("#httpMethod").val();
+        const missing = [];
+
+        const path = normalizedPath().replace(/\{([^}/]+)}/g, function(whole, name) {
+            const param = PARAMS.find(p => p.paramIn === 'PATH' && p.name === name);
+            const value = param ? (TEST_STATE.values[param.paramKey] || '') : '';
+
+            if(isEmpty(value)) missing.push(name);
+            return isEmpty(value) ? whole : encodeURIComponent(value);
+        });
+
+        const query = new URLSearchParams();
+        for(const param of PARAMS.filter(p => p.paramIn === 'QUERY')) {
+            const value = TEST_STATE.values[param.paramKey];
+            if(!isEmpty(value)) query.append(param.name, value);
+        }
+
+        const headers = [];
+        for(const param of PARAMS.filter(p => p.paramIn === 'HEADER')) {
+            const value = TEST_STATE.values[param.paramKey];
+            if(!isEmpty(value)) headers.push({name: param.name, value: value});
+        }
+        for(const header of TEST_STATE.extraHeaders) {
+            if(!isEmpty(header.name)) headers.push({name: header.name.trim(), value: header.value || ''});
+        }
+
+        const hasBody = method !== 'GET' && !isEmpty($("#bodyDataType").val());
+        const body = hasBody ? ($("#testBody").val() || '') : null;
+
+        if(hasBody && !isEmpty(body.trim()) && !headers.some(h => h.name.toLowerCase() === 'content-type')) {
+            headers.push({name: 'Content-Type', value: 'application/json'});
+        }
+
+        const queryString = query.toString();
+
+        return {
+            method: method,
+            url: REST_API_URL_PREFIX + path + (queryString ? '?' + queryString : ''),
+            headers: headers,
+            body: (hasBody && !isEmpty(body.trim())) ? body : null,
+            missingPathVariables: missing
+        };
+    }
+
+    function updateTestUrl() {
+        const request = buildTestRequest();
+        $("#testUrl").text(location.origin + request.url);
+    }
+
+    function copyTestCurl() {
+        const request = buildTestRequest();
+        const quote = value => "'" + String(value).replace(/'/g, "'\\''") + "'";
+
+        let curl = `curl -X ${request.method} ${quote(location.origin + request.url)}`;
+        for(const header of request.headers) {
+            curl += ` \\\n  -H ${quote(header.name + ': ' + header.value)}`;
+        }
+        if(request.body !== null) {
+            curl += ` \\\n  -d ${quote(request.body)}`;
+        }
+
+        copyText(curl);
+    }
+
+    function sendTestRequest() {
+        const request = buildTestRequest();
+
+        if(request.missingPathVariables.length > 0) {
+            alert('경로변수 값을 입력해주세요: ' + request.missingPathVariables.join(', '));
+            return;
+        }
+
+        if(request.body !== null) {
+            try {
+                JSON.parse(request.body);
+            }
+            catch(e) {
+                if(!confirm('요청 본문이 올바른 JSON 형식이 아닙니다. 그대로 보내시겠습니까?')) return;
+            }
+        }
+
+        const headers = {};
+        for(const header of request.headers) {
+            headers[header.name] = header.value;
+        }
+
+        const result = {pending: true, request: request};
+        TEST_STATE.result = result;
+        renderTestResult();
+        $("#btnTestSend").prop('disabled', true);
+
+        const startedTime = performance.now();
+
+        fetch(request.url, {
+            method: request.method,
+            headers: headers,
+            body: request.body === null ? undefined : request.body,
+            credentials: 'same-origin'
+        })
+            .then(function(response) {
+                result.status = response.status;
+                result.statusText = response.statusText;
+                result.contentType = response.headers.get('content-type') || '';
+
+                // 파일 다운로드 응답은 본문을 글자로 읽으면 깨지므로 그대로 받아 저장할 수 있게 둔다.
+                const disposition = response.headers.get('content-disposition') || '';
+                if(/attachment/i.test(disposition)) {
+                    return response.blob().then(function(blob) {
+                        result.file = {blob: blob, fileName: fileNameOfDisposition(disposition)};
+                    });
+                }
+
+                return response.text().then(function(text) {
+                    result.text = text;
+                });
+            })
+            .catch(function(error) {
+                result.networkError = error && error.message ? error.message : '요청을 보내지 못했습니다.';
+            })
+            .finally(function() {
+                result.pending = false;
+                result.elapsed = Math.round(performance.now() - startedTime);
+                result.finishedAt = new Date();
+
+                $("#btnTestSend").prop('disabled', false);
+
+                // 결과를 기다리는 사이 다른 API 를 골랐으면 그 화면에 그리지 않는다.
+                if(TEST_STATE.result === result) {
+                    renderTestResult();
+                }
+            });
+    }
+
+    function renderTestResult() {
+        const result = TEST_STATE.result;
+        const $summary = $("#testResultSummary").empty();
+        const $body = $("#testResultBody").empty();
+
+        $("#btnTestCopyResult").prop('disabled', !result || result.pending || result.networkError || !!result.file);
+
+        if(!result) {
+            $summary.append('<span class="result-muted">아직 호출하지 않았습니다.</span>');
+            $body.append('<div class="result-empty">호출 버튼을 누르면 응답이 여기에 표시됩니다.</div>');
+            return;
+        }
+
+        if(result.pending) {
+            $summary.append('<span class="status-chip pending">호출중</span><span class="result-muted">응답을 기다리는 중입니다...</span>');
+            return;
+        }
+
+        if(result.networkError) {
+            $summary.append('<span class="status-chip error">실패</span>').append($('<span class="result-muted"></span>').text(result.networkError));
+            return;
+        }
+
+        const statusClass = result.status >= 500 ? 'error' : (result.status >= 400 ? 'warning' : 'success');
+        $summary.append($('<span class="status-chip"></span>').addClass(statusClass).text(result.status + ' ' + (result.statusText || '')));
+
+        if(result.file) {
+            $summary.append($('<span class="result-message"></span>').text('파일 다운로드'));
+            $summary.append($('<span class="result-meta"></span>').text(`${result.elapsed}ms · ${result.file.blob.size.toLocaleString()} bytes · ${formatTime(result.finishedAt)}`));
+            $body.append(renderTestFileResult(result));
+            return;
+        }
+
+        let json = null;
+        try {
+            json = JSON.parse(result.text);
+        }
+        catch(e) {}
+
+        if(json && typeof json === 'object' && !Array.isArray(json)) {
+            if(json.code) $summary.append($('<span class="result-code"></span>').text(json.code));
+            if(json.message) $summary.append($('<span class="result-message"></span>').text(json.message));
+        }
+
+        const size = new Blob([result.text || '']).size;
+        $summary.append($('<span class="result-meta"></span>').text(`${result.elapsed}ms · ${size.toLocaleString()} bytes · ${formatTime(result.finishedAt)}`));
+
+        if(json !== null) {
+            $body.append($('<pre class="result-json"></pre>').html(highlightJson(JSON.stringify(json, null, 2))));
+        }
+        else if(isEmpty(result.text)) {
+            $body.append('<div class="result-empty">응답 본문이 없습니다.</div>');
+        }
+        else {
+            $body.append($('<pre class="result-json"></pre>').text(result.text));
+        }
+    }
+
+    function renderTestFileResult(result) {
+        const file = result.file;
+        const $card = $('<div class="result-file"></div>');
+
+        $card.append('<div class="result-file-icon"><i class="fas fa-file-download"></i></div>');
+
+        const $info = $('<div class="result-file-info"></div>');
+        $info.append($('<div class="result-file-name"></div>').text(file.fileName || '(파일명 없음)'));
+        $info.append($('<div class="result-file-meta"></div>').text(`${result.contentType || 'application/octet-stream'} · ${file.blob.size.toLocaleString()} bytes`));
+        $card.append($info);
+
+        $card.append($('<button type="button" class="ds-btn ds-btn-primary"><i class="fas fa-save"></i>파일 저장</button>').on('click', function() {
+            const url = URL.createObjectURL(file.blob);
+            const $link = $('<a style="display:none;"></a>').attr({href: url, download: file.fileName || 'download'}).appendTo('body');
+            $link[0].click();
+            $link.remove();
+            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        }));
+
+        return $card;
+    }
+
+    // Content-Disposition 의 filename*=UTF-8''... 를 먼저, 없으면 filename="..." 을 읽는다.
+    function fileNameOfDisposition(disposition) {
+        const encoded = /filename\*\s*=\s*([^']*)''([^;]+)/i.exec(disposition);
+        if(encoded) {
+            try {
+                return decodeURIComponent(encoded[2].trim());
+            }
+            catch(e) {}
+        }
+
+        const plain = /filename\s*=\s*"?([^";]+)"?/i.exec(disposition);
+        return plain ? plain[1].trim() : '';
+    }
+
+    function copyTestResult() {
+        const result = TEST_STATE.result;
+        if(!result || result.pending || result.networkError || result.file) return;
+
+        try {
+            copyText(JSON.stringify(JSON.parse(result.text), null, 2));
+        }
+        catch(e) {
+            copyText(result.text || '');
+        }
+    }
+
+    function formatTime(date) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    /* ================= API 문서 ================= */
+
+    function openDocument(apiId) {
+        $("#editorView").hide();
+        $("#docView").show();
+
+        loadDocument(apiId);
+    }
+
+    function closeDocument() {
+        $("#docView").hide();
+        $("#editorView").show();
+    }
+
+    function loadDocument(scrollApiId) {
+        httpClient.get(`/console/api/rest-api/document`, {},
+            function(response){
+                DOCUMENT_DATA = response;
+                renderDocument();
+
+                if(scrollApiId) {
+                    scrollToDocApi(scrollApiId);
+                }
+            },
+            function(error){
+                alert('API 문서를 불러오지 못했습니다.');
+            }
+        );
+    }
+
+    function documentApis() {
+        const kw = ($("#docSearch").val() || '').trim().toLowerCase();
+        const apis = (DOCUMENT_DATA && DOCUMENT_DATA.apis) || [];
+
+        return apis.filter(function(doc) {
+            if(!kw) return true;
+            const api = doc.restApi;
+            return (api.apiCode || '').toLowerCase().includes(kw)
+                || (api.displayName || '').toLowerCase().includes(kw)
+                || (api.path || '').toLowerCase().includes(kw)
+                || (api.httpMethod || '').toLowerCase().includes(kw);
+        });
+    }
+
+    function renderDocument() {
+        if(!DOCUMENT_DATA) return;
+
+        const prefix = DOCUMENT_DATA.urlPrefix || REST_API_URL_PREFIX;
+        const apis = documentApis();
+        const showMapping = $("#docShowMapping").is(':checked');
+
+        const $nav = $("#docNav").empty();
+        $nav.append($('<a class="doc-nav-item doc-nav-overview" href="javascript:void(0)"><i class="fas fa-book-open"></i> 개요</a>').on('click', function() {
+            scrollDocTo($("#doc-overview"));
+        }));
+
+        for(const doc of apis) {
+            const api = doc.restApi;
+            const $item = $('<a class="doc-nav-item" href="javascript:void(0)"></a>');
+            $item.append($('<span class="method-badge"></span>').addClass(api.httpMethod).text(api.httpMethod));
+            $item.append($('<span class="doc-nav-text"></span>')
+                .append($('<span class="doc-nav-name"></span>').text(api.displayName || api.apiCode))
+                .append($('<span class="doc-nav-path"></span>').text(prefix + api.path)));
+            if(!api.enabled) $item.addClass('disabled');
+
+            $item.on('click', function() { scrollToDocApi(api.id); });
+            $nav.append($item);
+        }
+
+        const $content = $("#docContent").empty();
+        $content.append(renderDocOverview(prefix));
+
+        if(apis.length === 0) {
+            $content.append('<div class="doc-empty">표시할 API 가 없습니다.</div>');
+        }
+
+        for(const doc of apis) {
+            $content.append(renderDocApi(doc, prefix, showMapping));
+        }
+    }
+
+    function scrollToDocApi(apiId) {
+        const $target = $(`#doc-api-${apiId}`);
+        if($target.length) scrollDocTo($target);
+    }
+
+    function scrollDocTo($target) {
+        const $content = $("#docContent");
+        $content.animate({scrollTop: $content.scrollTop() + $target.position().top - 12}, 150);
+    }
+
+    function renderDocOverview(prefix) {
+        const $section = $('<section class="doc-section doc-overview" id="doc-overview"></section>');
+
+        $section.append('<h2 class="doc-title">API 문서</h2>');
+        $section.append($('<p class="doc-desc"></p>').text(
+            `콘솔에서 정의한 Rest API 목록입니다. 모든 API 는 ${location.origin}${prefix} 아래에 있으며, 요청/응답 본문은 JSON 입니다.`));
+
+        $section.append('<h4 class="doc-subtitle">공통 응답 형식</h4>');
+        $section.append($('<p class="doc-desc"></p>').text(
+            '모든 응답은 아래 형식입니다. HTTP 상태코드와 status 값이 같고, 성공 시 contents 에 워크플로우가 만든 응답메시지가 "메시지ID: 행 목록" 으로 담깁니다.'));
+        $section.append($('<pre class="doc-json"></pre>').html(highlightJson(JSON.stringify({
+            contents: {'응답메시지ID': [{'컬럼': '값'}]},
+            status: 200,
+            message: '처리완료 되었습니다.',
+            code: 'S001',
+            resultType: 'SUCCESS'
+        }, null, 2))));
+
+        $section.append('<h4 class="doc-subtitle">공통 오류</h4>');
+        const errors = (DOCUMENT_DATA.commonErrors || []);
+        $section.append(docTable(['HTTP 상태', '코드', '설명'], errors.map(e => [
+            statusCell(e.status), codeCell(e.code), textCell(e.message)
+        ])));
+
+        $section.append($('<p class="doc-desc doc-note"></p>').text(
+            '인증을 사용하는 API 는 로그인 후 발급되는 액세스 토큰 쿠키가 있어야 하며, 인증/권한 오류는 워크플로우 권한 설정에 따라 반환됩니다.'));
+
+        return $section;
+    }
+
+    function renderDocApi(doc, prefix, showMapping) {
+        const api = doc.restApi;
+        const params = doc.parameters || [];
+        const workflow = doc.workflow;
+        const allowsBody = api.httpMethod !== 'GET' && !isEmpty(api.bodyDataType);
+
+        const $section = $('<section class="doc-section doc-api"></section>').attr('id', 'doc-api-' + api.id);
+
+        const $head = $('<div class="doc-api-head"></div>');
+        const $endpoint = $('<div class="doc-endpoint"></div>');
+        $endpoint.append($('<span class="method-badge"></span>').addClass(api.httpMethod).text(api.httpMethod));
+        $endpoint.append($('<span class="doc-endpoint-path"></span>').html(highlightPathVariables(prefix + api.path)));
+        $head.append($endpoint);
+
+        const $headTools = $('<div class="doc-api-tools"></div>');
+        if(!api.enabled) $headTools.append('<span class="doc-badge off">사용중지</span>');
+        $headTools.append($('<button type="button" class="ds-btn"><i class="fas fa-pen"></i>설정</button>').on('click', function() {
+            closeDocument();
+            selectApi(api.id);
+        }));
+        $headTools.append($('<button type="button" class="ds-btn"><i class="fas fa-vial"></i>테스트</button>').on('click', function() {
+            closeDocument();
+            selectApi(api.id, true);
+        }));
+        $head.append($headTools);
+        $section.append($head);
+
+        $section.append($('<h3 class="doc-api-name"></h3>').text(api.displayName || api.apiCode));
+        if(!isEmpty(api.description)) {
+            $section.append($('<p class="doc-desc"></p>').text(api.description));
+        }
+
+        const $meta = $('<dl class="doc-meta"></dl>');
+        const addMeta = function(label, $value) {
+            $meta.append($('<dt></dt>').text(label)).append($('<dd></dd>').append($value));
+        };
+        addMeta('API 코드', $('<code></code>').text(api.apiCode));
+        addMeta('인증', workflow
+            ? $('<span></span>').text(workflow.useAuthValidation ? '필요 (로그인 토큰)' : '불필요')
+            : $('<span class="doc-warning"></span>').text('워크플로우를 찾을 수 없습니다'));
+        if(allowsBody) addMeta('Content-Type', $('<code>application/json</code>'));
+        if(showMapping) {
+            addMeta('워크플로우', $('<span></span>').text(workflow ? `${workflow.displayName} (${workflow.workflowCode})` : api.workflowCode));
+        }
+        $section.append($meta);
+
+        const mappingHeaders = showMapping ? ['요청메시지ID', '매핑키'] : [];
+        const mappingCells = p => showMapping ? [codeCell(p.messageId), codeCell(p.mappingKey || p.name)] : [];
+
+        const pathParams = params.filter(p => p.paramIn === 'PATH');
+        if(pathParams.length > 0) {
+            $section.append('<h4 class="doc-subtitle">Path Variables</h4>');
+            $section.append(docTable(['이름', '타입', '필수', '설명'].concat(mappingHeaders), pathParams.map(p =>
+                [codeCell(p.name), typeCell(p.dataType), requiredCell(true), textCell(p.description)].concat(mappingCells(p)))));
+        }
+
+        const queryParams = params.filter(p => p.paramIn === 'QUERY');
+        if(queryParams.length > 0) {
+            $section.append('<h4 class="doc-subtitle">Request Params</h4>');
+            $section.append(docTable(['이름', '타입', '필수', '기본값', '설명'].concat(mappingHeaders), queryParams.map(p =>
+                [codeCell(p.name), typeCell(p.dataType), requiredCell(p.required), codeCell(p.defaultValue), textCell(p.description)].concat(mappingCells(p)))));
+        }
+
+        const headerParams = params.filter(p => p.paramIn === 'HEADER');
+        if(headerParams.length > 0) {
+            $section.append('<h4 class="doc-subtitle">Request Headers</h4>');
+            $section.append(docTable(['이름', '타입', '필수', '기본값', '설명'].concat(mappingHeaders), headerParams.map(p =>
+                [codeCell(p.name), typeCell(p.dataType), requiredCell(p.required), codeCell(p.defaultValue), textCell(p.description)].concat(mappingCells(p)))));
+        }
+
+        if(allowsBody) {
+            $section.append($('<h4 class="doc-subtitle"></h4>').text(`Request Body (${api.bodyDataType})`));
+
+            const fields = bodyFieldPaths(api.bodyDataType, params);
+            if(showMapping) {
+                $section.append($('<p class="doc-desc doc-note"></p>').text(`본문은 요청메시지 ${api.bodyMessageId} 에 담깁니다.`));
+            }
+
+            if(fields.length === 0) {
+                $section.append($('<p class="doc-desc"></p>').text(
+                    api.bodyDataType === 'ARRAY' ? '필드 정의가 없습니다. 객체 배열을 그대로 받습니다.' : '필드 정의가 없습니다. 객체를 그대로 받습니다.'));
+            }
+            else {
+                $section.append(docTable(['필드', '타입', '필수', '기본값', '설명'].concat(showMapping ? ['별도 요청메시지ID', '매핑키'] : []), fields.map(row =>
+                    [codeCell(row.path), typeCell(row.param.dataType), requiredCell(row.param.required), codeCell(row.param.defaultValue), textCell(row.param.description)]
+                        .concat(showMapping ? [codeCell(row.param.messageId), codeCell(row.param.mappingKey || row.param.name)] : []))));
+            }
+
+            $section.append('<div class="doc-example-label">예시</div>');
+            $section.append($('<pre class="doc-json"></pre>').html(highlightJson(buildBodyExampleJson(api.bodyDataType, params))));
+        }
+
+        renderDocResponse($section, api, params, doc.responseMessageIds || [], showMapping);
+
+        const errorResponses = doc.errorResponses || [];
+        if(errorResponses.length > 0) {
+            $section.append('<h4 class="doc-subtitle">업무 오류</h4>');
+            $section.append($('<p class="doc-desc"></p>').text('워크플로우의 조건에 따라 아래 오류를 반환할 수 있습니다. 공통 오류는 개요를 참고하세요.'));
+            $section.append(docTable(['HTTP 상태', '코드', '메시지', 'contents'], errorResponses.map(e =>
+                [statusCell(e.status), codeCell(e.code), textCell(e.message), codeCell(e.contents)])));
+        }
+
+        return $section;
+    }
+
+    function renderDocResponse($section, api, params, workflowResponseMessageIds, showMapping) {
+        if(api.responseType === 'FILE') {
+            $section.append('<h4 class="doc-subtitle">Response (파일 다운로드)</h4>');
+            $section.append($('<p class="doc-desc"></p>').text(
+                '성공하면 파일을 첨부파일로 내려줍니다. 실패하면 파일 대신 공통 응답 형식의 JSON 오류를 돌려줍니다.'));
+            $section.append(docTable(['헤더', '값'], [
+                [codeCell('Content-Disposition'), $('<span></span>').append($('<code></code>').text(`attachment; filename*=UTF-8''<파일명>`))],
+                [codeCell('Content-Type'), textCell(isEmpty(api.fileContentTypeKey)
+                    ? '파일명 확장자에 따라 정해집니다 (알 수 없으면 application/octet-stream)'
+                    : '파일마다 다릅니다 (없으면 파일명 확장자로 정해집니다)')]
+            ]));
+
+            if(showMapping) {
+                $section.append(docTable(['설정', '값'], [
+                    [textCell('파일 메시지ID'), codeCell(api.fileMessageId)],
+                    [textCell('파일내용 컬럼'), $('<span></span>').append($('<code></code>').text(api.fileContentKey || '-')).append(' ').append($('<span class="type-chip"></span>').text(api.fileContentEncoding || 'BASE64'))],
+                    [textCell('파일명 컬럼'), codeCell(api.fileNameKey)],
+                    [textCell('기본 파일명'), codeCell(api.fileName)],
+                    [textCell('Content-Type 컬럼'), codeCell(api.fileContentTypeKey)]
+                ]));
+            }
+            else if(!isEmpty(api.fileName) && isEmpty(api.fileNameKey)) {
+                $section.append($('<p class="doc-desc doc-note"></p>').text(`파일명: ${api.fileName}`));
+            }
+            return;
+        }
+
+        // 예전 구조로 저장된 설정도 화면과 같은 모양으로 보여준다(저장 전이면 실제 응답은 예전 설정대로다).
+        const setting = Object.assign({}, api);
+        const responseParams = migrateLegacyResponse(setting, params.map(p => Object.assign({}, p)));
+
+        $section.append('<h4 class="doc-subtitle">Response (JSON)</h4>');
+
+        if(isEmpty(setting.responseMessageId)) {
+            $section.append($('<p class="doc-desc"></p>').text(workflowResponseMessageIds.length > 0
+                ? `성공 시 contents 에 "메시지ID: 행 목록" 으로 담길 수 있는 응답메시지: ${workflowResponseMessageIds.join(', ')} (실행된 단계의 응답만 담깁니다)`
+                : '성공 시 contents 에 담기는 응답메시지가 없습니다.'));
+        }
+        else {
+            const isObject = setting.responseDataType === 'OBJECT';
+            $section.append($('<p class="doc-desc"></p>').text(isObject
+                ? '성공 시 contents 에 한 건(객체)이 담깁니다. 결과가 없으면 null 입니다.'
+                : '성공 시 contents 에 목록(배열)이 담깁니다. 결과가 없으면 빈 배열입니다.'));
+
+            if(showMapping) {
+                $section.append($('<p class="doc-desc doc-note"></p>').text(`워크플로우 응답메시지 ${setting.responseMessageId} 의 내용입니다.`));
+            }
+
+            const fields = responseFieldPaths(responseParams, setting.responseDataType);
+            if(fields.length > 0) {
+                $section.append(docTable(['필드', '타입', '기본값', '설명'].concat(showMapping ? ['원본 컬럼'] : []), fields.map(row =>
+                    [codeCell(row.path), typeCell(row.param.dataType), codeCell(row.param.defaultValue), textCell(row.param.description)]
+                        .concat(showMapping ? [codeCell(row.param.mappingKey || row.param.name)] : []))));
+            }
+            else {
+                $section.append($('<p class="doc-desc doc-note"></p>').text('응답스키마가 정의되지 않아 행의 컬럼이 그대로 담깁니다.'));
+            }
+        }
+
+        $section.append('<div class="doc-example-label">예시</div>');
+        $section.append($('<pre class="doc-json"></pre>').html(highlightJson(buildResponseExampleJson(setting, responseParams, workflowResponseMessageIds))));
+    }
+
+    function highlightPathVariables(path) {
+        return escapeHtml(path).replace(/\{[^}/]+}/g, match => `<span class="path-variable">${match}</span>`);
+    }
+
+    function docTable(headers, rows) {
+        const $wrap = $('<div class="doc-table-wrap"></div>');
+        const $table = $('<table class="doc-table"></table>');
+        const $headRow = $('<tr></tr>');
+
+        for(const header of headers) {
+            $headRow.append($('<th></th>').text(header));
+        }
+        $table.append($('<thead></thead>').append($headRow));
+
+        const $tbody = $('<tbody></tbody>');
+        for(const cells of rows) {
+            const $row = $('<tr></tr>');
+            for(const cell of cells) {
+                $row.append($('<td></td>').append(cell));
+            }
+            $tbody.append($row);
+        }
+        $table.append($tbody);
+
+        return $wrap.append($table);
+    }
+
+    function textCell(value) {
+        return isEmpty(value) ? $('<span class="doc-muted">-</span>') : $('<span></span>').text(value);
+    }
+
+    function codeCell(value) {
+        return isEmpty(value) ? $('<span class="doc-muted">-</span>') : $('<code></code>').text(value);
+    }
+
+    function typeCell(value) {
+        return $('<span class="type-chip"></span>').text(value);
+    }
+
+    function requiredCell(required) {
+        return required ? $('<span class="doc-required">필수</span>') : $('<span class="doc-muted">선택</span>');
+    }
+
+    function statusCell(status) {
+        const statusClass = status >= 500 ? 'error' : (status >= 400 ? 'warning' : 'success');
+        return $('<span class="status-chip"></span>').addClass(statusClass).text(status);
+    }
+
+    function printDocument() {
+        window.print();
+    }
+</script>
+<div id="rest-api-app" th:fragment="view">
+    <div id="editorView">
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-plug"></i> Rest API 목록</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="openDocument()"><i class="fas fa-book"></i>API 문서</button>
+                    <button type="button" class="ds-btn" onclick="newContent()"><i class="fas fa-plus"></i>신규</button>
+                    <button type="button" class="ds-btn" onclick="getList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                </div>
+            </div>
+            <div class="ds-list-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="apiSearch" placeholder="코드, 명칭, 경로, 워크플로우로 검색" oninput="renderApiList(this.value)">
+            </div>
+            <div class="ds-list-body" id="apiListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-code"></i> Rest API 설정</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                    <button type="button" class="ds-btn ds-btn-danger" id="btnDelete" onclick="deleteContent()"><i class="fas fa-trash"></i>삭제</button>
+                    <button type="button" class="ds-btn" id="btnOpenApiDoc" onclick="openDocument($('#id').val())" title="이 API 의 문서 보기"><i class="fas fa-book"></i>문서</button>
+                </div>
+            </div>
+            <div class="endpoint-bar">
+                <div class="endpoint-url">
+                    <span class="method-badge GET" id="endpointMethod">GET</span>
+                    <span class="endpoint-url-text" id="endpointUrl"></span>
+                </div>
+                <button type="button" class="ds-btn" onclick="copyEndpoint()" title="호출 주소 복사"><i class="fas fa-copy"></i>복사</button>
+            </div>
+
+            <ul class="nav ds-tabs" id="rest-api-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="pill" href="#rest-api-basic" role="tab">기본정보</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#rest-api-query" role="tab">Request Param <span class="tab-count" id="queryTabCount">0</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#rest-api-header" role="tab">Request Header <span class="tab-count" id="headerTabCount">0</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#rest-api-body" role="tab">Request Body <span class="tab-count" id="bodyTabCount">0</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#rest-api-response" role="tab">Response <span class="tab-count" id="responseTabCount">0</span></a>
+                </li>
+                <li class="nav-item ds-tabs-right">
+                    <a class="nav-link" data-toggle="pill" href="#rest-api-test" role="tab"><i class="fas fa-vial"></i> 테스트 호출</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- 기본정보 -->
+                <div class="tab-pane fade show active" id="rest-api-basic" role="tabpanel">
+                    <div class="ds-detail-body">
+                        <input type="hidden" id="id">
+                        <div class="ds-section-grid">
+                            <div class="form-group col-4">
+                                <label class="field-label" for="apiCode">API 코드</label>
+                                <input type="text" class="form-control" id="apiCode" autocomplete="off" placeholder="예) GOAL_SAVE">
+                            </div>
+                            <div class="form-group col-4">
+                                <label class="field-label" for="displayName">API 명칭</label>
+                                <input type="text" class="form-control" id="displayName" autocomplete="off" placeholder="예) 목표 저장">
+                            </div>
+                            <div class="form-group col-4">
+                                <label class="field-label" for="enabled">사용 여부</label>
+                                <div style="padding-top:6px;">
+                                    <input type="checkbox" id="enabled"> 활성화
+                                </div>
+                            </div>
+                            <div class="form-group col-2">
+                                <label class="field-label" for="httpMethod">HTTP 메소드</label>
+                                <select class="form-control" id="httpMethod" onchange="onMethodChange()">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label class="field-label" for="path">경로</label>
+                                <div class="input-prefix-group">
+                                    <span class="input-prefix" id="pathPrefix"></span>
+                                    <input type="text" class="form-control" id="path" autocomplete="off" placeholder="/goals/{goalId}" oninput="onPathInput()">
+                                </div>
+                                <div class="field-help">{이름} 으로 경로변수를 받습니다. 경로변수는 Request Param 탭의 Path Variable 에 자동으로 추가됩니다.</div>
+                            </div>
+                            <div class="form-group col-4">
+                                <label class="field-label" for="workflowDisplay">실행할 워크플로우</label>
+                                <div class="picker-group">
+                                    <input type="text" class="form-control" id="workflowDisplay" placeholder="검색하여 선택" readonly onclick="openWorkflowPicker()" style="cursor:pointer;">
+                                    <button type="button" class="icon-btn" style="width:34px;height:auto;" title="워크플로우 검색" onclick="openWorkflowPicker()"><i class="fas fa-search"></i></button>
+                                </div>
+                                <input type="hidden" id="workflowCode">
+                                <div class="field-help">인증/권한 검사는 워크플로우의 설정을 따릅니다.</div>
+                            </div>
+                            <div class="form-group col-12">
+                                <label class="field-label" for="description">설명</label>
+                                <input type="text" class="form-control" id="description" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Param (Path Variable + Query) -->
+                <div class="tab-pane fade" id="rest-api-query" role="tabpanel">
+                    <div class="ds-detail-body">
+                        <div class="notice">
+                            <i class="fas fa-info-circle"></i>
+                            <div>
+                                각 값은 <b>요청메시지ID</b> 의 행에 <b>매핑키</b>(비우면 이름 그대로)로 담겨 워크플로우로 전달됩니다.
+                                같은 요청메시지ID 로 모은 값들은 한 행에 함께 담깁니다.
+                            </div>
+                        </div>
+
+                        <div class="section" id="pathParamSection">
+                            <div class="section-head">
+                                <span class="section-title">Path Variable <span class="section-desc">경로의 {이름} 에서 자동으로 만들어집니다.</span></span>
+                            </div>
+                            <div class="param-table-wrap">
+                                <table class="param-table">
+                                    <colgroup>
+                                        <col style="width:16%"><col style="width:11%"><col style="width:6%">
+                                        <col style="width:17%"><col style="width:17%"><col>
+                                    </colgroup>
+                                    <thead>
+                                    <tr><th>이름</th><th>타입</th><th class="col-check">필수</th><th>요청메시지ID</th><th>매핑키</th><th>설명</th></tr>
+                                    </thead>
+                                    <tbody id="pathParamBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-head">
+                                <span class="section-title">Request Param <span class="section-desc">?이름=값 으로 받는 값</span></span>
+                                <button type="button" class="ds-btn" onclick="addFlatParam('QUERY')"><i class="fas fa-plus"></i>파라미터 추가</button>
+                            </div>
+                            <div class="param-table-wrap">
+                                <table class="param-table">
+                                    <colgroup>
+                                        <col style="width:16%"><col style="width:11%"><col style="width:6%"><col style="width:11%">
+                                        <col style="width:15%"><col style="width:15%"><col><col style="width:44px">
+                                    </colgroup>
+                                    <thead>
+                                    <tr><th>이름</th><th>타입</th><th class="col-check">필수</th><th>기본값</th><th>요청메시지ID</th><th>매핑키</th><th>설명</th><th></th></tr>
+                                    </thead>
+                                    <tbody id="queryParamBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Header -->
+                <div class="tab-pane fade" id="rest-api-header" role="tabpanel">
+                    <div class="ds-detail-body">
+                        <div class="section">
+                            <div class="section-head">
+                                <span class="section-title">Request Header <span class="section-desc">헤더 이름은 대소문자를 구분하지 않습니다.</span></span>
+                                <button type="button" class="ds-btn" onclick="addFlatParam('HEADER')"><i class="fas fa-plus"></i>헤더 추가</button>
+                            </div>
+                            <div class="param-table-wrap">
+                                <table class="param-table">
+                                    <colgroup>
+                                        <col style="width:16%"><col style="width:11%"><col style="width:6%"><col style="width:11%">
+                                        <col style="width:15%"><col style="width:15%"><col><col style="width:44px">
+                                    </colgroup>
+                                    <thead>
+                                    <tr><th>이름</th><th>타입</th><th class="col-check">필수</th><th>기본값</th><th>요청메시지ID</th><th>매핑키</th><th>설명</th><th></th></tr>
+                                    </thead>
+                                    <tbody id="headerParamBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Body -->
+                <div class="tab-pane fade" id="rest-api-body" role="tabpanel">
+                    <div class="ds-detail-body">
+                        <div class="notice warning" id="bodyGetNotice" style="display:none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>GET 메소드는 Request Body 를 받을 수 없습니다. 본문이 필요하면 HTTP 메소드를 POST / PUT / DELETE 로 바꿔주세요.</div>
+                        </div>
+
+                        <div class="body-root" id="bodyRoot">
+                            <div class="form-group">
+                                <label class="field-label" for="bodyDataType">본문 타입</label>
+                                <select class="form-control" id="bodyDataType" style="width:200px;" onchange="onBodyDataTypeChange()">
+                                    <option value="">받지 않음</option>
+                                    <option value="OBJECT">OBJECT ({ ... })</option>
+                                    <option value="ARRAY">ARRAY ([{ ... }])</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="bodyMessageIdGroup">
+                                <label class="field-label" for="bodyMessageId">본문을 담을 요청메시지ID</label>
+                                <input type="text" class="form-control" id="bodyMessageId" style="width:240px;" autocomplete="off" placeholder="예) ME_GOAL_SAVE">
+                            </div>
+                            <div class="field-help" style="flex:1 1 300px;margin:0 0 4px 0;">
+                                OBJECT 는 본문이 요청메시지의 한 행, ARRAY 는 원소마다 한 행이 됩니다.
+                                OBJECT/ARRAY 필드에 요청메시지ID 를 적으면 그 필드가 별도 요청메시지가 되고, 비우면 상위 행에 중첩된 값으로 담깁니다.
+                            </div>
+                        </div>
+
+                        <div class="notice" id="bodyNoneNotice" style="display:none;">
+                            <i class="fas fa-info-circle"></i>
+                            <div>본문을 받지 않습니다. 본문이 필요하면 본문 타입을 OBJECT 또는 ARRAY 로 선택해주세요.</div>
+                        </div>
+
+                        <div class="body-layout" id="bodyLayout" style="display:none;">
+                            <div class="body-fields">
+                                <div class="section-head">
+                                    <span class="section-title"><span id="bodyRootTypeLabel">본문 객체의 필드</span></span>
+                                    <button type="button" class="ds-btn" onclick="addBodyField(null)"><i class="fas fa-plus"></i>필드 추가</button>
+                                </div>
+                                <div class="param-table-wrap">
+                                    <table class="param-table">
+                                        <colgroup>
+                                            <col style="width:20%"><col style="width:10%"><col style="width:5%"><col style="width:10%">
+                                            <col style="width:15%"><col style="width:13%"><col><col style="width:70px">
+                                        </colgroup>
+                                        <thead>
+                                        <tr><th>필드명</th><th>타입</th><th class="col-check">필수</th><th>기본값</th><th>요청메시지ID</th><th>매핑키</th><th>설명</th><th></th></tr>
+                                        </thead>
+                                        <tbody id="bodyParamBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="body-example">
+                                <div class="section-head">
+                                    <span class="section-title">요청 본문 예시</span>
+                                </div>
+                                <pre class="example-json" id="bodyExample"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Response -->
+                <div class="tab-pane fade" id="rest-api-response" role="tabpanel">
+                    <div class="ds-detail-body">
+                        <datalist id="workflowResponseMessageIdList"></datalist>
+
+                        <div class="body-root">
+                            <div class="form-group">
+                                <label class="field-label" for="responseType">응답유형</label>
+                                <select class="form-control" id="responseType" style="width:200px;" onchange="onResponseTypeChange()">
+                                    <option value="JSON">JSON</option>
+                                    <option value="FILE">파일 다운로드</option>
+                                </select>
+                            </div>
+                            <div class="field-help" style="flex:1 1 300px;margin:0 0 4px 0;">
+                                JSON 은 워크플로우 응답을 JSON 으로 돌려주고, 파일 다운로드는 응답메시지 한 행의 파일 데이터를 첨부파일로 내려줍니다.
+                                워크플로우가 실패하면 응답유형과 상관없이 JSON 오류를 돌려줍니다.
+                            </div>
+                        </div>
+
+                        <!-- JSON 응답 -->
+                        <div id="responseJsonSection">
+                            <div class="notice">
+                                <i class="fas fa-info-circle"></i>
+                                <div>
+                                    <b>응답메시지ID 를 지정하지 않으면</b> 워크플로우 응답 전체(contents)를 그대로 돌려줍니다.
+                                    지정하면 contents 에 <b>그 메시지의 내용만</b> 메시지ID 없이 담아 돌려줍니다.
+                                    <b>응답스키마</b>(행의 필드)를 정의하면 정의한 필드만 그 타입으로 바꿔 돌려주고, 정의하지 않으면 행을 그대로 돌려줍니다.
+                                </div>
+                            </div>
+
+                            <div class="body-root">
+                                <div class="form-group">
+                                    <label class="field-label" for="responseMessageId">응답메시지ID</label>
+                                    <input type="text" class="form-control" id="responseMessageId" style="width:260px;" list="workflowResponseMessageIdList" autocomplete="off" placeholder="비우면 contents 전체" oninput="onResponseMessageIdInput()">
+                                </div>
+                                <div class="form-group" id="responseDataTypeGroup">
+                                    <label class="field-label" for="responseDataType">응답 형태</label>
+                                    <select class="form-control" id="responseDataType" style="width:200px;" onchange="renderResponseExample()">
+                                        <option value="ARRAY">목록 (행 전체 배열)</option>
+                                        <option value="OBJECT">한 건 (첫 행 객체)</option>
+                                    </select>
+                                </div>
+                                <div class="field-help" style="flex:1 1 260px;margin:0 0 4px 0;" id="workflowResponseMessageHint"></div>
+                            </div>
+
+                            <div class="body-layout">
+                                <div class="body-fields">
+                                    <div class="section-head">
+                                        <span class="section-title">응답스키마 <span class="section-desc" id="responseSchemaDesc"></span></span>
+                                        <button type="button" class="ds-btn" id="btnAddResponseField" onclick="addResponseField(null)"><i class="fas fa-plus"></i>필드 추가</button>
+                                    </div>
+                                    <div class="param-table-wrap">
+                                        <table class="param-table">
+                                            <colgroup>
+                                                <col style="width:22%"><col style="width:12%"><col style="width:12%">
+                                                <col style="width:18%"><col><col style="width:70px">
+                                            </colgroup>
+                                            <thead>
+                                            <tr><th>필드명</th><th>타입</th><th>기본값</th><th>원본 컬럼</th><th>설명</th><th></th></tr>
+                                            </thead>
+                                            <tbody id="responseParamBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="body-example">
+                                    <div class="section-head">
+                                        <span class="section-title">응답 예시</span>
+                                    </div>
+                                    <pre class="example-json" id="responseExample"></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 파일 다운로드 응답 -->
+                        <div id="responseFileSection" style="display:none;">
+                            <div class="notice">
+                                <i class="fas fa-info-circle"></i>
+                                <div>
+                                    <b>파일 메시지ID</b> 의 첫 행에서 파일을 읽어 내려줍니다.
+                                    파일내용 컬럼 값이 DB BLOB(byte) 이면 그대로, 문자열이면 인코딩 설정(Base64 / 텍스트)에 따라 읽습니다.
+                                    파일 메시지가 비어있으면 404, 내용을 읽을 수 없으면 500 JSON 오류를 돌려줍니다.
+                                </div>
+                            </div>
+
+                            <div class="ds-section-grid">
+                                <div class="form-group col-4">
+                                    <label class="field-label" for="fileMessageId">파일 메시지ID <span class="required-mark">*</span></label>
+                                    <input type="text" class="form-control" id="fileMessageId" list="workflowResponseMessageIdList" autocomplete="off" placeholder="예) ME_FILE">
+                                </div>
+                                <div class="form-group col-4">
+                                    <label class="field-label" for="fileContentKey">파일내용 컬럼 <span class="required-mark">*</span></label>
+                                    <input type="text" class="form-control" id="fileContentKey" autocomplete="off" placeholder="예) file_data">
+                                </div>
+                                <div class="form-group col-4">
+                                    <label class="field-label" for="fileContentEncoding">파일내용 인코딩 (문자열일 때)</label>
+                                    <select class="form-control" id="fileContentEncoding">
+                                        <option value="BASE64">Base64</option>
+                                        <option value="TEXT">텍스트 (UTF-8)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-4">
+                                    <label class="field-label" for="fileNameKey">파일명 컬럼</label>
+                                    <input type="text" class="form-control" id="fileNameKey" autocomplete="off" placeholder="예) file_name">
+                                </div>
+                                <div class="form-group col-4">
+                                    <label class="field-label" for="fileName">기본 파일명</label>
+                                    <input type="text" class="form-control" id="fileName" autocomplete="off" placeholder="예) report.pdf">
+                                    <div class="field-help">파일명 컬럼이 없거나 값이 비어있을 때 씁니다. 둘 다 없으면 download 입니다.</div>
+                                </div>
+                                <div class="form-group col-4">
+                                    <label class="field-label" for="fileContentTypeKey">Content-Type 컬럼</label>
+                                    <input type="text" class="form-control" id="fileContentTypeKey" autocomplete="off" placeholder="예) mime_type">
+                                    <div class="field-help">비어있으면 파일명 확장자로 정합니다.</div>
+                                </div>
+                            </div>
+                            <div class="field-help" id="workflowResponseMessageHintFile"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 테스트 호출 -->
+                <div class="tab-pane fade" id="rest-api-test" role="tabpanel">
+                    <div class="ds-detail-body">
+                        <div class="notice" id="testUnsavedNotice" style="display:none;">
+                            <i class="fas fa-info-circle"></i>
+                            <div>저장된 API 만 테스트 호출할 수 있습니다. 먼저 API 를 저장해주세요.</div>
+                        </div>
+
+                        <div id="testForm">
+                            <div class="notice warning" id="testDirtyNotice" style="display:none;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div>저장하지 않은 변경사항이 있습니다. 테스트 호출은 <b>마지막으로 저장된 설정</b>으로 처리되므로, 바뀐 설정을 확인하려면 먼저 저장해주세요.</div>
+                            </div>
+
+                            <div class="test-layout">
+                                <div class="test-request">
+                                    <div class="test-url-bar">
+                                        <span class="method-badge GET" id="testMethod">GET</span>
+                                        <span class="test-url" id="testUrl"></span>
+                                        <button type="button" class="ds-btn" onclick="copyTestCurl()" title="curl 명령으로 복사"><i class="fas fa-terminal"></i>curl</button>
+                                        <button type="button" class="ds-btn ds-btn-primary" id="btnTestSend" onclick="sendTestRequest()"><i class="fas fa-paper-plane"></i>호출</button>
+                                    </div>
+
+                                    <div class="test-block" id="testPathSection">
+                                        <div class="test-block-title">Path Variables</div>
+                                        <table class="test-param-table">
+                                            <colgroup><col style="width:34%"><col style="width:90px"><col></colgroup>
+                                            <tbody id="testPathBody"></tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="test-block" id="testQuerySection">
+                                        <div class="test-block-title">Request Params <span class="section-desc">값을 적은 파라미터만 보냅니다.</span></div>
+                                        <table class="test-param-table">
+                                            <colgroup><col style="width:34%"><col style="width:90px"><col></colgroup>
+                                            <tbody id="testQueryBody"></tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="test-block">
+                                        <div class="test-block-title">
+                                            Request Headers
+                                            <button type="button" class="ds-btn" onclick="addTestExtraHeader()"><i class="fas fa-plus"></i>헤더 추가</button>
+                                        </div>
+                                        <table class="test-param-table" id="testDefinedHeaderTable">
+                                            <colgroup><col style="width:34%"><col style="width:90px"><col></colgroup>
+                                            <tbody id="testHeaderBody"></tbody>
+                                        </table>
+                                        <table class="test-param-table" id="testExtraHeaderTable">
+                                            <colgroup><col style="width:34%"><col><col style="width:40px"></colgroup>
+                                            <tbody id="testExtraHeaderBody"></tbody>
+                                        </table>
+                                        <div class="test-empty" id="testHeaderEmpty">정의된 헤더가 없습니다. 필요하면 헤더 추가로 보낼 수 있습니다.</div>
+                                    </div>
+
+                                    <div class="test-block" id="testBodySection">
+                                        <div class="test-block-title">
+                                            Request Body
+                                            <span class="test-block-tools">
+                                                <button type="button" class="ds-btn" onclick="fillTestBodyExample()"><i class="fas fa-magic"></i>예시로 채우기</button>
+                                                <button type="button" class="ds-btn" onclick="formatTestBody()"><i class="fas fa-align-left"></i>정렬</button>
+                                            </span>
+                                        </div>
+                                        <textarea class="form-control test-body" id="testBody" rows="12" spellcheck="false" oninput="TEST_STATE.body = this.value"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="test-response">
+                                    <div class="test-response-toolbar">
+                                        <span class="test-response-title"><i class="fas fa-reply"></i> 응답</span>
+                                        <button type="button" class="test-response-btn" id="btnTestCopyResult" onclick="copyTestResult()" title="응답 복사"><i class="fas fa-copy"></i> 복사</button>
+                                    </div>
+                                    <div class="test-response-summary" id="testResultSummary"></div>
+                                    <div class="test-response-body" id="testResultBody"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    </div>
+
+    <!-- API 문서 -->
+    <div id="docView" style="display:none;">
+        <div class="doc-toolbar">
+            <button type="button" class="ds-btn" onclick="closeDocument()"><i class="fas fa-arrow-left"></i>설정으로</button>
+            <h3><i class="fas fa-book"></i> API 문서</h3>
+            <div class="doc-toolbar-tools">
+                <div class="doc-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="docSearch" placeholder="코드, 명칭, 경로로 검색" oninput="renderDocument()">
+                </div>
+                <label class="doc-toggle" title="워크플로우와 요청메시지 매핑 정보를 함께 표시합니다">
+                    <input type="checkbox" id="docShowMapping" onchange="renderDocument()"> 내부 매핑 정보
+                </label>
+                <button type="button" class="ds-btn" onclick="loadDocument()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                <button type="button" class="ds-btn" onclick="printDocument()"><i class="fas fa-print"></i>인쇄</button>
+            </div>
+        </div>
+        <div class="doc-layout">
+            <nav class="doc-nav" id="docNav"></nav>
+            <div class="doc-content" id="docContent"></div>
+        </div>
+    </div>
+</div>
+</html>

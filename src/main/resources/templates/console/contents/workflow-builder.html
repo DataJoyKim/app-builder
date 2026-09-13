@@ -1154,7 +1154,69 @@
         line-height: 1.5;
     }
 
-    /* ============ Settings modal ============ */
+    /* 실행 패널은 요청 행과 로그를 나란히 보려면 노드 설정보다 넓어야 한다. */
+    .wf-node-drawer.wf-drawer-wide {
+        width: 520px;
+        max-width: 100%;
+    }
+
+    .wf-drawer-title {
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .wf-drawer-title i {
+        color: #9199a3;
+        font-size: 13px;
+    }
+
+    .wf-topbar-actions button.is-active {
+        background: #eef5ff;
+        border-color: #9cc3f0;
+        color: #1d4ed8;
+    }
+
+    .wf-section-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .wf-section-label .btn {
+        font-size: 11.5px;
+        padding: 2px 8px;
+    }
+
+    .wf-switch-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .wf-switch-row-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .wf-switch-row-desc {
+        font-size: 11.5px;
+        color: #9199a3;
+        margin-top: 2px;
+    }
+
+    /* ============ Settings drawer ============ */
     .wf-authority-chips {
         display: flex;
         flex-wrap: wrap;
@@ -1193,45 +1255,211 @@
         flex: 1;
     }
 
-    /* ============ Execute modal ============ */
+    /* ============ Execute drawer ============ */
+    /* 실행 패널은 위쪽 요청 편집, 아래쪽 로그 콘솔로 나눈다. 로그가 남은 높이를 모두 쓴다. */
+    .wf-execute-body {
+        padding: 0;
+        gap: 0;
+        overflow: hidden;
+    }
+
+    .wf-execute-request {
+        padding: 14px 16px;
+        border-bottom: 1px solid #eef0f2;
+        max-height: 40%;
+        overflow-y: auto;
+        flex: 0 0 auto;
+    }
+
     .wf-execute-row {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr 24px;
-        gap: 8px;
+        grid-template-columns: 1fr 1fr 1fr 20px;
+        gap: 6px;
         align-items: center;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
 
     .wf-execute-row-remove {
         cursor: pointer;
         color: #9199a3;
         text-align: center;
+        font-size: 12px;
     }
 
     .wf-execute-row-remove:hover {
         color: #dc2626;
     }
 
-    /* bootstrap의 .form-control[readonly] 배경색 규칙이 명시도가 더 높아
-       !important 없이는 다크 콘솔 배경이 먹히지 않는다. */
-    .wf-console-textarea,
-    .wf-console-textarea[readonly] {
-        background-color: #1e1e1e !important;
-        color: #6fe36f;
-        font-family: "Consolas", "Menlo", "Monaco", monospace;
-        font-size: 12.5px;
-        line-height: 1.5;
-        border: 1px solid #333;
-        border-radius: 6px;
-        resize: vertical;
-        caret-color: transparent;
-        opacity: 1;
+    .wf-execute-empty {
+        font-size: 12px;
+        color: #9199a3;
+        border: 1px dashed #e5e7eb;
+        border-radius: 8px;
+        padding: 10px 12px;
+        text-align: center;
     }
 
-    .wf-console-textarea:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(74, 144, 226, .35);
+    .wf-execute-run {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
     }
+
+    .wf-execute-target {
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 11.5px;
+        color: #6b7280;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-log {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: #111418;
+    }
+
+    .wf-log-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 7px 10px 7px 14px;
+        background: #181c21;
+        border-bottom: 1px solid #262b31;
+        color: #8b949e;
+        font-size: 11.5px;
+    }
+
+    .wf-log-toolbar-title {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 600;
+        letter-spacing: .02em;
+    }
+
+    .wf-log-toolbar-actions {
+        display: flex;
+        gap: 2px;
+    }
+
+    .wf-log-toolbar-actions button {
+        border: none;
+        background: transparent;
+        color: #8b949e;
+        font-size: 11.5px;
+        padding: 3px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .wf-log-toolbar-actions button:hover {
+        background: #262b31;
+        color: #e6edf3;
+    }
+
+    .wf-log-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 6px 0 10px 0;
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        color: #c9d1d9;
+    }
+
+    .wf-log-empty {
+        color: #6e7681;
+        padding: 10px 14px;
+    }
+
+    /* 실행결과 요약줄. 성공/실패, status, code, message 를 한 줄에 보여주고 길면 줄바꿈한다. */
+    .wf-result-summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #262b31;
+        background: #14181d;
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 12px;
+        color: #c9d1d9;
+    }
+
+    .wf-result-status {
+        font-weight: 700;
+        color: #e6edf3;
+    }
+
+    .wf-result-message {
+        color: #c9d1d9;
+        word-break: break-all;
+    }
+
+    .wf-result-meta {
+        margin-left: auto;
+        color: #6e7681;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .wf-log-level {
+        flex: 0 0 auto;
+        font-weight: 700;
+        font-size: 10.5px;
+        padding: 0 6px;
+        border-radius: 4px;
+    }
+
+    .wf-log-level.is-success { color: #3fb950; background: rgba(46, 160, 67, .15); }
+    .wf-log-level.is-error { color: #f85149; background: rgba(248, 81, 73, .15); }
+    .wf-log-level.is-pending { color: #d29922; background: rgba(210, 153, 34, .15); }
+
+    .wf-log-muted {
+        color: #8b949e;
+    }
+
+    .wf-log-code {
+        color: #d2a8ff;
+    }
+
+    .wf-log-json {
+        margin: 4px 0 0 12px;
+        padding: 8px 10px;
+        background: #0b0d10;
+        border: 1px solid #1f242a;
+        border-radius: 6px;
+        white-space: pre;
+        overflow-x: auto;
+        max-height: 360px;
+        overflow-y: auto;
+        color: #c9d1d9;
+        font-size: 11.5px;
+    }
+
+    /* 실행결과 JSON 은 남은 영역을 통째로 쓴다. 스크롤은 바깥 .wf-log-body 가 맡는다. */
+    .wf-log-json.wf-result-json {
+        margin: 0;
+        padding: 12px 14px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        max-height: none;
+        overflow: visible;
+        font-size: 12px;
+    }
+
+    .wf-log-json .json-key { color: #79c0ff; }
+    .wf-log-json .json-string { color: #a5d6ff; }
+    .wf-log-json .json-number { color: #ffa657; }
+    .wf-log-json .json-boolean { color: #ff7b72; }
+    .wf-log-json .json-null { color: #8b949e; }
 </style>
 <script th:fragment="script">
     App.codes = {
@@ -1270,6 +1498,7 @@
     let currentAuthorityList = [];
     let executeRows = [];
     let executeRowSeq = 0;
+    let executeResult = null;      // 가장 최근 실행 한 건. {pending, elapsed, finishedAt, httpStatus, response}
 
     /* ================= Workflow graph model =================
        노드는 nodeId 로 식별하고, 흐름은 연결선 목록으로만 들고 있다.
@@ -1612,23 +1841,62 @@
         renderAuthorityChips();
     }
 
-    function openSettingsModal() {
+    /* ================= Side panels (node / settings / execute) =================
+       우측 슬라이드 패널은 같은 자리를 나눠 쓰므로 한 번에 하나만 열린다. */
+
+    function openSidePanel(panelId) {
+        // 노드 상세창이 열려있으면 선택 상태까지 같이 풀어준다.
+        if (panelId !== 'nodeDrawer') {
+            activeNodeId = null;
+            $(".step-item").removeClass("selected");
+        }
+
+        $(".wf-node-drawer").not(`#${panelId}`).removeClass("open");
+        $(`#${panelId}`).addClass("open");
+
+        $("#settingsPanelButton").toggleClass('is-active', panelId === 'settingsDrawer');
+        $("#executePanelButton").toggleClass('is-active', panelId === 'executeDrawer');
+    }
+
+    function closeSidePanels() {
+        activeNodeId = null;
+        $(".step-item").removeClass("selected");
+        $(".wf-node-drawer").removeClass("open");
+        $("#settingsPanelButton, #executePanelButton").removeClass('is-active');
+    }
+
+    function isSidePanelOpen(panelId) {
+        return $(`#${panelId}`).hasClass("open");
+    }
+
+    function toggleSettingsPanel() {
+        if (isSidePanelOpen('settingsDrawer')) {
+            closeSidePanels();
+            return;
+        }
+
         renderAuthorityChips();
-        $('#settingsModal').modal('show');
+        openSidePanel('settingsDrawer');
     }
 
     /* ================= Execute ================= */
 
+    // 다른 워크플로우를 열면 요청 행과 실행결과를 비운다. 앞 워크플로우의 결과가 남아 보이면 안 된다.
     function initExecuteGrid() {
         executeRows = [];
         executeRowSeq = 0;
-        $("#responseData").val('');
+        executeResult = null;
         renderExecuteRows();
+        renderExecuteResult();
     }
 
     function renderExecuteRows() {
         const $rows = $("#executeRows");
         $rows.empty();
+
+        if (executeRows.length === 0) {
+            $rows.append(`<div class="wf-execute-empty">요청 메시지가 없습니다. 행 추가로 메시지ID / 컬럼 / 값을 입력하세요.</div>`);
+        }
 
         for (const row of executeRows) {
             const $row = $(`
@@ -1670,33 +1938,146 @@
             return result;
         }, {});
 
-        let header = {workflowCode : $("#workflowCode").val()};
+        const workflowCode = $("#workflowCode").val();
+        if (!workflowCode) {
+            alert("워크플로우 코드를 입력해주세요.");
+            return;
+        }
+
+        const header = {workflowCode : workflowCode};
+        const startedTime = performance.now();
+
+        // 실행결과는 누적하지 않는다. 실행할 때마다 직전 결과를 이번 결과로 갈아끼운다.
+        const result = {pending: true};
+        executeResult = result;
+
+        renderExecuteResult();
+        $("#executeButton").prop('disabled', true);
+
+        const finish = function(httpStatus, response) {
+            result.pending = false;
+            result.elapsed = Math.round(performance.now() - startedTime);
+            result.finishedAt = new Date();
+            result.httpStatus = httpStatus;
+            result.response = response;
+
+            $("#executeButton").prop('disabled', false);
+            renderExecuteResult();
+        };
 
         httpClient.post(`/workflow`,{},{body:body,header:header},
             function(response){
-                $("#responseData").val(JSON.stringify(response,null,3));
+                finish(200, response);
             },
             function(error){
-                $("#responseData").val(JSON.stringify(error.responseJSON,null,3));
+                // 서버에 닿지도 못한 경우(status 0)는 응답 본문이 없다.
+                finish(error.status, error.responseJSON || {message: error.statusText || '요청에 실패하였습니다.'});
             }
         );
     }
 
-    function openExecuteModal() {
-        $('#executeModal').modal('show');
+    function toggleExecutePanel() {
+        if (isSidePanelOpen('executeDrawer')) {
+            closeSidePanels();
+            return;
+        }
+
+        renderExecuteResult();
+        openSidePanel('executeDrawer');
+    }
+
+    // 가장 최근 실행 한 건의 결과만 보여준다. 위쪽 요약줄(성공여부/status/code/message/소요시간) + 아래 응답 JSON.
+    function renderExecuteResult() {
+        const workflowCode = $("#workflowCode").val();
+        $("#executeTarget").text(workflowCode ? `POST /workflow · ${workflowCode}` : '워크플로우 코드가 없습니다');
+
+        const $summary = $("#executeResultSummary");
+        const $json = $("#executeResultJson");
+
+        if (!executeResult) {
+            $summary.html(`<span class="wf-log-muted">아직 실행하지 않았습니다.</span>`);
+            $json.html(`<div class="wf-log-empty">실행 버튼을 누르면 실행결과가 여기에 표시됩니다.</div>`);
+            return;
+        }
+
+        if (executeResult.pending) {
+            $summary.html(`
+                <span class="wf-log-level is-pending">실행중</span>
+                <span class="wf-log-muted">응답을 기다리는 중입니다...</span>
+            `);
+            $json.html('');
+            return;
+        }
+
+        const response = executeResult.response || {};
+        const isSuccess = response.resultType === 'SUCCESS';
+        const status = response.status != null ? response.status : executeResult.httpStatus;
+
+        $summary.html(`
+            <span class="wf-log-level ${isSuccess ? 'is-success' : 'is-error'}">${isSuccess ? '성공' : '실패'}</span>
+            <span class="wf-result-status">${escapeHtml(status == null ? '-' : status)}</span>
+            <span class="wf-log-code">${escapeHtml(response.code || '')}</span>
+            <span class="wf-result-message">${escapeHtml(response.message || '')}</span>
+            <span class="wf-result-meta">${executeResult.elapsed}ms · ${formatResultTime(executeResult.finishedAt)}</span>
+        `);
+
+        $json.html(`<pre class="wf-log-json wf-result-json">${highlightJson(JSON.stringify(response, null, 2))}</pre>`);
+        $json.scrollTop(0);
+    }
+
+    function formatResultTime(date) {
+        const pad = (value, size) => String(value).padStart(size, '0');
+
+        return `${pad(date.getHours(), 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}`;
+    }
+
+    // 키/문자열/숫자/불리언/null 에 색을 입힌다.
+    // 토큰을 먼저 나누고 조각마다 이스케이프한다. 통째로 이스케이프한 뒤 찾으면 값 안의 따옴표/꺾쇠가 토큰을 깨뜨린다.
+    function highlightJson(json) {
+        const text = json == null ? '' : String(json);
+        const tokenPattern = /("(?:\\.|[^"\\])*")(\s*:)?|\b(?:true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g;
+
+        let html = '';
+        let lastIndex = 0;
+        let matched;
+
+        while ((matched = tokenPattern.exec(text)) !== null) {
+            html += escapeHtml(text.slice(lastIndex, matched.index));
+
+            const token = matched[0];
+            let className = 'json-number';
+
+            if (matched[1]) {
+                className = matched[2] ? 'json-key' : 'json-string';
+                html += `<span class="${className}">${escapeHtml(matched[1])}</span>${matched[2] || ''}`;
+            }
+            else {
+                if (token === 'true' || token === 'false') className = 'json-boolean';
+                else if (token === 'null') className = 'json-null';
+
+                html += `<span class="${className}">${escapeHtml(token)}</span>`;
+            }
+
+            lastIndex = tokenPattern.lastIndex;
+        }
+
+        return html + escapeHtml(text.slice(lastIndex));
     }
 
     function copyExecuteResult() {
-        const text = $("#responseData").val();
-        if (!text) return;
+        if (!executeResult || executeResult.pending) return;
+
+        const text = JSON.stringify(executeResult.response, null, 2);
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text);
-        } else {
-            const $textarea = $("#responseData");
-            $textarea.trigger('select');
-            document.execCommand('copy');
+            return;
         }
+
+        const $textarea = $('<textarea style="position:fixed;left:-9999px;"></textarea>').val(text).appendTo('body');
+        $textarea.trigger('select');
+        document.execCommand('copy');
+        $textarea.remove();
     }
 
     /* ================= Graph model ================= */
@@ -2249,9 +2630,9 @@
             $(document).off('mousemove.wfpan mouseup.wfpan');
             $("#workflowCanvas").removeClass('is-panning');
 
-            // 빈 곳을 그냥 클릭하면 상세창을 닫는다.
+            // 빈 곳을 그냥 클릭하면 우측 패널을 닫는다.
             if (!moved) {
-                closeNodeDrawer();
+                closeSidePanels();
             }
         });
     }
@@ -2569,8 +2950,10 @@
                 $el.addClass('is-dragging');
             }
 
-            node.x = Math.max(0, Math.round(originX + (e.clientX - startX) / viewScale));
-            node.y = Math.max(0, Math.round(originY + (e.clientY - startY) / viewScale));
+            // 캔버스 좌표 0 은 화면 이동/화면맞춤으로 화면 한가운데에 와 있을 수도 있다.
+            // 여기서 0 으로 막으면 보이지 않는 선에 걸려 멈추므로 끄는 동안은 음수도 허용하고, 놓을 때 전체를 밀어 되돌린다.
+            node.x = Math.round(originX + (e.clientX - startX) / viewScale);
+            node.y = Math.round(originY + (e.clientY - startY) / viewScale);
 
             $el.css({left:node.x + 'px', top:node.y + 'px'});
             drawConnectors();
@@ -2586,9 +2969,38 @@
             suppressNodeClick = true;
             setTimeout(function() { suppressNodeClick = false; }, 0);
 
+            normalizeNodePositions();
             updateCanvasSize();
             drawConnectors();
         });
+    }
+
+    // 노드가 캔버스 좌표 0 보다 왼쪽/위로 나가 있으면 전체 노드를 오른쪽/아래로 밀어 좌표를 양수로 되돌린다.
+    // 같은 만큼 화면 위치를 반대로 옮기므로 사용자 눈에는 아무것도 움직이지 않는다.
+    // (#workflowContent 와 연결선 svg 가 좌표 0 에서 시작하고, 저장되는 위치도 양수로 유지하기 위함)
+    function normalizeNodePositions() {
+        let minX = Infinity;
+        let minY = Infinity;
+
+        for (const node of nodeMap.values()) {
+            minX = Math.min(minX, node.x);
+            minY = Math.min(minY, node.y);
+        }
+
+        const shiftX = minX < 0 ? CANVAS_PADDING - minX : 0;
+        const shiftY = minY < 0 ? CANVAS_PADDING - minY : 0;
+
+        if (shiftX === 0 && shiftY === 0) return;
+
+        for (const node of nodeMap.values()) {
+            node.x += shiftX;
+            node.y += shiftY;
+            $(`.wf-node[data-node-id="${node.nodeId}"]`).css({left:node.x + 'px', top:node.y + 'px'});
+        }
+
+        viewX -= shiftX * viewScale;
+        viewY -= shiftY * viewScale;
+        applyViewTransform();
     }
 
     function bindPortInteraction($port, node, port) {
@@ -2816,15 +3228,15 @@
 
         openFunctionTypeModal(null, function(selectedCode) {
             createAndOpenNode(selectedCode, {
-                x: Math.max(0, Math.round(center.x - NODE_WIDTH / 2)),
-                y: Math.max(0, Math.round(center.y - NODE_HEIGHT / 2))
+                x: Math.round(center.x - NODE_WIDTH / 2),
+                y: Math.round(center.y - NODE_HEIGHT / 2)
             }, null, null);
         });
     }
 
     function addNodeFromPort(sourceNode, port, dropPoint) {
         const position = dropPoint
-            ? {x:Math.max(0, Math.round(dropPoint.x - NODE_WIDTH / 2)), y:Math.max(0, Math.round(dropPoint.y))}
+            ? {x:Math.round(dropPoint.x - NODE_WIDTH / 2), y:Math.round(dropPoint.y)}
             : emptyPositionBelow(sourceNode);
 
         openFunctionTypeModal(null, function(selectedCode) {
@@ -2840,6 +3252,9 @@
         node.y = position.y;
 
         nodeMap.set(nodeId, node);
+
+        // 화면을 옮겨둔 상태에서 만들면 좌표가 음수일 수 있다.
+        normalizeNodePositions();
 
         if (sourceNodeId && port) {
             connectNodes(sourceNodeId, port, nodeId);
@@ -2868,7 +3283,7 @@
             x += NODE_WIDTH + LAYOUT_GAP_X;
         }
 
-        return {x:Math.max(0, x), y:y};
+        return {x:x, y:y};
     }
 
     function isOccupied(x, y) {
@@ -2917,16 +3332,17 @@
     /* ================= Node detail drawer ================= */
 
     function openNodeDrawer(nodeId) {
+        openSidePanel('nodeDrawer');
+
         activeNodeId = nodeId;
 
         $(".step-item").removeClass("selected");
         $(`#${STEP_ITEM_ID_PREFIX}${nodeId}`).addClass("selected");
 
         refreshDrawerFields(getNode(nodeId) || {});
-
-        $("#nodeDrawer").addClass("open");
     }
 
+    // 노드 상세창만 닫는다. 설정/실행 패널이 열려있으면 그대로 둔다(워크플로우를 다시 불러올 때도 불린다).
     function closeNodeDrawer() {
         activeNodeId = null;
         $(".step-item").removeClass("selected");
@@ -3213,8 +3629,8 @@
                     <input type="text" id="displayName" class="wf-name-input" placeholder="워크플로우 이름을 입력하세요" autocomplete="off">
                 </div>
                 <div class="wf-topbar-actions">
-                    <button type="button" onclick="openSettingsModal()"><i class="fas fa-cog"></i> 설정</button>
-                    <button type="button" onclick="openExecuteModal()"><i class="fas fa-play"></i> 실행</button>
+                    <button type="button" id="settingsPanelButton" onclick="toggleSettingsPanel()"><i class="fas fa-cog"></i> 설정</button>
+                    <button type="button" id="executePanelButton" onclick="toggleExecutePanel()"><i class="fas fa-play"></i> 실행</button>
                     <button type="button" onclick="restore()"><i class="fas fa-undo"></i> 복원</button>
                     <button type="button" class="btn-primary" onclick="save()"><i class="fas fa-save"></i> 저장</button>
                     <button type="button" class="btn-danger" onclick="deleteWorkflow()"><i class="fas fa-trash"></i> 삭제</button>
@@ -3326,6 +3742,75 @@
                         </button>
                     </div>
                 </aside>
+
+                <!-- Workflow settings (auth / authority) -->
+                <aside class="wf-node-drawer" id="settingsDrawer">
+                    <div class="wf-drawer-header">
+                        <span class="wf-drawer-title"><i class="fas fa-cog"></i> 워크플로우 설정</span>
+                        <button type="button" class="wf-drawer-close" onclick="closeSidePanels()">&times;</button>
+                    </div>
+                    <div class="wf-drawer-body">
+                        <div class="wf-field">
+                            <div class="wf-switch-row">
+                                <div>
+                                    <div class="wf-switch-row-title">인증 사용</div>
+                                    <div class="wf-switch-row-desc">로그인한 사용자만 이 워크플로우를 실행할 수 있습니다.</div>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="useAuthValidation">
+                                    <label for="useAuthValidation" class="custom-control-label" style="cursor:pointer;"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wf-field">
+                            <label>권한</label>
+                            <div id="authorityChips" class="wf-authority-chips"></div>
+                            <div class="wf-authority-add">
+                                <select id="authoritySelect" class="form-control form-control-sm"></select>
+                                <button type="button" class="btn btn-default btn-sm" onclick="addAuthorityChip()">추가</button>
+                            </div>
+                            <div class="wf-field-help">
+                                인증 사용 시, 여기 등록한 권한 중 하나를 가진 사용자만 실행할 수 있습니다.
+                                변경한 설정은 상단 저장 버튼을 눌러야 반영됩니다.
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Execute -->
+                <aside class="wf-node-drawer wf-drawer-wide" id="executeDrawer">
+                    <div class="wf-drawer-header">
+                        <span class="wf-drawer-title"><i class="fas fa-play"></i> 워크플로우 실행</span>
+                        <button type="button" class="wf-drawer-close" onclick="closeSidePanels()">&times;</button>
+                    </div>
+                    <div class="wf-drawer-body wf-execute-body">
+                        <div class="wf-execute-request">
+                            <div class="wf-section-label">
+                                요청 메시지
+                                <button type="button" class="btn btn-default btn-sm" onclick="addExecuteRow()">
+                                    <i class="fas fa-plus"></i> 행 추가
+                                </button>
+                            </div>
+                            <div id="executeRows"></div>
+                            <div class="wf-execute-run">
+                                <span class="wf-execute-target" id="executeTarget"></span>
+                                <button type="button" class="btn btn-success btn-sm" id="executeButton" onclick="execute()">
+                                    <i class="fas fa-play"></i> 실행
+                                </button>
+                            </div>
+                        </div>
+                        <div class="wf-log">
+                            <div class="wf-log-toolbar">
+                                <span class="wf-log-toolbar-title"><i class="fas fa-terminal"></i> 실행 결과</span>
+                                <span class="wf-log-toolbar-actions">
+                                    <button type="button" onclick="copyExecuteResult()" title="응답 JSON 복사"><i class="fas fa-copy"></i> 복사</button>
+                                </span>
+                            </div>
+                            <div class="wf-result-summary" id="executeResultSummary"></div>
+                            <div class="wf-log-body" id="executeResultJson"></div>
+                        </div>
+                    </div>
+                </aside>
             </div>
         </div>
     </div>
@@ -3347,74 +3832,5 @@
         </div>
     </div>
 
-    <!-- Workflow settings (auth / authority) -->
-    <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">워크플로우 설정</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="wf-field" style="margin-bottom:18px;">
-                        <label for="useAuthValidation">인증 사용</label>
-                        <div class="custom-control custom-switch" style="transform: scale(1.3); transform-origin: left center;">
-                            <input type="checkbox" class="custom-control-input" id="useAuthValidation">
-                            <label for="useAuthValidation" class="custom-control-label" style="cursor:pointer;"></label>
-                        </div>
-                    </div>
-                    <div class="wf-field">
-                        <label>권한</label>
-                        <div id="authorityChips" class="wf-authority-chips"></div>
-                        <div class="wf-authority-add">
-                            <select id="authoritySelect" class="form-control form-control-sm"></select>
-                            <button type="button" class="btn btn-default btn-sm" onclick="addAuthorityChip()">추가</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Execute -->
-    <div class="modal fade" id="executeModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">워크플로우 실행</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="wf-field">
-                        <label style="display:flex;align-items:center;justify-content:space-between;">
-                            요청 메시지
-                            <button type="button" class="btn btn-default btn-sm" onclick="addExecuteRow()">
-                                <i class="fas fa-plus"></i> 행 추가
-                            </button>
-                        </label>
-                        <div id="executeRows"></div>
-                    </div>
-                    <div class="wf-field">
-                        <label style="display:flex;align-items:center;justify-content:space-between;">
-                            실행 결과
-                            <button type="button" class="btn btn-default btn-sm" onclick="copyExecuteResult()">
-                                <i class="fas fa-copy"></i> 복사
-                            </button>
-                        </label>
-                        <textarea class="form-control wf-console-textarea" id="responseData" rows="10" readonly></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" onclick="execute()">
-                        <i class="fas fa-play"></i> 실행
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 </html>
