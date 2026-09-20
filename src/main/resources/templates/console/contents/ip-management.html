@@ -1,0 +1,684 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #ip-management-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #ip-management-app .ip-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #ip-management-app .ip-list-panel,
+    #ip-management-app .ip-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #ip-management-app .ip-list-panel {
+        flex: 0 0 340px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #ip-management-app .ip-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #ip-management-app .ip-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #ip-management-app .ip-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #ip-management-app .ip-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #ip-management-app .ip-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #ip-management-app .ip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #ip-management-app .ip-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #ip-management-app .ip-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #ip-management-app .ip-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #ip-management-app .ip-btn-danger {
+        color: #dc2626;
+    }
+
+    #ip-management-app .ip-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    #ip-management-app .ip-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #ip-management-app .ip-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+    }
+
+    #ip-management-app .ip-list-search input {
+        width: 100%;
+        border: 1px solid #e1e4e8;
+        border-radius: 8px;
+        padding: 7px 10px 7px 28px;
+        font-size: 12.5px;
+        outline: none;
+    }
+
+    #ip-management-app .ip-list-search input:focus {
+        border-color: #4A90E2;
+    }
+
+    #ip-management-app .ip-list-body {
+        max-height: calc(100vh - 230px);
+        overflow-y: auto;
+    }
+
+    #ip-management-app .ip-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #f2f4f6;
+        cursor: pointer;
+    }
+
+    #ip-management-app .ip-list-item:hover {
+        background: #f8fafc;
+    }
+
+    #ip-management-app .ip-list-item.selected {
+        background: #eef5fd;
+        box-shadow: inset 3px 0 0 #4A90E2;
+    }
+
+    #ip-management-app .ip-list-item-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    #ip-management-app .ip-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #ip-management-app .ip-list-item-code {
+        font-size: 11.5px;
+        color: #8b93a0;
+        font-family: Consolas, Menlo, monospace;
+    }
+
+    #ip-management-app .ip-count-chip {
+        flex: 0 0 auto;
+        font-size: 11px;
+        color: #4A90E2;
+        background: #eef5fd;
+        border: 1px solid #d5e6fa;
+        border-radius: 999px;
+        padding: 2px 9px;
+        white-space: nowrap;
+    }
+
+    #ip-management-app .ip-list-empty {
+        padding: 36px 16px;
+        text-align: center;
+        color: #9199a3;
+        font-size: 12.5px;
+    }
+
+    #ip-management-app .ip-list-empty i {
+        display: block;
+        font-size: 22px;
+        margin-bottom: 8px;
+        color: #cbd2da;
+    }
+
+    #ip-management-app .ip-detail-body {
+        padding: 16px;
+    }
+
+    #ip-management-app .ip-section {
+        border: 1px solid #edeff2;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    #ip-management-app .ip-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    #ip-management-app .ip-section-header i {
+        color: #4A90E2;
+    }
+
+    #ip-management-app .ip-section-header .ip-panel-tools {
+        margin-left: auto;
+    }
+
+    #ip-management-app .ip-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 4px 8px;
+    }
+
+    #ip-management-app .ip-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 12px;
+    }
+
+    #ip-management-app .ip-section-grid label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 4px;
+    }
+
+    #ip-management-app .ip-section-grid .form-control {
+        font-size: 13px;
+        height: 34px;
+    }
+
+    #ip-management-app .ip-help {
+        display: block;
+        margin-top: 5px;
+        font-size: 11px;
+        color: #9199a3;
+    }
+
+    #ip-management-app table.ip-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+    #ip-management-app table.ip-table th {
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        padding: 8px 10px;
+        text-align: left;
+        font-weight: 600;
+        color: #4b5563;
+        white-space: nowrap;
+    }
+
+    #ip-management-app table.ip-table td {
+        border-bottom: 1px solid #f2f4f6;
+        padding: 6px 10px;
+        vertical-align: middle;
+    }
+
+    #ip-management-app table.ip-table input[type=text] {
+        width: 100%;
+        border: 1px solid #e1e4e8;
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 12.5px;
+        outline: none;
+    }
+
+    #ip-management-app table.ip-table input[type=text]:focus {
+        border-color: #4A90E2;
+    }
+
+    #ip-management-app table.ip-table .ip-row-ip input {
+        font-family: Consolas, Menlo, monospace;
+    }
+
+    #ip-management-app .ip-table-empty {
+        padding: 26px 16px;
+        text-align: center;
+        color: #9199a3;
+        font-size: 12.5px;
+    }
+
+    #ip-management-app .ip-row-delete {
+        border: none;
+        background: none;
+        color: #dc2626;
+        cursor: pointer;
+    }
+
+    #ip-management-app .ip-detail-empty {
+        padding: 60px 16px;
+        text-align: center;
+        color: #9199a3;
+        font-size: 13px;
+    }
+
+    #ip-management-app .ip-detail-empty i {
+        display: block;
+        font-size: 26px;
+        margin-bottom: 10px;
+        color: #cbd2da;
+    }
+</style>
+<script th:fragment="script">
+    let IP_GROUP_LIST = [];
+    let SELECTED_GROUP_ID = null;
+    let IP_ROWS = [];
+
+    $( document ).ready(function() {
+        getIpGroupList();
+    });
+
+    function isEmpty(v) {
+        return (v == undefined || v == null || v == '');
+    }
+
+    function errorMessageOf(error, defaultMessage) {
+        const body = error && error.responseJSON;
+        return (body && body.message) ? body.message : defaultMessage;
+    }
+
+    /* ================= IP 그룹 목록 ================= */
+
+    function getIpGroupList(selectId) {
+        httpClient.get(`/console/api/ip-group`, {},
+            function(response){
+                IP_GROUP_LIST = response || [];
+                renderIpGroupList($("#groupSearch").val());
+
+                if(!isEmpty(selectId)) {
+                    selectIpGroup(selectId);
+                }
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderIpGroupList(keyword) {
+        const kw = (keyword || '').trim().toLowerCase();
+        const filtered = IP_GROUP_LIST.filter(function(item) {
+            if(!kw) return true;
+            return (item.groupCode || '').toLowerCase().includes(kw)
+                || (item.displayName || '').toLowerCase().includes(kw);
+        });
+
+        const $body = $("#groupListBody");
+        $body.empty();
+
+        if(filtered.length === 0) {
+            const $empty = $(`<div class="ip-list-empty"><i class="fas fa-inbox"></i><span></span></div>`);
+            $empty.find('span').text(IP_GROUP_LIST.length === 0 ? '등록된 IP그룹이 없습니다.' : '검색 결과가 없습니다.');
+            $body.append($empty);
+            return;
+        }
+
+        for(const item of filtered) {
+            const $item = $(`
+                <div class="ip-list-item" data-id="${item.id}">
+                    <div class="ip-list-item-main">
+                        <span class="ip-list-item-name"></span>
+                        <span class="ip-list-item-code"></span>
+                    </div>
+                    <span class="ip-count-chip"></span>
+                </div>
+            `);
+
+            $item.find('.ip-list-item-name').text(item.displayName || item.groupCode);
+            $item.find('.ip-list-item-code').text(item.groupCode);
+            $item.find('.ip-count-chip').text(`IP ${item.ipCount || 0}`);
+
+            if(String(item.id) === String(SELECTED_GROUP_ID)) {
+                $item.addClass('selected');
+            }
+
+            $item.on('click', function() {
+                selectIpGroup(item.id);
+            });
+
+            $body.append($item);
+        }
+    }
+
+    function selectIpGroup(id) {
+        httpClient.get(`/console/api/ip-group/${id}`, {},
+            function(response){
+                SELECTED_GROUP_ID = response.id;
+
+                $("#groupListBody .ip-list-item").removeClass('selected');
+                $(`#groupListBody .ip-list-item[data-id="${response.id}"]`).addClass('selected');
+
+                setContent(response);
+                setIpRows(response.ipAddresses || []);
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    /* ================= IP 그룹 정보 ================= */
+
+    function getContent() {
+        return {
+            id: $("#id").val(),
+            groupCode: $("#groupCode").val(),
+            displayName: $("#displayName").val(),
+            note: $("#note").val()
+        }
+    }
+
+    function setContent(params) {
+        $("#id").val(params.id || '');
+        $("#groupCode").val(params.groupCode || '');
+        $("#displayName").val(params.displayName || '');
+        $("#note").val(params.note || '');
+
+        $("#ipSection").toggleClass('d-none', isEmpty(params.id));
+        $("#ipEmptyHint").toggleClass('d-none', !isEmpty(params.id));
+    }
+
+    function newContent() {
+        SELECTED_GROUP_ID = null;
+        $("#groupListBody .ip-list-item").removeClass('selected');
+
+        setContent({});
+        setIpRows([]);
+    }
+
+    function validateContent(content) {
+        if(isEmpty(content.groupCode)) {
+            alert("IP그룹 코드를 입력해주세요.");
+            return false;
+        }
+        if(isEmpty(content.displayName)) {
+            alert("IP그룹 명을 입력해주세요.");
+            return false;
+        }
+        return true;
+    }
+
+    function save() {
+        const content = getContent();
+        if(!validateContent(content)) return;
+
+        if(isEmpty(content.id)) {
+            httpClient.post(`/console/api/ip-group`,{},content,
+                function(response){
+                    alert("저장완료되었습니다.");
+                    getIpGroupList(response.id);
+                },
+                function(error){
+                    alert(errorMessageOf(error, '저장에 실패하였습니다.'));
+                }
+            );
+        }
+        else {
+            httpClient.put(`/console/api/ip-group/${content.id}`,{},content,
+                function(response){
+                    alert("저장완료되었습니다.");
+                    getIpGroupList(content.id);
+                },
+                function(error){
+                    alert(errorMessageOf(error, '저장에 실패하였습니다.'));
+                }
+            );
+        }
+    }
+
+    function deleteContent() {
+        const id = $("#id").val();
+        if(isEmpty(id)) return;
+        if(!confirm("IP그룹과 등록된 IP를 모두 삭제하시겠습니까?")) return;
+
+        httpClient.delete(`/console/api/ip-group/${id}`, {},
+            function(response){
+                alert("삭제 되었습니다.");
+                newContent();
+                getIpGroupList();
+            },
+            function(error){
+                alert(errorMessageOf(error, '삭제에 실패하였습니다.'));
+            }
+        );
+    }
+
+    /* ================= 허용 IP 목록 ================= */
+
+    function setIpRows(rows) {
+        IP_ROWS = (rows || []).map(row => ({
+            ipAddress: row.ipAddress || '',
+            note: row.note || '',
+            enabled: row.enabled !== false
+        }));
+
+        renderIpRows();
+    }
+
+    function renderIpRows() {
+        const $body = $("#ipTableBody");
+        $body.empty();
+
+        $("#ipTableEmpty").toggleClass('d-none', IP_ROWS.length > 0);
+        $("#ipTable").toggleClass('d-none', IP_ROWS.length === 0);
+
+        IP_ROWS.forEach(function(row, index) {
+            const $row = $(`
+                <tr>
+                    <td class="ip-row-ip"><input type="text" placeholder="192.168.0.10 / 192.168.0.0/24 / 192.168.0.* / *"></td>
+                    <td><input type="text" placeholder="설명"></td>
+                    <td style="text-align:center;">
+                        <div class="custom-control custom-switch" style="display:inline-block;">
+                            <input type="checkbox" class="custom-control-input" id="ipEnabled${index}">
+                            <label for="ipEnabled${index}" class="custom-control-label" style="cursor:pointer;"></label>
+                        </div>
+                    </td>
+                    <td style="text-align:center;width:44px;">
+                        <button type="button" class="ip-row-delete" title="행 삭제"><i class="fas fa-times"></i></button>
+                    </td>
+                </tr>
+            `);
+
+            $row.find('.ip-row-ip input').val(row.ipAddress).on('input', function() {
+                IP_ROWS[index].ipAddress = this.value;
+            });
+
+            $row.find('td:eq(1) input').val(row.note).on('input', function() {
+                IP_ROWS[index].note = this.value;
+            });
+
+            $row.find('input[type=checkbox]').prop('checked', row.enabled !== false).on('change', function() {
+                IP_ROWS[index].enabled = this.checked;
+            });
+
+            $row.find('.ip-row-delete').on('click', function() {
+                IP_ROWS.splice(index, 1);
+                renderIpRows();
+            });
+
+            $body.append($row);
+        });
+    }
+
+    function addIpRow() {
+        IP_ROWS.push({ipAddress:'', note:'', enabled:true});
+        renderIpRows();
+    }
+
+    function saveIpRows() {
+        const id = $("#id").val();
+        if(isEmpty(id)) {
+            alert("IP그룹을 먼저 저장해주세요.");
+            return;
+        }
+
+        const rows = IP_ROWS
+            .filter(row => !isEmpty((row.ipAddress || '').trim()))
+            .map((row, index) => ({
+                ipAddress: row.ipAddress.trim(),
+                note: row.note,
+                enabled: row.enabled !== false,
+                orderNum: index
+            }));
+
+        httpClient.put(`/console/api/ip-group/${id}/address`,{},rows,
+            function(response){
+                alert("IP 목록을 저장하였습니다.");
+                setIpRows(response);
+                getIpGroupList(id);
+            },
+            function(error){
+                alert(errorMessageOf(error, 'IP 목록 저장에 실패하였습니다.'));
+            }
+        );
+    }
+</script>
+<div id="ip-management-app" th:fragment="view">
+    <div class="ip-layout">
+        <aside class="ip-list-panel">
+            <div class="ip-panel-header">
+                <h3><i class="fas fa-shield-alt"></i> IP그룹 목록</h3>
+                <div class="ip-panel-tools">
+                    <button type="button" class="ip-btn" onclick="getIpGroupList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                </div>
+            </div>
+            <div class="ip-list-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="groupSearch" placeholder="IP그룹 코드, 그룹명으로 검색" oninput="renderIpGroupList(this.value)">
+            </div>
+            <div class="ip-list-body" id="groupListBody"></div>
+        </aside>
+
+        <section class="ip-detail-panel">
+            <div class="ip-panel-header">
+                <h3><i class="fas fa-sliders-h"></i> IP그룹 설정</h3>
+                <div class="ip-panel-tools">
+                    <button type="button" class="ip-btn" onclick="newContent()"><i class="fas fa-plus"></i>신규</button>
+                    <button type="button" class="ip-btn ip-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                    <button type="button" class="ip-btn ip-btn-danger" onclick="deleteContent()"><i class="fas fa-trash"></i>삭제</button>
+                </div>
+            </div>
+
+            <div class="ip-detail-body">
+                <input type="hidden" id="id">
+
+                <div class="ip-section">
+                    <div class="ip-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                    <div class="ip-section-grid">
+                        <div class="form-group col-4">
+                            <label for="groupCode">IP그룹 코드</label>
+                            <input type="text" class="form-control" id="groupCode" placeholder="예) OFFICE" autocomplete="off">
+                            <span class="ip-help">워크플로우 설정에서 이 코드로 매핑합니다.</span>
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="displayName">IP그룹 명</label>
+                            <input type="text" class="form-control" id="displayName" placeholder="예) 사내망" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="note">설명</label>
+                            <input type="text" class="form-control" id="note" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ip-detail-empty d-none" id="ipEmptyHint">
+                    <i class="fas fa-network-wired"></i>
+                    IP그룹을 저장하면 허용 IP를 등록할 수 있습니다.
+                </div>
+
+                <div class="ip-section d-none" id="ipSection">
+                    <div class="ip-section-header">
+                        <i class="fas fa-network-wired"></i><span>허용 IP</span>
+                        <div class="ip-panel-tools">
+                            <button type="button" class="ip-btn" onclick="addIpRow()"><i class="fas fa-plus"></i>행 추가</button>
+                            <button type="button" class="ip-btn ip-btn-primary" onclick="saveIpRows()"><i class="fas fa-save"></i>IP 저장</button>
+                        </div>
+                    </div>
+                    <table class="ip-table d-none" id="ipTable">
+                        <thead>
+                            <tr>
+                                <th style="width:40%;">IP / 대역</th>
+                                <th>설명</th>
+                                <th style="width:90px;text-align:center;">사용</th>
+                                <th style="width:44px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="ipTableBody"></tbody>
+                    </table>
+                    <div class="ip-table-empty" id="ipTableEmpty">
+                        등록된 IP가 없습니다. [행 추가] 로 허용할 IP를 등록해주세요.<br>
+                        단일 IP(192.168.0.10), 대역(192.168.0.0/24), 와일드카드(192.168.0.*), 전체(*) 를 쓸 수 있습니다.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</html>

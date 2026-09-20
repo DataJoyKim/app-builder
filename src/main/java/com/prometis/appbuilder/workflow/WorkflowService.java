@@ -8,6 +8,7 @@ import com.prometis.appbuilder.node.code.ResultType;
 import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import com.prometis.appbuilder.security.domain.GrantedAuthority;
 import com.prometis.appbuilder.security.exception.SecurityBusinessException;
+import com.prometis.appbuilder.security.ip.IpAccessValidator;
 import com.prometis.appbuilder.security.service.AuthService;
 import com.prometis.appbuilder.security.token.TokenCookie;
 import com.prometis.appbuilder.workflow.code.BranchType;
@@ -31,6 +32,7 @@ public class WorkflowService {
     private final NodeExecutorFactory nodeExecutorFactory;
     private final ConditionEvaluator conditionEvaluator;
     private final AuthService authService;
+    private final IpAccessValidator ipAccessValidator;
 
     public ResponseMessage execute(
             HttpServletRequest request,
@@ -49,6 +51,9 @@ public class WorkflowService {
             if(user != null) {
                 validateAuthorization(user, workflow);
             }
+
+            // IP 접근제어.
+            ipAccessValidator.validate(request, workflow);
 
             return executeFunction(requestMessage, user, createGraph(workflow));
         }

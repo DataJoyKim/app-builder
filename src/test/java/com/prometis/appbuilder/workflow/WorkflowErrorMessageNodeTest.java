@@ -6,6 +6,7 @@ import com.prometis.appbuilder.dto.ResultType;
 import com.prometis.appbuilder.executor.script.ScriptEngine;
 import com.prometis.appbuilder.node.*;
 import com.prometis.appbuilder.node.code.FunctionType;
+import com.prometis.appbuilder.security.ip.IpAccessValidator;
 import com.prometis.appbuilder.security.service.AuthService;
 import com.prometis.appbuilder.workflow.code.BranchType;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +65,8 @@ class WorkflowErrorMessageNodeTest {
                 mock(WorkflowAuthorityRepository.class),
                 nodeExecutorFactory,
                 new ConditionEvaluator(new ScriptEngine()),
-                mock(AuthService.class)
+                mock(AuthService.class),
+                mock(IpAccessValidator.class)
         );
 
         // n1(조건분기) -- if grade === 'F' --> n2(에러메시지) --> n4(SQL, 에러 뒤에 이어져 있어도 실행되면 안 된다)

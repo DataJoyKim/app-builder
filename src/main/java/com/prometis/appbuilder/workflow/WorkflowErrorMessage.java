@@ -13,6 +13,7 @@ public enum WorkflowErrorMessage implements ErrorMessage {
     NOT_FOUND_MULTIPART_MESSAGE(400, "E-WORKFLOW-008", "요청메시지(JSON)를 'message' 파트로 보내주세요."),
     INVALID_MULTIPART_MESSAGE(400, "E-WORKFLOW-009", "'message' 파트의 요청메시지 형식이 올바르지않습니다."),
     INVALID_MULTIPART_FILE_PART(400, "E-WORKFLOW-010", "업로드 파일은 'files' 파트로 보내주세요."),
+    NOT_ALLOWED_IP(403, "E-WORKFLOW-011", "허용되지않은 IP 에서의 접근입니다."),
     ;
     private Integer status;
     private String errorCode;

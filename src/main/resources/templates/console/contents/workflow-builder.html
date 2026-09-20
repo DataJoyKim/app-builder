@@ -1250,6 +1250,12 @@
         font-size: 12px;
     }
 
+    /* IP 그룹 칩은 권한 칩과 구분되게 색을 달리한다. */
+    .wf-ip-chip {
+        background: #eefaf3;
+        color: #0f766e;
+    }
+
     .wf-authority-add {
         display: flex;
         gap: 8px;
@@ -1501,6 +1507,8 @@
     let activeNodeId = null;
     let authorityCodesMaster = [];
     let currentAuthorityList = [];
+    let ipGroupsMaster = [];
+    let currentIpGroupList = [];
     let executeRows = [];
     let executeRowSeq = 0;
     let executeResult = null;      // 가장 최근 실행 한 건. {pending, elapsed, finishedAt, httpStatus, response}
@@ -1543,6 +1551,7 @@
     function init() {
         getWorkflowList();
         setAuthorityCodesMaster();
+        setIpGroupsMaster();
         newContent();
     }
 
@@ -1612,7 +1621,8 @@
                 workflowEdges:graph.edges,
                 workflowConditions:graph.conditions,
                 workflowErrorResponses:graph.errorResponses,
-                workflowAuthority:currentAuthorityList
+                workflowAuthority:currentAuthorityList,
+                workflowIpGroup:currentIpGroupList
             },
             function(response){
                 alert("저장 완료되었습니다.");
@@ -1710,6 +1720,7 @@
                 setContentData(response);
                 loadWorkflowGraph(workflowId);
                 getWorkflowAuthority(workflowId);
+                getWorkflowIpGroup(workflowId);
                 initExecuteGrid();
                 renderWorkflowList();
             },
@@ -1761,6 +1772,8 @@
 
         currentAuthorityList = [];
         renderAuthorityChips();
+        currentIpGroupList = [];
+        renderIpGroupChips();
         initExecuteGrid();
         renderWorkflowList();
     }
@@ -1844,6 +1857,89 @@
     function removeAuthorityChip(code) {
         currentAuthorityList = currentAuthorityList.filter(item => item.authorityCode !== code);
         renderAuthorityChips();
+    }
+
+    /* ================= Settings (IP 접근제어) =================
+       IP 그룹을 하나도 매핑하지 않으면 IP 제한 없이 실행된다. */
+
+    function setIpGroupsMaster() {
+        httpClient.get(`/console/api/ip-group`, {},
+            function(response){
+                ipGroupsMaster = response || [];
+                renderIpGroupChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function getWorkflowIpGroup(workflowId) {
+        httpClient.get(`/console/api/workflow-ip-group`, {workflowId:workflowId},
+            function(response){
+                currentIpGroupList = response.map(r => ({ipGroupCode:r.ipGroupCode}));
+                renderIpGroupChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderIpGroupChips() {
+        const $chips = $("#ipGroupChips");
+        $chips.empty();
+
+        if (currentIpGroupList.length === 0) {
+            $chips.append(`<span class="wf-chip-empty">매핑된 IP그룹이 없습니다. (IP 제한 없음)</span>`);
+        }
+
+        for (const item of currentIpGroupList) {
+            const master = ipGroupsMaster.find(g => g.groupCode === item.ipGroupCode);
+            const label = master ? `${master.displayName} (IP ${master.ipCount || 0})` : item.ipGroupCode;
+
+            const $chip = $(`
+                <span class="wf-authority-chip wf-ip-chip"><i class="fas fa-network-wired"></i> <span class="wf-ip-chip-label"></span> <i class="fas fa-times"></i></span>
+            `);
+
+            $chip.find('.wf-ip-chip-label').text(label);
+
+            $chip.find('i.fa-times').on('click', function() {
+                removeIpGroupChip(item.ipGroupCode);
+            });
+
+            $chips.append($chip);
+        }
+
+        const $select = $("#ipGroupSelect");
+        $select.empty().append(`<option value="">IP그룹 추가...</option>`);
+        for (const g of ipGroupsMaster) {
+            if (!currentIpGroupList.some(item => item.ipGroupCode === g.groupCode)) {
+                $select.append($('<option></option>').attr('value', g.groupCode).text(`${g.displayName} (${g.groupCode})`));
+            }
+        }
+    }
+
+    function addIpGroupChip() {
+        const code = $("#ipGroupSelect").val();
+        if (!code) return;
+
+        currentIpGroupList.push({ipGroupCode:code});
+        renderIpGroupChips();
+    }
+
+    function removeIpGroupChip(code) {
+        currentIpGroupList = currentIpGroupList.filter(item => item.ipGroupCode !== code);
+        renderIpGroupChips();
+    }
+
+    // IP 관리 화면을 팝업으로 띄운다. 닫으면 그룹 목록을 다시 읽어 선택 목록에 바로 반영한다.
+    function openIpManagement() {
+        App.modalPopup.open('/console/ip-management', {title:'IP 관리', size:'modal-fullscreen-md', height:'92vh', messageId:'IP_GROUP_REQUEST'});
+
+        $('#popup').one('hidden.bs.modal', function() {
+            setIpGroupsMaster();
+        });
     }
 
     /* ================= Side panels (node / settings / execute) =================
@@ -3790,6 +3886,21 @@
                             <div class="wf-field-help">
                                 인증 사용 시, 여기 등록한 권한 중 하나를 가진 사용자만 실행할 수 있습니다.
                                 변경한 설정은 상단 저장 버튼을 눌러야 반영됩니다.
+                            </div>
+                        </div>
+                        <div class="wf-field">
+                            <label>IP 접근제어</label>
+                            <div id="ipGroupChips" class="wf-authority-chips"></div>
+                            <div class="wf-authority-add">
+                                <select id="ipGroupSelect" class="form-control form-control-sm"></select>
+                                <button type="button" class="btn btn-default btn-sm" onclick="addIpGroupChip()">추가</button>
+                                <button type="button" class="btn btn-default btn-sm" onclick="openIpManagement()" title="IP그룹/허용 IP 관리">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                            <div class="wf-field-help">
+                                여기 등록한 IP그룹의 허용 IP에서만 실행할 수 있습니다. 하나도 등록하지 않으면 IP 제한 없이 실행됩니다.
+                                IP그룹과 허용 IP는 톱니바퀴 버튼(또는 Security &gt; IP 관리)에서 등록합니다.
                             </div>
                         </div>
                     </div>

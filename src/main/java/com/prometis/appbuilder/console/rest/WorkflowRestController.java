@@ -13,6 +13,8 @@ import com.prometis.appbuilder.workflow.WorkflowEdge;
 import com.prometis.appbuilder.workflow.WorkflowEdgeRepository;
 import com.prometis.appbuilder.workflow.WorkflowErrorResponse;
 import com.prometis.appbuilder.workflow.WorkflowErrorResponseRepository;
+import com.prometis.appbuilder.workflow.WorkflowIpGroup;
+import com.prometis.appbuilder.workflow.WorkflowIpGroupRepository;
 import com.prometis.appbuilder.workflow.WorkflowRepository;
 import com.prometis.appbuilder.workflow.code.BranchType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,8 @@ public class WorkflowRestController {
     private WorkflowErrorResponseRepository workflowErrorResponseRepository;
     @Autowired
     private WorkflowAuthorityRepository workflowAuthorityRepository;
+    @Autowired
+    private WorkflowIpGroupRepository workflowIpGroupRepository;
 
     @Transactional
     @PostMapping("/save")
@@ -49,6 +53,7 @@ public class WorkflowRestController {
         List<Map<String,Object>> workflowConditionParams = (List<Map<String,Object>>) params.get("workflowConditions");
         List<Map<String,Object>> workflowErrorResponseParams = (List<Map<String,Object>>) params.get("workflowErrorResponses");
         List<Map<String,Object>> workflowAuthorityParams = (List<Map<String,Object>>) params.get("workflowAuthority");
+        List<Map<String,Object>> workflowIpGroupParams = (List<Map<String,Object>>) params.get("workflowIpGroup");
 
         Long id = (workflowParams.get("id") == null || ((String) workflowParams.get("id")).isEmpty())
                 ? null
@@ -172,6 +177,20 @@ public class WorkflowRestController {
             workflowAuthorityRepository.save(workflowAuthority);
         }
 
+        // IP 접근제어. 매핑한 IP 그룹이 없으면 IP 제한을 쓰지않는 워크플로우가 된다.
+        workflowIpGroupRepository.deleteByWorkflowId(savedWorkflow.getId());
+
+        if(workflowIpGroupParams != null) {
+            for(Map<String,Object> param : workflowIpGroupParams) {
+                WorkflowIpGroup workflowIpGroup = WorkflowIpGroup.builder()
+                        .ipGroupCode((String) param.get("ipGroupCode"))
+                        .workflow(savedWorkflow)
+                        .build();
+
+                workflowIpGroupRepository.save(workflowIpGroup);
+            }
+        }
+
         return ResponseEntity.ok(savedWorkflow);
     }
 
@@ -204,6 +223,7 @@ public class WorkflowRestController {
         workflowConditionRepository.deleteByWorkflowId(workflow.getId());
         workflowErrorResponseRepository.deleteByWorkflowId(workflow.getId());
         workflowAuthorityRepository.deleteByWorkflowId(workflow.getId());
+        workflowIpGroupRepository.deleteByWorkflowId(workflow.getId());
         repository.deleteById(workflow.getId());
 
         return new ResponseEntity<>(HttpStatus.OK);
