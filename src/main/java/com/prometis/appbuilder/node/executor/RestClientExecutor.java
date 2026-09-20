@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.node.executor;
 
+import com.prometis.appbuilder.dto.RequestMessage;
 import com.prometis.appbuilder.node.NodeConfig;
 import com.prometis.appbuilder.node.NodeExecutor;
 import com.prometis.appbuilder.node.NodeResult;
@@ -22,7 +23,7 @@ public class RestClientExecutor implements NodeExecutor {
     private final NodeConfig config;
 
     @Override
-    public NodeResult execute(AuthenticatedUser user, String functionName, List<Map<String, Object>> params) {
+    public NodeResult execute(AuthenticatedUser user, String functionName, RequestMessage.Header header, List<Map<String, Object>> params) {
 
         ResultType resultType = ResultType.SUCCESS;
         List<Map<String, Object>> results = new ArrayList<>();

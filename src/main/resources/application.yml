@@ -13,6 +13,12 @@ spring:
     suffix: .html
     cache: false
 
+  # multipart/form-data 파일 업로드 한도 (기본값은 파일 1MB / 요청 10MB)
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
   web:
     resources:
       static-locations: file:src/main/resources/static/

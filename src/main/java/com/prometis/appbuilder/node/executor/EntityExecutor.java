@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.node.executor;
 
+import com.prometis.appbuilder.dto.RequestMessage;
 import com.prometis.appbuilder.entity.EntityRequest;
 import com.prometis.appbuilder.entity.EntityResult;
 import com.prometis.appbuilder.entity.EntityService;
@@ -20,7 +21,7 @@ public class EntityExecutor implements NodeExecutor {
     private final EntityService entityService;
 
     @Override
-    public NodeResult execute(AuthenticatedUser user, String functionName, List<Map<String, Object>> params) {
+    public NodeResult execute(AuthenticatedUser user, String functionName, RequestMessage.Header header, List<Map<String, Object>> params) {
         EntityRequest entityParams = EntityRequest.builder()
                                         .contents(params)
                                         .build();

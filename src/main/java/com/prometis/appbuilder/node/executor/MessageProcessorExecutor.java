@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.node.executor;
 
+import com.prometis.appbuilder.dto.RequestMessage;
 import com.prometis.appbuilder.message.MessageProcessorRequest;
 import com.prometis.appbuilder.message.MessageProcessorResult;
 import com.prometis.appbuilder.message.MessageProcessorService;
@@ -23,7 +24,7 @@ public class MessageProcessorExecutor implements NodeExecutor {
     private final NodeConfig config;
 
     @Override
-    public NodeResult execute(AuthenticatedUser user, String functionName, List<Map<String, Object>> params) {
+    public NodeResult execute(AuthenticatedUser user, String functionName, RequestMessage.Header header, List<Map<String, Object>> params) {
 
         MessageProcessorRequest request = MessageProcessorRequest.builder()
                 .contents(params)

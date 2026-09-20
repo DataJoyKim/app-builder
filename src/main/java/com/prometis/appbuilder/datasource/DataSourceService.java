@@ -2,6 +2,8 @@ package com.prometis.appbuilder.datasource;
 
 import com.prometis.appbuilder.datasource.database.DataSourceDatabaseMeta;
 import com.prometis.appbuilder.datasource.database.DataSourceDatabaseMetaRepository;
+import com.prometis.appbuilder.datasource.filestorage.DataSourceFileStorage;
+import com.prometis.appbuilder.datasource.filestorage.DataSourceFileStorageRepository;
 import com.prometis.appbuilder.datasource.notification.NotificationProvider;
 import com.prometis.appbuilder.datasource.notification.NotificationProviderRepository;
 import com.prometis.appbuilder.datasource.restserver.DataSourceRestServer;
@@ -19,6 +21,7 @@ public class DataSourceService {
     private final DataSourceDatabaseMetaRepository dataSourceDatabaseMetaRepository;
     private final DataSourceRestServerRepository dataSourceRestServerRepository;
     private final NotificationProviderRepository notificationProviderRepository;
+    private final DataSourceFileStorageRepository dataSourceFileStorageRepository;
 
     public List<DataSourceDatabaseMeta> getDatabaseMetadata() {
         return dataSourceDatabaseMetaRepository.findAll();
@@ -30,5 +33,9 @@ public class DataSourceService {
 
     public List<NotificationProvider> getNotificationProvider() {
         return notificationProviderRepository.findAll();
+    }
+
+    public List<DataSourceFileStorage> getDataSourceFileStorage() {
+        return dataSourceFileStorageRepository.findAll();
     }
 }

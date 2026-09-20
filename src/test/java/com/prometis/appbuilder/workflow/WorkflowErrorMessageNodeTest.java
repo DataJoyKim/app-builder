@@ -50,7 +50,7 @@ class WorkflowErrorMessageNodeTest {
 
         when(workflowRepository.findByWorkflowCode(WORKFLOW_CODE)).thenReturn(Optional.of(workflow));
         when(nodeExecutorFactory.instance(FunctionType.SQL)).thenReturn(sqlExecutor);
-        when(sqlExecutor.execute(any(), anyString(), anyList())).thenAnswer(invocation -> NodeResult.builder()
+        when(sqlExecutor.execute(any(), anyString(), any(), anyList())).thenAnswer(invocation -> NodeResult.builder()
                 .resultType(com.prometis.appbuilder.node.code.ResultType.SUCCESS)
                 .results(List.of(Map.of("step", invocation.getArgument(1))))
                 .build());
@@ -157,7 +157,7 @@ class WorkflowErrorMessageNodeTest {
         assertEquals("F", response.getContents().get("IN").get(0).get("grade"));
         assertTrue(response.getContents().get("없는메시지").isEmpty());
 
-        verify(sqlExecutor, never()).execute(any(), anyString(), anyList());
+        verify(sqlExecutor, never()).execute(any(), anyString(), any(), anyList());
     }
 
     @Test
@@ -169,8 +169,8 @@ class WorkflowErrorMessageNodeTest {
 
         assertEquals(ResultType.SUCCESS, response.getResultType());
         assertEquals(Set.of("OUT_n3"), response.getContents().keySet());
-        verify(sqlExecutor).execute(any(), eq("n3"), anyList());
-        verify(sqlExecutor, never()).execute(any(), eq("n4"), anyList());
+        verify(sqlExecutor).execute(any(), eq("n3"), any(), anyList());
+        verify(sqlExecutor, never()).execute(any(), eq("n4"), any(), anyList());
     }
 
     @Test

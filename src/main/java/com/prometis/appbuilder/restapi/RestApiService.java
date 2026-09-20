@@ -59,6 +59,11 @@ public class RestApiService {
                 ? parseEnum(FileContentEncoding.class, text(restApiParams, "fileContentEncoding"), "파일내용 인코딩", false)
                 : null;
 
+        // MULTIPART 는 업로드(요청)에서만 쓰는 인코딩이라 파일 다운로드 응답에는 쓸 수 없다.
+        if(fileContentEncoding != null && fileContentEncoding.isRequestOnly()) {
+            throw RestApiValidationException.definition("파일내용 인코딩 '" + fileContentEncoding + "' 는 응답에 사용할 수 없습니다.");
+        }
+
         // JSON 응답 설정. 파일 다운로드면 쓰지 않는다.
         String responseMessageId = isFile ? null : emptyToNullText(text(restApiParams, "responseMessageId"));
         SchemaDataType responseDataType = isFile ? null

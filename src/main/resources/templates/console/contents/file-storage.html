@@ -1,0 +1,679 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #file-storage-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #file-storage-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #file-storage-app .ds-list-panel,
+    #file-storage-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #file-storage-app .ds-list-panel {
+        flex: 0 0 380px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #file-storage-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #file-storage-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #file-storage-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #file-storage-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #file-storage-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #file-storage-app .ds-btn-divider {
+        width: 1px;
+        align-self: stretch;
+        background: #e5e7eb;
+        margin: 0 2px;
+    }
+
+    #file-storage-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #file-storage-app .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #file-storage-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #file-storage-app .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #file-storage-app .ds-btn-danger {
+        color: #dc2626;
+    }
+
+    #file-storage-app .ds-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    /* ---- 목록: ag-Grid 대신 검색+카드형 리스트로 직접 렌더링 ---- */
+    #file-storage-app .ds-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #file-storage-app .ds-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #file-storage-app .ds-list-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #file-storage-app .ds-list-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #file-storage-app .ds-list-body {
+        max-height: 560px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #file-storage-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #file-storage-app .ds-list-item:hover {
+        background: #fafbfc;
+    }
+
+    #file-storage-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #file-storage-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #file-storage-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #file-storage-app .ds-list-item.selected .ds-list-item-name {
+        color: #1d4ed8;
+    }
+
+    #file-storage-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #file-storage-app .ds-type-chip {
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+        background: #eef5ff;
+        color: #1d4ed8;
+    }
+
+    #file-storage-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #file-storage-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    /* ---- 상세 설정 ---- */
+    #file-storage-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    #file-storage-app .ds-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    #file-storage-app .ds-section:last-child {
+        margin-bottom: 0;
+    }
+
+    #file-storage-app .ds-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #file-storage-app .ds-section-header i {
+        color: #4A90E2;
+    }
+
+    #file-storage-app .ds-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 0;
+    }
+
+    #file-storage-app .ds-section-grid.ds-empty-section {
+        padding: 0;
+    }
+
+    #file-storage-app .ds-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #file-storage-app .ds-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #file-storage-app .ds-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #file-storage-app .ds-section-grid .form-control:disabled {
+        background: #f8f9fa;
+        color: #6b7280;
+    }
+
+    #file-storage-app .ds-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #file-storage-app .ds-option-empty-hint {
+        padding: 30px 16px;
+        text-align: center;
+        color: #9199a3;
+        font-size: 12.5px;
+    }
+
+    #file-storage-app .ds-option-help {
+        display: block;
+        margin-top: 5px;
+        font-size: 11px;
+        color: #9199a3;
+    }
+</style>
+<script th:fragment="script">
+        let DATASOURCE_LIST = [];
+        let SELECTED_DATASOURCE_ID = null;
+
+        $( document ).ready(function() {
+            init();
+        });
+
+        function init() {
+            getDataSource();
+        }
+
+        function typeLabel(type) {
+            const labels = {LOCAL:'Local'};
+            return labels[type] || type;
+        }
+
+        function getDataSource() {
+            httpClient.get(`/console/api/datasource/file-storage`, {},
+                function(response){
+                    DATASOURCE_LIST = response || [];
+                    renderDataSourceList($("#dsSearch").val());
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function renderDataSourceList(keyword) {
+            const kw = (keyword || '').trim().toLowerCase();
+            const filtered = DATASOURCE_LIST.filter(function(item) {
+                if(!kw) return true;
+                return (item.dataSourceName || '').toLowerCase().includes(kw)
+                    || (item.displayName || '').toLowerCase().includes(kw);
+            });
+
+            const $body = $("#dsListBody");
+            $body.empty();
+
+            if(filtered.length === 0) {
+                const $empty = $(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-inbox"></i>
+                        <span></span>
+                    </div>
+                `);
+                $empty.find('span').text(DATASOURCE_LIST.length === 0 ? '등록된 File Storage가 없습니다.' : '검색 결과가 없습니다.');
+                $body.append($empty);
+                return;
+            }
+
+            for(const item of filtered) {
+                const $item = $(`
+                    <div class="ds-list-item" data-id="${item.id}">
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                        <span class="ds-type-chip"></span>
+                    </div>
+                `);
+
+                $item.find('.ds-list-item-name').text(item.displayName || item.dataSourceName);
+                $item.find('.ds-list-item-code').text(item.dataSourceName);
+                $item.find('.ds-type-chip').text(typeLabel(item.storageType));
+
+                if(String(item.id) === String(SELECTED_DATASOURCE_ID)) {
+                    $item.addClass('selected');
+                }
+
+                $item.on('click', function() {
+                    selectDataSource(item.id);
+                });
+
+                $body.append($item);
+            }
+        }
+
+        function selectDataSource(id) {
+            const item = DATASOURCE_LIST.find(a => String(a.id) === String(id));
+            if(!item) return;
+
+            SELECTED_DATASOURCE_ID = id;
+            $("#dsListBody .ds-list-item").removeClass('selected');
+            $(`#dsListBody .ds-list-item[data-id="${id}"]`).addClass('selected');
+
+            selectedContent(item);
+        }
+
+        function selectedContent(item) {
+            httpClient.get(`/console/api/datasource/file-storage/${item.id}`, {},
+                function(response){
+                    setContentData(response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function isEmpty(v) {
+            return (v == undefined || v == null || v == '');
+        }
+
+        function validateContent(content) {
+            if(isEmpty(content.dataSourceName)) {
+                alert("DataSource 명을 입력해주세요.");
+                return false;
+            }
+            if(isEmpty(content.displayName)) {
+                alert("화면 노출명을 입력해주세요.");
+                return false;
+            }
+            if(isEmpty(content.storageType)) {
+                alert("저장소유형을 선택해주세요.");
+                return false;
+            }
+            if(content.storageType === "LOCAL" && isEmpty($("#rootPath").val())) {
+                alert("저장소경로를 입력해주세요.");
+                return false;
+            }
+            return true;
+        }
+
+        function save() {
+            const content = getContent();
+            if(!validateContent(content)) return;
+
+            if(isEmpty(content.id))
+                insertContent(content);
+            else
+                updateContent(content);
+        }
+
+        function insertContent(content) {
+            httpClient.post(`/console/api/datasource/file-storage`,{},content,
+                function(response){
+                    alert("저장완료되었습니다. 실행에 반영하려면 [갱신]을 눌러주세요.");
+                    SELECTED_DATASOURCE_ID = response.id;
+                    $("#id").val(response.id);
+                    getDataSource();
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateContent(content) {
+          httpClient.put(`/console/api/datasource/file-storage/${content.id}`, {}, content,
+              function(response){
+                  alert("저장완료되었습니다. 실행에 반영하려면 [갱신]을 눌러주세요.");
+                  getDataSource();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteContent() {
+          let id = $("#id").val();
+          if(isEmpty(id)) return;
+          if(!confirm("삭제하시겠습니까?")) return;
+
+          httpClient.delete(`/console/api/datasource/file-storage/${id}`, {},
+              function(response){
+                  alert("삭제 처리 완료되었습니다.");
+                  newContent();
+                  getDataSource();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function refreshDataSource() {
+          let id = $("#id").val();
+          if(isEmpty(id)) return;
+
+          httpClient.post(`/console/api/datasource/file-storage/${id}/refresh`,{},{},
+              function(response){
+                  alert("갱신 완료되었습니다.");
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function validateConnectDataSource() {
+            let id = $("#id").val();
+            if(isEmpty(id)) return;
+
+            httpClient.get(`/console/api/datasource/file-storage/${id}/connect-valid`, {},
+                function(response){
+                    if(response != null && response.result === true) {
+                        alert("연결 성공");
+                    }
+                    else {
+                        const detail = (response && response.e && response.e.message) ? "\n" + response.e.message : "";
+                        alert("연결 실패" + detail);
+                    }
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function setContentData(response) {
+            setContent({
+                id:response.id,
+                displayName:response.displayName,
+                dataSourceName:response.dataSourceName,
+                note:response.note,
+                storageType:response.storageType,
+                options:response.options
+              });
+
+            changeType();
+        }
+
+        function getContent() {
+            let options = null;
+            const storageType = $("#storageType").val();
+            if(storageType === "LOCAL") {
+                options = JSON.stringify({
+                    rootPath:$("#rootPath").val()
+                });
+            }
+
+            return {
+                id: $("#id").val(),
+                displayName: $("#displayName").val(),
+                dataSourceName: $("#dataSourceName").val(),
+                note: $("#note").val(),
+                storageType: storageType,
+                options: options
+            }
+        }
+
+        function setContent(params) {
+            $("#id").val(params.id);
+            $("#displayName").val(params.displayName);
+            $("#dataSourceName").val(params.dataSourceName);
+            $("#note").val(params.note);
+            $("#storageType").val(params.storageType);
+
+            const options = (params.options) ? JSON.parse(params.options) : {};
+            $("#rootPath").val(options.rootPath || '');
+          }
+
+          function newContent(){
+            SELECTED_DATASOURCE_ID = null;
+            $("#dsListBody .ds-list-item").removeClass('selected');
+
+            setContent({
+                id:'',
+                displayName:'',
+                dataSourceName:'',
+                note:'',
+                storageType:''
+              });
+
+            changeType();
+          }
+
+          function changeType() {
+              clearOptionGrid();
+
+              const storageType = $("#storageType").val();
+              if(storageType === "LOCAL") {
+                  showOptionGird("op-grid-local");
+              }
+              else {
+                  $("#op-grid-empty-hint").removeClass('d-none');
+              }
+          }
+
+          function clearOptionGrid() {
+              $("#op-grid-local").addClass("d-none");
+              $("#op-grid-empty-hint").addClass('d-none');
+          }
+          function showOptionGird(id){
+              $("#"+id).removeClass("d-none");
+          }
+    </script>
+<div id="file-storage-app" th:fragment="view">
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-folder-open"></i> File Storage 목록</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="getDataSource()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                </div>
+            </div>
+            <div class="ds-list-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="dsSearch" placeholder="DataSource명, 화면노출명으로 검색" oninput="renderDataSourceList(this.value)">
+            </div>
+            <div class="ds-list-body" id="dsListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-sliders-h"></i> 상세 설정</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="newContent()"><i class="fas fa-plus"></i>신규</button>
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                    <button type="button" class="ds-btn ds-btn-danger" onclick="deleteContent()"><i class="fas fa-trash"></i>삭제</button>
+                    <span class="ds-btn-divider"></span>
+                    <button type="button" class="ds-btn" onclick="refreshDataSource()"><i class="fas fa-arrow-up"></i>갱신</button>
+                    <button type="button" class="ds-btn" onclick="validateConnectDataSource()"><i class="fas fa-check"></i>연결확인</button>
+                </div>
+            </div>
+
+            <div class="ds-detail-body">
+                <input type="hidden" id="id">
+
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                    <div class="ds-section-grid">
+                        <div class="form-group col-4">
+                            <label for="dataSourceName">DataSource 명</label>
+                            <input type="text" class="form-control" id="dataSourceName" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="displayName">화면 노출명</label>
+                            <input type="text" class="form-control" id="displayName" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="storageType">저장소유형</label>
+                            <select class="form-control" id="storageType" onchange="changeType()">
+                                <option value="">선택</option>
+                                <option value="LOCAL">Local</option>
+                                <option value="REMOTE" disabled>Remote (준비중)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-12">
+                            <label for="note">note</label>
+                            <input type="text" class="form-control" id="note" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-cog"></i><span>옵션</span></div>
+                    <div class="ds-option-empty-hint" id="op-grid-empty-hint">저장소유형을 선택하면 옵션이 표시됩니다.</div>
+                    <div class="ds-section-grid d-none" id="op-grid-local">
+                        <div class="form-group col-12">
+                            <label for="rootPath">저장소경로</label>
+                            <input type="text" class="form-control" id="rootPath" placeholder="예) C:/admin-builder/files" autocomplete="off">
+                            <span class="ds-option-help">File 노드의 파일경로는 이 경로 아래 상대경로로 붙습니다. 경로 밖(..)으로는 접근할 수 없습니다.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</html>

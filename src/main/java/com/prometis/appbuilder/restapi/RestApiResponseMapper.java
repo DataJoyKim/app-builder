@@ -177,6 +177,8 @@ public class RestApiResponseMapper {
                 case TEXT -> {
                     return text.getBytes(StandardCharsets.UTF_8);
                 }
+                // MULTIPART 는 업로드(요청)에서만 쓰는 인코딩이다.
+                case MULTIPART -> throw new BusinessException(RestApiErrorMessage.INVALID_FILE_CONTENT);
                 default -> {
                     try {
                         // data URL(data:image/png;base64,....) 로 온 값도 받는다.

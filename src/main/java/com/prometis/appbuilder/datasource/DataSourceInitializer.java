@@ -2,6 +2,8 @@ package com.prometis.appbuilder.datasource;
 
 import com.prometis.appbuilder.datasource.database.DataSourceDatabaseMeta;
 import com.prometis.appbuilder.datasource.database.DataSourceDatabaseRegister;
+import com.prometis.appbuilder.datasource.filestorage.DataSourceFileStorage;
+import com.prometis.appbuilder.datasource.filestorage.DataSourceFileStorageRegister;
 import com.prometis.appbuilder.datasource.notification.DataSourceNotificationRegister;
 import com.prometis.appbuilder.datasource.notification.NotificationProvider;
 import com.prometis.appbuilder.datasource.restserver.DataSourceRestServer;
@@ -29,5 +31,8 @@ public class DataSourceInitializer {
 
         List<NotificationProvider> notifications = dataSourceService.getNotificationProvider();
         DataSourceNotificationRegister.initialize(notifications);
+
+        List<DataSourceFileStorage> fileStorages = dataSourceService.getDataSourceFileStorage();
+        DataSourceFileStorageRegister.initialize(fileStorages);
     }
 }

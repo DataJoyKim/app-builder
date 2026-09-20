@@ -1,0 +1,962 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #wffile-app {
+        height: 100vh;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        padding: 14px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #wffile-app .wf-card {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #wffile-app .wf-tabs {
+        display: flex;
+        gap: 2px;
+        padding: 8px 16px 0;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex: 0 0 auto;
+        margin: 0;
+        list-style: none;
+    }
+
+    #wffile-app .wf-tabs .nav-link {
+        border: none;
+        border-radius: 7px 7px 0 0;
+        padding: 8px 16px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #6b7280;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    #wffile-app .wf-tabs .nav-link.active {
+        background: #fff;
+        color: #1d4ed8;
+        box-shadow: inset 0 -2px 0 #4A90E2;
+    }
+
+    #wffile-app .wf-tab-content {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    #wffile-app .wf-tab-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eef0f2;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 1;
+    }
+
+    #wffile-app .wf-tab-toolbar h4 {
+        margin: 0;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #wffile-app .wf-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #wffile-app .wf-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #wffile-app .wf-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #wffile-app .wf-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #wffile-app .wf-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #wffile-app .wf-btn-danger {
+        color: #dc2626;
+    }
+
+    #wffile-app .wf-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    #wffile-app .wf-btn-success {
+        background: #16a34a;
+        border-color: #16a34a;
+        color: #fff;
+    }
+
+    #wffile-app .wf-btn-success:hover {
+        background: #15803d;
+    }
+
+    #wffile-app .wf-detail-body {
+        padding: 16px;
+    }
+
+    #wffile-app .wf-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    #wffile-app .wf-section:last-child {
+        margin-bottom: 0;
+    }
+
+    #wffile-app .wf-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #wffile-app .wf-section-header i {
+        color: #4A90E2;
+    }
+
+    #wffile-app .wf-section-body {
+        padding: 14px;
+    }
+
+    #wffile-app .wf-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 0;
+    }
+
+    #wffile-app .wf-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #wffile-app .wf-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #wffile-app .wf-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #wffile-app .wf-section-grid .form-control:disabled {
+        background: #f8f9fa;
+        color: #6b7280;
+    }
+
+    #wffile-app .wf-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #wffile-app .wf-toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #wffile-app .wf-toggle-row label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    /* ---- 인라인 편집 테이블 (jsGrid 대체) ---- */
+    #wffile-app .wf-table-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 8px;
+    }
+
+    #wffile-app .wf-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+    }
+
+    #wffile-app .wf-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+    #wffile-app .wf-table thead th {
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        text-align: left;
+        padding: 8px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        white-space: nowrap;
+    }
+
+    #wffile-app .wf-table tbody td {
+        border-bottom: 1px solid #f1f3f5;
+        padding: 6px 8px;
+        vertical-align: middle;
+    }
+
+    #wffile-app .wf-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    #wffile-app .wf-table tbody tr:hover {
+        background: #fafbfc;
+    }
+
+    #wffile-app .wf-cell-input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 6px;
+        font-size: 12.5px;
+        padding: 5px 8px;
+        background: #fff;
+    }
+
+    #wffile-app .wf-cell-input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #wffile-app .wf-table-action-col {
+        width: 34px;
+        text-align: center;
+    }
+
+    #wffile-app .wf-row-del-btn {
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 6px;
+        width: 26px;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #dc2626;
+    }
+
+    #wffile-app .wf-row-del-btn:hover {
+        background: #fef2f2;
+    }
+
+    #wffile-app .wf-table-empty {
+        text-align: center;
+        color: #9199a3;
+        padding: 20px;
+    }
+
+    /* ---- 실행 결과 콘솔 ---- */
+    #wffile-app .wf-console {
+        width: 100%;
+        box-sizing: border-box;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 12.5px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 12px;
+        resize: vertical;
+    }
+
+    #wffile-app .wf-help {
+        display: block;
+        margin-top: 5px;
+        font-size: 11px;
+        color: #9199a3;
+        line-height: 1.5;
+    }
+
+    #wffile-app .wf-help code {
+        font-size: 11px;
+        color: #1d4ed8;
+        background: #eef5ff;
+        padding: 0 4px;
+        border-radius: 4px;
+    }
+
+    #wffile-app .wf-path-preview {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        padding: 8px 10px;
+        border: 1px dashed #d7dbe0;
+        border-radius: 7px;
+        background: #fbfbfc;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 12px;
+        color: #374151;
+        word-break: break-all;
+    }
+
+    #wffile-app .wf-path-preview .wf-path-root {
+        color: #6b7280;
+    }
+
+    #wffile-app .wf-path-preview .wf-path-file {
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+
+    #wffile-app .wf-upload-picker {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: #6b7280;
+    }
+</style>
+<script th:fragment="script">
+    class EditableTable {
+        constructor(containerId, columns) {
+            this.containerId = containerId;
+            this.columns = columns;
+            this.data = [];
+            this.render();
+        }
+
+        setData(data) {
+            this.data = (data || []).map(d => Object.assign({}, d));
+            this.render();
+        }
+
+        getData() {
+            return this.data;
+        }
+
+        addRow(defaults) {
+            this.data.push(Object.assign({}, defaults));
+            this.render();
+        }
+
+        upsertRow(field, key, values) {
+            const row = this.data.find(r => r[field] === key);
+            if(row) {
+                Object.assign(row, values);
+                this.render();
+            }
+            else {
+                this.addRow(Object.assign({[field]: key}, values));
+            }
+        }
+
+        removeRow(index) {
+            this.data.splice(index, 1);
+            this.render();
+        }
+
+        render() {
+            const $container = $('#' + this.containerId);
+            $container.empty();
+
+            const $table = $('<table class="wf-table"></table>');
+            const $theadRow = $('<tr></tr>');
+            for (const col of this.columns) {
+                $theadRow.append($('<th></th>').text(col.label));
+            }
+            $theadRow.append('<th class="wf-table-action-col"></th>');
+            $table.append($('<thead></thead>').append($theadRow));
+
+            const $tbody = $('<tbody></tbody>');
+            if (this.data.length === 0) {
+                $tbody.append(`<tr><td colspan="${this.columns.length + 1}" class="wf-table-empty">데이터가 없습니다.</td></tr>`);
+            }
+
+            this.data.forEach((row, idx) => {
+                const $tr = $('<tr></tr>');
+                for (const col of this.columns) {
+                    const $td = $('<td></td>');
+                    const $input = $('<input type="text" class="wf-cell-input">');
+                    $input.val(row[col.field] != null ? row[col.field] : '');
+                    $input.on('input', (e) => { row[col.field] = $(e.target).val(); });
+                    $td.append($input);
+                    $tr.append($td);
+                }
+
+                const $actionTd = $('<td class="wf-table-action-col"></td>');
+                const $delBtn = $('<button type="button" class="wf-row-del-btn" title="삭제"><i class="fas fa-times"></i></button>');
+                $delBtn.on('click', () => this.removeRow(idx));
+                $actionTd.append($delBtn);
+                $tr.append($actionTd);
+
+                $tbody.append($tr);
+            });
+
+            $table.append($tbody);
+            $container.append($table);
+        }
+    }
+
+    const FILE_CONTENT_KEY_DEFAULT = 'fileContent';
+    // Multipart 업로드 파트명. 워크플로우(/workflow)와 맞춰둔다.
+    const FILE_PART = 'files';
+    const RESULT_PREVIEW_LENGTH = 200;
+
+    let functionName;
+    let executeGrid;
+    let fileStorageList = [];
+    let lastReadResult = null;
+    // MULTIPART 정의일 때 실행 탭에서 고른 파일
+    let pickedFile = null;
+
+    $( document ).ready(function() {
+        init();
+    });
+
+    function init() {
+        executeGrid = new EditableTable('executeGrid', [
+            {field:'key', label:'파라미터'},
+            {field:'value', label:'값'}
+        ]);
+
+        $("#dataSourceName").on('change', renderPathPreview);
+        $("#filePath").on('input', renderPathPreview);
+        $("#actionType").on('change', changeActionType);
+
+        App.modalPopup.receiveParam('FUNC_REQUEST', function(data){
+            if(!data.functionName) {
+                alert('기능코드가 존재하지않습니다.');
+            }
+
+            functionName = data.functionName;
+
+            setDataSourceAsFileStorage(function() {
+                getFileHandler(functionName);
+            });
+        });
+    }
+
+    function isEmpty(v) {
+        return (v == undefined || v == null || v === '');
+    }
+
+    function setDataSourceAsFileStorage(callback) {
+        httpClient.get(`/console/api/datasource/file-storage`, {},
+            function(response){
+                fileStorageList = response || [];
+
+                let codes = new Array();
+                for(let i=0; i<fileStorageList.length; i++) {
+                    codes.push({code:fileStorageList[i].dataSourceName,name:fileStorageList[i].displayName});
+                }
+
+                App.util.setCodeBox("dataSourceName", codes, {useFirstItem:true, firstItemLabel:'선택', firstItemValue:''});
+
+                if(callback) callback();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function resolveRootPath(dataSourceName) {
+        const storage = fileStorageList.find(s => s.dataSourceName === dataSourceName);
+        if(!storage || !storage.options) return null;
+
+        try {
+            return JSON.parse(storage.options).rootPath || null;
+        }
+        catch (e) {
+            return null;
+        }
+    }
+
+    function renderPathPreview() {
+        const rootPath = resolveRootPath($("#dataSourceName").val());
+        const filePath = ($("#filePath").val() || '').replace(/^[\/\\]+/, '');
+
+        const $preview = $("#pathPreview");
+        $preview.empty();
+        $preview.append($('<span class="wf-path-root"></span>').text(rootPath ? rootPath.replace(/[\/\\]+$/, '') + '/' : '(데이터소스 저장소경로)/'));
+        $preview.append($('<span class="wf-path-file"></span>').text(filePath || '(파일경로)'));
+    }
+
+    function changeActionType() {
+        const actionType = $("#actionType").val();
+
+        $(".wf-action-read-upload").toggleClass('d-none', !(actionType === 'READ' || actionType === 'UPLOAD'));
+        $(".wf-action-upload").toggleClass('d-none', actionType !== 'UPLOAD');
+
+        changeContentEncoding();
+    }
+
+    function getFileHandler(functionName) {
+        httpClient.get(`/console/api/file`, {handlerName:`${functionName}`},
+            function(response){
+                let data = response[0];
+                if(data) {
+                    setContent(data);
+                }
+                else {
+                    setContent({
+                        id:'',
+                        handlerName:functionName,
+                        displayName:'',
+                        dataSourceName:'',
+                        actionType:'READ',
+                        filePath:'',
+                        fileContentKey:'',
+                        fileContentEncoding:'BASE64',
+                        overwrite:false
+                    });
+                }
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function getContent() {
+        const actionType = $("#actionType").val();
+
+        return {
+            id: $("#id").val(),
+            handlerName: $("#handlerName").val(),
+            displayName: $("#displayName").val(),
+            dataSourceName: $("#dataSourceName").val(),
+            actionType: actionType,
+            filePath: $("#filePath").val(),
+            // 삭제는 파일내용을 다루지않고, Multipart 업로드는 올라온 파일을 그대로 저장하므로 파일내용 키를 쓰지 않는다.
+            fileContentKey: (actionType === 'DELETE' || isMultipartUpload()) ? null : $("#fileContentKey").val(),
+            fileContentEncoding: (actionType === 'UPLOAD') ? $("#fileContentEncoding").val() : null,
+            overwrite: (actionType === 'UPLOAD') ? App.util.isCheck("overwrite") : null
+        }
+    }
+
+    function setContent(params) {
+        $("#id").val(params.id);
+        $("#handlerName").val(params.handlerName);
+        $("#displayName").val(params.displayName);
+        $("#dataSourceName").val(params.dataSourceName);
+        $("#actionType").val(params.actionType || 'READ');
+        $("#filePath").val(params.filePath);
+        $("#fileContentKey").val(params.fileContentKey);
+        $("#fileContentEncoding").val(params.fileContentEncoding || 'BASE64');
+        App.util.check('overwrite', params.overwrite === true);
+
+        changeActionType();
+        renderPathPreview();
+    }
+
+    function validateContent(content) {
+        if(isEmpty(content.displayName)) {
+            alert("화면노출명을 입력해주세요.");
+            return false;
+        }
+        if(isEmpty(content.dataSourceName)) {
+            alert("데이터소스를 선택해주세요.");
+            return false;
+        }
+        if(isEmpty(content.actionType)) {
+            alert("액션유형을 선택해주세요.");
+            return false;
+        }
+        if(isEmpty(content.filePath)) {
+            alert("파일경로를 입력해주세요.");
+            return false;
+        }
+        return true;
+    }
+
+    function save() {
+        const content = getContent();
+        if(!validateContent(content)) return;
+
+        httpClient.post(`/console/api/file/save`,{},
+            content,
+            function(response){
+                alert("저장완료되었습니다.");
+                getFileHandler($("#handlerName").val());
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function deleteFileHandler() {
+      let id = $("#id").val();
+      if(isEmpty(id)) return;
+      if(!confirm("삭제하시겠습니까?")) return;
+
+      httpClient.delete(`/console/api/file/${id}`, {},
+          function(response){
+              alert("삭제 되었습니다.");
+              getFileHandler($("#handlerName").val());
+          },
+          function(error){
+              alert('error');
+          }
+      );
+    }
+
+    function resolveContentKey() {
+        return $("#fileContentKey").val() || FILE_CONTENT_KEY_DEFAULT;
+    }
+
+    function isMultipartUpload() {
+        return $("#actionType").val() === 'UPLOAD' && $("#fileContentEncoding").val() === 'MULTIPART';
+    }
+
+    function changeContentEncoding() {
+        const multipart = isMultipartUpload();
+
+        // Multipart 업로드는 올라온 파일을 그대로 저장하므로 파일내용 키를 쓰지 않는다.
+        $(".wf-content-key").toggleClass('d-none', multipart);
+
+        pickedFile = null;
+        $("#uploadFile").val('');
+        $("#uploadFileInfo").text(multipart
+            ? `업로드할 파일을 고르면 '${FILE_PART}' 파트로 multipart/form-data 전송합니다.`
+            : "업로드할 파일을 고르면 파일내용 키에 Base64 로 담습니다.");
+    }
+
+    // 실행 탭에서 파일을 고르면 Base64 로 읽어 파일내용 파라미터에 넣는다. (MULTIPART 정의면 파일 그대로 전송)
+    function pickUploadFile(input) {
+        const file = input.files && input.files[0];
+        pickedFile = null;
+        if(!file) return;
+
+        if(isMultipartUpload()) {
+            pickedFile = file;
+            $("#uploadFileInfo").text(`${file.name} (${file.size.toLocaleString()} bytes) → '${FILE_PART}' 파트로 전송합니다.`);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            executeGrid.upsertRow('key', resolveContentKey(), {value: e.target.result});
+            executeGrid.upsertRow('key', 'fileName', {value: file.name});
+            $("#uploadFileInfo").text(`${file.name} (${file.size.toLocaleString()} bytes) → '${resolveContentKey()}' 파라미터에 Base64 로 담았습니다.`);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function execute() {
+        let executeTarget = $("#handlerName").val();
+
+        if(isEmpty($("#id").val())) {
+            alert("정의를 먼저 저장해주세요.");
+            return;
+        }
+
+        let contents = {};
+        for(const data of executeGrid.getData()) {
+            if(isEmpty(data.key)) continue;
+            contents[data.key] = (data.value == "null") ? null : data.value;
+        }
+
+        lastReadResult = null;
+        $("#downloadResultBtn").addClass('d-none');
+
+        if(isMultipartUpload()) {
+            executeMultipart(executeTarget, contents);
+            return;
+        }
+
+        httpClient.post(`/console/api/file/${executeTarget}/execute`,{},contents,
+            function(response){
+                renderExecuteResult(response);
+            },
+            function(error){
+                $("#responseData").val(JSON.stringify(error.responseJSON,null,3));
+            }
+        );
+    }
+
+    // MULTIPART 정의는 파일을 파트로 담아 multipart/form-data 로 보낸다.
+    function executeMultipart(executeTarget, contents) {
+        if(!pickedFile) {
+            alert("업로드할 파일을 선택해주세요.");
+            return;
+        }
+
+        const formData = new FormData();
+        for(const key in contents) {
+            formData.append(key, (contents[key] == null) ? '' : contents[key]);
+        }
+        formData.append(FILE_PART, pickedFile);
+
+        $.ajax({
+            type: 'POST',
+            url: `/console/api/file/${executeTarget}/execute`,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                renderExecuteResult(response);
+            },
+            error: function(error) {
+                $("#responseData").val(JSON.stringify(error.responseJSON,null,3));
+            }
+        });
+    }
+
+    function renderExecuteResult(response) {
+        const contentKey = resolveContentKey();
+        const display = JSON.parse(JSON.stringify(response || {}));
+
+        // 조회결과의 파일내용(Base64)은 길어서 앞부분만 보여주고, 다운로드 버튼으로 받게 한다.
+        if(display.content && typeof display.content[contentKey] === 'string') {
+            const base64 = display.content[contentKey];
+            lastReadResult = {
+                base64: base64,
+                fileName: display.content.fileName || 'download',
+                contentType: display.content.contentType || 'application/octet-stream'
+            };
+            $("#downloadResultBtn").removeClass('d-none');
+
+            if(base64.length > RESULT_PREVIEW_LENGTH) {
+                display.content[contentKey] = base64.substring(0, RESULT_PREVIEW_LENGTH) + `... (Base64 ${base64.length.toLocaleString()}자)`;
+            }
+        }
+
+        $("#responseData").val(JSON.stringify(display,null,3));
+    }
+
+    function downloadResult() {
+        if(!lastReadResult) return;
+
+        const binary = atob(lastReadResult.base64);
+        const bytes = new Uint8Array(binary.length);
+        for(let i=0; i<binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+
+        const url = URL.createObjectURL(new Blob([bytes], {type: lastReadResult.contentType}));
+        const $a = $('<a></a>').attr({href: url, download: lastReadResult.fileName}).appendTo('body');
+        $a[0].click();
+        $a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function copyResult() {
+        const text = $("#responseData").val();
+        if (!text) return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text);
+        } else {
+            const $textarea = $("#responseData");
+            $textarea.trigger('select');
+            document.execCommand('copy');
+        }
+    }
+</script>
+<div id="wffile-app" th:fragment="view">
+    <div class="wf-card">
+        <ul class="nav wf-tabs" id="detail-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="workflow-def-tab" data-toggle="pill" href="#workflow-def" role="tab" aria-controls="workflow-def" aria-selected="true">정의</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="execute-tab" data-toggle="pill" href="#execute" role="tab" aria-controls="execute" aria-selected="false">실행</a>
+            </li>
+        </ul>
+        <div class="tab-content wf-tab-content" id="detail-tabContent">
+
+            <div class="tab-pane fade show active" id="workflow-def" role="tabpanel" aria-labelledby="workflow-def-tab">
+                <div class="wf-tab-toolbar">
+                    <h4>파일 정의</h4>
+                    <div class="wf-panel-tools">
+                        <button type="button" class="wf-btn wf-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                        <button type="button" class="wf-btn wf-btn-danger" onclick="deleteFileHandler()"><i class="fas fa-trash"></i>삭제</button>
+                    </div>
+                </div>
+                <div class="wf-detail-body">
+                    <input type="hidden" id="id">
+
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                        <div class="wf-section-grid">
+                            <div class="form-group col-4">
+                                <label for="handlerName">기능코드</label>
+                                <input type="text" class="form-control" id="handlerName" autocomplete="off" disabled>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="displayName">화면노출명</label>
+                                <input type="text" class="form-control" id="displayName" autocomplete="off">
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="actionType">액션유형</label>
+                                <select class="form-control" id="actionType">
+                                    <option value="READ">조회</option>
+                                    <option value="UPLOAD">업로드</option>
+                                    <option value="DELETE">삭제</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-folder-open"></i><span>파일 위치</span></div>
+                        <div class="wf-section-grid">
+                            <div class="form-group col-4">
+                                <label for="dataSourceName">데이터소스 (File Storage)</label>
+                                <select class="form-control" id="dataSourceName"></select>
+                            </div>
+                            <div class="form-group col-8">
+                                <label for="filePath">파일경로</label>
+                                <input type="text" class="form-control" id="filePath" placeholder="예) board/#{boardId}/#{fileName}" autocomplete="off">
+                                <span class="wf-help"><code>#{파라미터}</code> 로 요청메시지 값을 넣을 수 있습니다. 저장소경로 기준 상대경로이며 파일명까지 포함합니다.</span>
+                            </div>
+                            <div class="form-group col-12">
+                                <label>실제 파일 위치</label>
+                                <div class="wf-path-preview" id="pathPreview"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wf-section wf-action-read-upload">
+                        <div class="wf-section-header"><i class="fas fa-file-alt"></i><span>파일 내용</span></div>
+                        <div class="wf-section-grid">
+                            <div class="form-group col-4 wf-action-upload">
+                                <label for="fileContentEncoding">파일내용 인코딩</label>
+                                <select class="form-control" id="fileContentEncoding" onchange="changeContentEncoding()">
+                                    <option value="BASE64">Base64 (문자열)</option>
+                                    <option value="TEXT">Text (UTF-8, 문자열)</option>
+                                    <option value="MULTIPART">Multipart (업로드 파일)</option>
+                                </select>
+                                <span class="wf-help">byte[] 값은 인코딩과 상관없이 그대로 저장합니다.<br>
+                                    Multipart: multipart/form-data 로 올라온 파일을 스트림 그대로 저장합니다. 파일내용 키는 쓰지않고, 업로드한 파일의 원본 파일명을 <code>#{original_filename}</code> 으로 파일경로에 쓸 수 있습니다.</span>
+                            </div>
+                            <div class="form-group col-4 wf-content-key">
+                                <label for="fileContentKey">파일내용 키</label>
+                                <input type="text" class="form-control" id="fileContentKey" placeholder="기본값: fileContent" autocomplete="off">
+                                <span class="wf-help">업로드: 이 키의 값을 파일로 저장 / 조회: 이 키에 파일내용을 담아 응답</span>
+                            </div>
+                            <div class="form-group col-4 wf-action-upload">
+                                <div class="wf-toggle-row" style="margin-top:22px;">
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="overwrite">
+                                        <label for="overwrite" class="custom-control-label" style="cursor:pointer;"></label>
+                                    </div>
+                                    <label for="overwrite">같은 파일이 있으면 덮어쓰기</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-reply"></i><span>응답 항목</span></div>
+                        <div class="wf-section-body">
+                            <span class="wf-help" style="margin-top:0;">
+                                조회: <code>filePath</code> <code>fileName</code> <code>fileSize</code> <code>contentType</code> + 파일내용 키<br>
+                                업로드: <code>filePath</code> <code>fileName</code> <code>fileSize</code> <code>contentType</code><br>
+                                삭제: <code>filePath</code> <code>deleted</code><br>
+                                공통: <code>resultCode</code>(SUCCESS/FAILURE) <code>message</code>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="execute" role="tabpanel" aria-labelledby="execute-tab">
+                <div class="wf-tab-toolbar">
+                    <h4>실행 (정의 검증용 · 저장된 정의 기준)</h4>
+                    <div class="wf-panel-tools">
+                        <button type="button" class="wf-btn" onclick="executeGrid.addRow({})"><i class="fas fa-plus"></i>파라미터 추가</button>
+                        <button type="button" class="wf-btn wf-btn-success" onclick="execute()"><i class="fas fa-play"></i>실행</button>
+                    </div>
+                </div>
+                <div class="wf-detail-body">
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-sliders-h"></i><span>실행 파라미터</span></div>
+                        <div class="wf-section-body">
+                            <div class="wf-upload-picker wf-action-upload" style="margin-bottom:10px;">
+                                <input type="file" id="uploadFile" onchange="pickUploadFile(this)">
+                                <span id="uploadFileInfo">업로드할 파일을 고르면 파일내용 키에 Base64 로 담습니다.</span>
+                            </div>
+                            <div class="wf-table-wrap" id="executeGrid"></div>
+                        </div>
+                    </div>
+                    <div class="wf-section">
+                        <div class="wf-section-header">
+                            <i class="fas fa-terminal"></i><span>실행 결과</span>
+                            <span style="margin-left:auto;"></span>
+                            <button type="button" class="wf-btn d-none" id="downloadResultBtn" onclick="downloadResult()"><i class="fas fa-download"></i>파일 다운로드</button>
+                            <button type="button" class="wf-btn" onclick="copyResult()"><i class="fas fa-copy"></i>복사</button>
+                        </div>
+                        <div class="wf-section-body">
+                            <textarea class="wf-console" id="responseData" rows="14" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</html>

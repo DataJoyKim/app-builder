@@ -65,6 +65,10 @@ public class WorkflowNode {
         return FunctionType.ERROR_MESSAGE.equals(functionType);
     }
 
+    public boolean isFile() {
+        return FunctionType.FILE.equals(functionType);
+    }
+
     public void update(
             Long workflowId,
             String nodeId,

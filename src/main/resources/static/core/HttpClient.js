@@ -108,6 +108,56 @@ class HttpClient {
     });
   }
 
+  /**
+   * 파일과 함께 워크플로우를 호출한다. (POST /workflow, multipart/form-data)
+   * 요청메시지(JSON)는 'message' 파트로, 파일은 'files' 파트로 보낸다.
+   * 업로드 파일은 요청메시지가 아니라 헤더(header.files)로 실려가고, FILE 노드(파일내용 인코딩 MULTIPART)가
+   * 저장소에 스트림 그대로 저장한다. 파일경로에 쓸 값은 그 노드의 요청메시지로 보낸다.
+   * 예) body:{uploadParam:[{boardId:'10'}]} + 파일경로 board/#{boardId}/#{original_filename}
+   * _files 는 input[type=file] 의 files 또는 File 배열. 파일마다 한 번씩 저장하며,
+   * 요청메시지 행이 한 개면 모든 파일이 그 값을 쓰고 여러 개면 파일 순서대로 짝지어진다.
+   */
+  postFiles(_url, _requestMessage, _files, _success, _error, _options) {
+    let self = this;
+    let options = _options || {};
+
+    console.log('httpClient.postFiles.'+_url+'.request',{
+        url:_url,
+        requestMessage:_requestMessage,
+        fileCount:(_files) ? _files.length : 0
+    });
+
+    let formData = new FormData();
+    formData.append('message', JSON.stringify(_requestMessage));
+
+    for(let i=0; i<((_files) ? _files.length : 0); i++) {
+        formData.append('files', _files[i]);
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: _url,
+      data: formData,
+      processData: false,
+      contentType: false,
+      timeout: options.timeout || this.timeout,
+      beforeSend: function() {
+        self.showLoadingBar();
+      },
+      success: function(response) {
+        console.log('httpClient.postFiles.'+_url+'.response',response);
+
+        _success(response);
+      },
+      error: function(error) {
+        _error(error);
+      },
+      complete: function() {
+        self.hideLoadingBar();
+      }
+    });
+  }
+
   delete(_url, _requestParams, _success, _error) {
     let self = this;
 

@@ -5,6 +5,8 @@ import com.prometis.appbuilder.message.MessageProcessor;
 import com.prometis.appbuilder.message.MessageProcessorRepository;
 import com.prometis.appbuilder.entity.Entity;
 import com.prometis.appbuilder.entity.EntityRepository;
+import com.prometis.appbuilder.file.FileHandler;
+import com.prometis.appbuilder.file.FileHandlerRepository;
 import com.prometis.appbuilder.node.WorkflowNode;
 import com.prometis.appbuilder.node.WorkflowNodeRepository;
 import com.prometis.appbuilder.node.code.FunctionType;
@@ -44,6 +46,8 @@ public class WorkflowNodeRestController {
     private MessageProcessorRepository messageProcessorRepository;
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private FileHandlerRepository fileHandlerRepository;
 
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody List<Map<String,Object>> params) {
@@ -166,6 +170,12 @@ public class WorkflowNodeRestController {
         }
         else if(FunctionType.NOTIFICATION.equals(w.getFunctionType())) {
             Optional<Notification> func = notificationRepository.findByNotificationName(w.getFunctionName());
+            if(func.isPresent()){
+                displayName = func.get().getDisplayName();
+            }
+        }
+        else if(FunctionType.FILE.equals(w.getFunctionType())) {
+            Optional<FileHandler> func = fileHandlerRepository.findByHandlerName(w.getFunctionName());
             if(func.isPresent()){
                 displayName = func.get().getDisplayName();
             }

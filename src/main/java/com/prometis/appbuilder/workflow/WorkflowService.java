@@ -148,7 +148,7 @@ public class WorkflowService {
 
             NodeExecutor executor = nodeExecutorFactory.instance(current.getFunctionType());
 
-            NodeResult result = executor.execute(user, current.getFunctionName(), params);
+            NodeResult result = executor.execute(user, current.getFunctionName(), requestMessage.getHeader(), params);
 
             if(ResultType.FAILURE.equals(result.getResultType())) {
                 failureCnt++;

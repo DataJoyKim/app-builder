@@ -27,7 +27,7 @@ class EnumColumnConstraintTest {
                   FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
                   JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON cc.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
                  WHERE tc.CONSTRAINT_TYPE = 'CHECK'
-                   AND tc.TABLE_NAME IN ('REST_API', 'REST_API_PARAMETER', 'WORKFLOW_NODE')
+                   AND tc.TABLE_NAME IN ('REST_API', 'REST_API_PARAMETER', 'WORKFLOW_NODE', 'FILE_HANDLER', 'DATA_SOURCE_FILE_STORAGE')
                 """);
 
         assertEquals(List.of(), constraints);
