@@ -8,6 +8,7 @@ import com.prometis.appbuilder.node.code.ResultType;
 import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import com.prometis.appbuilder.security.domain.GrantedAuthority;
 import com.prometis.appbuilder.security.exception.SecurityBusinessException;
+import com.prometis.appbuilder.security.domainaccess.DomainAccessValidator;
 import com.prometis.appbuilder.security.ip.IpAccessValidator;
 import com.prometis.appbuilder.security.service.AuthService;
 import com.prometis.appbuilder.security.token.TokenCookie;
@@ -33,6 +34,7 @@ public class WorkflowService {
     private final ConditionEvaluator conditionEvaluator;
     private final AuthService authService;
     private final IpAccessValidator ipAccessValidator;
+    private final DomainAccessValidator domainAccessValidator;
 
     public ResponseMessage execute(
             HttpServletRequest request,
@@ -54,6 +56,9 @@ public class WorkflowService {
 
             // IP 접근제어.
             ipAccessValidator.validate(request, workflow);
+
+            // 도메인 접근제어. 워크플로우에 매핑된 도메인이 없으면 제한하지않는다.
+            domainAccessValidator.validate(request, workflow);
 
             return executeFunction(requestMessage, user, createGraph(workflow));
         }

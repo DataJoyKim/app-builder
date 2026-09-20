@@ -3,6 +3,7 @@ package com.prometis.appbuilder.console.rest;
 import com.prometis.appbuilder.node.WorkflowNode;
 import com.prometis.appbuilder.node.WorkflowNodeRepository;
 import com.prometis.appbuilder.node.code.FunctionType;
+import com.prometis.appbuilder.security.domainaccess.DomainMatcher;
 import com.prometis.appbuilder.util.DataTypeUtil;
 import com.prometis.appbuilder.workflow.Workflow;
 import com.prometis.appbuilder.workflow.WorkflowAuthority;
@@ -12,6 +13,8 @@ import com.prometis.appbuilder.workflow.WorkflowConditionRepository;
 import com.prometis.appbuilder.workflow.WorkflowEdge;
 import com.prometis.appbuilder.workflow.WorkflowEdgeRepository;
 import com.prometis.appbuilder.workflow.WorkflowErrorResponse;
+import com.prometis.appbuilder.workflow.WorkflowDomain;
+import com.prometis.appbuilder.workflow.WorkflowDomainRepository;
 import com.prometis.appbuilder.workflow.WorkflowErrorResponseRepository;
 import com.prometis.appbuilder.workflow.WorkflowIpGroup;
 import com.prometis.appbuilder.workflow.WorkflowIpGroupRepository;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController("console.WorkflowRestController")
@@ -43,6 +47,8 @@ public class WorkflowRestController {
     private WorkflowAuthorityRepository workflowAuthorityRepository;
     @Autowired
     private WorkflowIpGroupRepository workflowIpGroupRepository;
+    @Autowired
+    private WorkflowDomainRepository workflowDomainRepository;
 
     @Transactional
     @PostMapping("/save")
@@ -54,6 +60,21 @@ public class WorkflowRestController {
         List<Map<String,Object>> workflowErrorResponseParams = (List<Map<String,Object>>) params.get("workflowErrorResponses");
         List<Map<String,Object>> workflowAuthorityParams = (List<Map<String,Object>>) params.get("workflowAuthority");
         List<Map<String,Object>> workflowIpGroupParams = (List<Map<String,Object>>) params.get("workflowIpGroup");
+        List<Map<String,Object>> workflowDomainParams = (List<Map<String,Object>>) params.get("workflowDomain");
+
+        // 저장 도중에 막으면 앞쪽 저장만 남으므로 도메인 형식은 저장을 시작하기 전에 본다.
+        if(workflowDomainParams != null) {
+            for(Map<String,Object> param : workflowDomainParams) {
+                String domain = (String) param.get("domain");
+
+                if(domain != null && !domain.isBlank() && !DomainMatcher.isValidPattern(domain)) {
+                    return new ResponseEntity<>(
+                            Map.of("message", "도메인 형식이 올바르지않습니다. [" + domain + "]"),
+                            HttpStatus.BAD_REQUEST
+                    );
+                }
+            }
+        }
 
         Long id = (workflowParams.get("id") == null || ((String) workflowParams.get("id")).isEmpty())
                 ? null
@@ -191,6 +212,26 @@ public class WorkflowRestController {
             }
         }
 
+        // 도메인 접근제어. 매핑한 도메인이 없으면 도메인 제한을 쓰지않는 워크플로우가 된다.
+        workflowDomainRepository.deleteByWorkflowId(savedWorkflow.getId());
+
+        if(workflowDomainParams != null) {
+            for(Map<String,Object> param : workflowDomainParams) {
+                String domain = (String) param.get("domain");
+
+                if(domain == null || domain.isBlank()) {
+                    continue;
+                }
+
+                WorkflowDomain workflowDomain = WorkflowDomain.builder()
+                        .domain(domain.trim().toLowerCase(Locale.ROOT))
+                        .workflow(savedWorkflow)
+                        .build();
+
+                workflowDomainRepository.save(workflowDomain);
+            }
+        }
+
         return ResponseEntity.ok(savedWorkflow);
     }
 
@@ -224,6 +265,7 @@ public class WorkflowRestController {
         workflowErrorResponseRepository.deleteByWorkflowId(workflow.getId());
         workflowAuthorityRepository.deleteByWorkflowId(workflow.getId());
         workflowIpGroupRepository.deleteByWorkflowId(workflow.getId());
+        workflowDomainRepository.deleteByWorkflowId(workflow.getId());
         repository.deleteById(workflow.getId());
 
         return new ResponseEntity<>(HttpStatus.OK);

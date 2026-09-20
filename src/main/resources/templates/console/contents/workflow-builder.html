@@ -1250,10 +1250,19 @@
         font-size: 12px;
     }
 
-    /* IP 그룹 칩은 권한 칩과 구분되게 색을 달리한다. */
+    /* IP 그룹 / 도메인 칩은 권한 칩과 구분되게 색을 달리한다. */
     .wf-ip-chip {
         background: #eefaf3;
         color: #0f766e;
+    }
+
+    .wf-domain-chip {
+        background: #fdf4e7;
+        color: #b45309;
+    }
+
+    .wf-authority-add input {
+        flex: 1;
     }
 
     .wf-authority-add {
@@ -1509,6 +1518,7 @@
     let currentAuthorityList = [];
     let ipGroupsMaster = [];
     let currentIpGroupList = [];
+    let currentDomainList = [];
     let executeRows = [];
     let executeRowSeq = 0;
     let executeResult = null;      // 가장 최근 실행 한 건. {pending, elapsed, finishedAt, httpStatus, response}
@@ -1622,7 +1632,8 @@
                 workflowConditions:graph.conditions,
                 workflowErrorResponses:graph.errorResponses,
                 workflowAuthority:currentAuthorityList,
-                workflowIpGroup:currentIpGroupList
+                workflowIpGroup:currentIpGroupList,
+                workflowDomain:currentDomainList
             },
             function(response){
                 alert("저장 완료되었습니다.");
@@ -1630,7 +1641,8 @@
                 selectedContent(response.id);
             },
             function(error){
-                alert("에러 발생하였습니다.");
+                const body = error && error.responseJSON;
+                alert((body && body.message) ? body.message : "에러 발생하였습니다.");
             }
         );
     }
@@ -1721,6 +1733,7 @@
                 loadWorkflowGraph(workflowId);
                 getWorkflowAuthority(workflowId);
                 getWorkflowIpGroup(workflowId);
+                getWorkflowDomain(workflowId);
                 initExecuteGrid();
                 renderWorkflowList();
             },
@@ -1774,6 +1787,8 @@
         renderAuthorityChips();
         currentIpGroupList = [];
         renderIpGroupChips();
+        currentDomainList = [];
+        renderDomainChips();
         initExecuteGrid();
         renderWorkflowList();
     }
@@ -1931,6 +1946,76 @@
     function removeIpGroupChip(code) {
         currentIpGroupList = currentIpGroupList.filter(item => item.ipGroupCode !== code);
         renderIpGroupChips();
+    }
+
+    /* ================= Settings (도메인 접근제어) =================
+       도메인을 하나도 등록하지 않으면 도메인 제한 없이 실행된다. */
+
+    function getWorkflowDomain(workflowId) {
+        httpClient.get(`/console/api/workflow-domain`, {workflowId:workflowId},
+            function(response){
+                currentDomainList = response.map(r => ({domain:r.domain}));
+                renderDomainChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderDomainChips() {
+        const $chips = $("#domainChips");
+        $chips.empty();
+
+        if (currentDomainList.length === 0) {
+            $chips.append(`<span class="wf-chip-empty">등록된 도메인이 없습니다. (도메인 제한 없음)</span>`);
+        }
+
+        for (const item of currentDomainList) {
+            const $chip = $(`
+                <span class="wf-authority-chip wf-domain-chip"><i class="fas fa-globe"></i> <span class="wf-domain-chip-label"></span> <i class="fas fa-times"></i></span>
+            `);
+
+            $chip.find('.wf-domain-chip-label').text(item.domain);
+
+            $chip.find('i.fa-times').on('click', function() {
+                removeDomainChip(item.domain);
+            });
+
+            $chips.append($chip);
+        }
+    }
+
+    // 도메인 표기 검사. 전체(*) 이거나 도메인 글자(영문/숫자/./-/*)로만 이루어져야 한다.
+    function isValidDomain(domain) {
+        if (domain === '*') return true;
+        if (!/^[A-Za-z0-9*._-]+$/.test(domain)) return false;
+
+        return domain.split('.').every(label => label.length > 0);
+    }
+
+    function addDomainChip() {
+        const domain = ($("#domainInput").val() || '').trim().toLowerCase();
+        if (!domain) return;
+
+        if (!isValidDomain(domain)) {
+            alert("도메인 형식이 올바르지않습니다.\n예) portal.example.com, *.example.com, *");
+            return;
+        }
+
+        if (currentDomainList.some(item => item.domain === domain)) {
+            $("#domainInput").val('');
+            return;
+        }
+
+        currentDomainList.push({domain:domain});
+        $("#domainInput").val('');
+        renderDomainChips();
+    }
+
+    function removeDomainChip(domain) {
+        currentDomainList = currentDomainList.filter(item => item.domain !== domain);
+        renderDomainChips();
     }
 
     // IP 관리 화면을 팝업으로 띄운다. 닫으면 그룹 목록을 다시 읽어 선택 목록에 바로 반영한다.
@@ -3901,6 +3986,22 @@
                             <div class="wf-field-help">
                                 여기 등록한 IP그룹의 허용 IP에서만 실행할 수 있습니다. 하나도 등록하지 않으면 IP 제한 없이 실행됩니다.
                                 IP그룹과 허용 IP는 톱니바퀴 버튼(또는 Security &gt; IP 관리)에서 등록합니다.
+                            </div>
+                        </div>
+                        <div class="wf-field">
+                            <label>도메인 접근제어</label>
+                            <div id="domainChips" class="wf-authority-chips"></div>
+                            <div class="wf-authority-add">
+                                <input type="text" id="domainInput" class="form-control form-control-sm"
+                                       placeholder="portal.example.com 또는 *.example.com" autocomplete="off"
+                                       onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addDomainChip(); }">
+                                <button type="button" class="btn btn-default btn-sm" onclick="addDomainChip()">추가</button>
+                            </div>
+                            <div class="wf-field-help">
+                                요청의 Referer(없으면 Origin) 도메인이 여기 등록한 도메인일 때만 실행할 수 있습니다.
+                                하나도 등록하지 않으면 도메인 제한 없이 실행됩니다.<br>
+                                와일드카드: <code>*.example.com</code>(하위 도메인 전체, example.com 자신은 제외),
+                                <code>dev-*.example.com</code>, <code>*</code>(전체). 포트는 비교하지 않습니다.
                             </div>
                         </div>
                     </div>
