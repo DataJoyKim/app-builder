@@ -682,6 +682,30 @@
     margin: 0;
 }
 
+#app-container #options .vb-opt-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#app-container #options .vb-opt-item-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#app-container #options .vb-opt-item-row input {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+#app-container #options .vb-opt-item-remove {
+    flex: 0 0 auto;
+    padding: 2px 8px;
+    line-height: 1.2;
+    color: #bd2130;
+}
+
 #app-container .vb-empty-hint {
     display: flex;
     flex-direction: column;

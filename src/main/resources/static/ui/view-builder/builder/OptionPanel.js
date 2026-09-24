@@ -194,6 +194,90 @@ class OptionPanel {
         return sheet;
     }
 
+    /* 라디오 항목(라벨/값)처럼 같은 모양의 행을 여러 개 직접 입력받는 컨트롤.
+       columns는 [{key, placeholder}] 형태이고, 행 추가/삭제/입력이 일어날 때마다
+       itemListEvent()에 등록한 핸들러로 현재 목록 전체를 넘긴다.
+       (Sheet 기반 sheet()는 메타데이터로 동작하는 액션 옵션패널용이라,
+        입력 즉시 반영되는 컴포넌트 옵션패널에는 이쪽이 맞다.) */
+    itemList(id, option) {
+        option.size = option.size || 'col-12';
+
+        const formGroupEl = this.formGroup(option);
+        formGroupEl.addClass('vb-opt-block');
+
+        const headerEl = $(`<div class="vb-opt-block-header"></div>`);
+        headerEl.append(this.label(id, option));
+        headerEl.append($(`<button type="button" class="btn btn-default btn-sm" id="${this.elementId(id)}-add"><i class="fas fa-plus"></i><span>추가</span></button>`));
+        formGroupEl.append(headerEl);
+
+        formGroupEl.append($(`<div class="vb-opt-item-list" id="${this.elementId(id)}"></div>`));
+
+        return formGroupEl;
+    }
+
+    itemListRow(columns, item) {
+        const rowEl = $(`<div class="vb-opt-item-row"></div>`);
+
+        for(const column of columns) {
+            const inputEl = $(`<input type="text" class="form-control form-control-sm rounded-0">`);
+            inputEl.attr('data-key', column.key);
+            inputEl.attr('placeholder', column.placeholder || column.key);
+            inputEl.attr('spellcheck', false);
+            inputEl.attr('autocomplete', 'off');
+            inputEl.val(item?.[column.key] ?? '');
+
+            rowEl.append(inputEl);
+        }
+
+        rowEl.append($(`<button type="button" class="btn btn-default btn-sm vb-opt-item-remove" title="삭제"><i class="fas fa-times"></i></button>`));
+
+        return rowEl;
+    }
+
+    setItemListValue(id, columns, items) {
+        const listEl = $('#'+this.elementId(id));
+        listEl.empty();
+
+        for(const item of items ?? []) {
+            listEl.append(this.itemListRow(columns, item));
+        }
+    }
+
+    getItemListValue(id, columns) {
+        const items = [];
+
+        $('#'+this.elementId(id)).children('.vb-opt-item-row').each(function() {
+            const item = {};
+
+            for(const column of columns) {
+                item[column.key] = $(this).find(`input[data-key="${column.key}"]`).val();
+            }
+
+            items.push(item);
+        });
+
+        return items;
+    }
+
+    itemListEvent(id, columns, _handler) {
+        const listId = this.elementId(id);
+        const notify = () => _handler(this.getItemListValue(id, columns));
+
+        $('#'+listId+'-add').off('click').on('click', () => {
+            $('#'+listId).append(this.itemListRow(columns, null));
+            notify();
+        });
+
+        // 행이 추가/삭제되며 계속 바뀌므로 목록 컨테이너에 위임해서 건다.
+        $('#'+listId)
+            .off('input.vbItemList click.vbItemList')
+            .on('input.vbItemList', 'input', notify)
+            .on('click.vbItemList', '.vb-opt-item-remove', function() {
+                $(this).closest('.vb-opt-item-row').remove();
+                notify();
+            });
+    }
+
     toggle(id, option) {
         const formGroupEl = this.formGroup(option);
         formGroupEl.addClass('vb-opt-toggle-row');

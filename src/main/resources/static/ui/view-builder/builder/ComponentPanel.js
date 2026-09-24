@@ -36,6 +36,11 @@ class ComponentPanel {
         let $inputEl = this.category('폼 입력 요소', true, 'fas fa-keyboard');
         this.item($inputEl, 'input', 'Input', 'fas fa-i-cursor', '한 줄 텍스트 입력창');
         this.item($inputEl, 'select', 'Select', 'fas fa-caret-square-down', '드롭다운 선택 목록');
+        this.item($inputEl, 'date-input', 'Date', 'far fa-calendar-alt', '달력에서 고르는 날짜 입력창');
+        this.item($inputEl, 'textarea', 'TextArea', 'fas fa-align-left', '여러 줄 텍스트 입력창');
+        this.item($inputEl, 'checkbox', 'Checkbox', 'far fa-check-square', '단일 체크박스');
+        this.item($inputEl, 'radio', 'Radio', 'far fa-dot-circle', '항목을 직접 지정하는 라디오 버튼 그룹');
+        this.item($inputEl, 'toggle', 'Toggle', 'fas fa-toggle-on', '스위치 모양의 on/off 입력');
         $listWrap.append($inputEl);
 
         let $etcEl = this.category('기타', true, 'fas fa-ellipsis-h');
