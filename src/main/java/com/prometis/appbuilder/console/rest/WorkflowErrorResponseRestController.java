@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.workflow.WorkflowErrorResponse;
-import com.prometis.appbuilder.workflow.WorkflowErrorResponseRepository;
+import com.prometis.appbuilder.app.workflow.WorkflowErrorResponse;
+import com.prometis.appbuilder.app.workflow.WorkflowErrorResponseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

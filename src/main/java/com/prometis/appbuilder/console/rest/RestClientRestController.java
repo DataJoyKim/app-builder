@@ -1,11 +1,11 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.executor.rest.HttpMethod;
-import com.prometis.appbuilder.restclient.*;
-import com.prometis.appbuilder.restclient.code.BodyMessageFormat;
-import com.prometis.appbuilder.restclient.code.ContentType;
-import com.prometis.appbuilder.restclient.code.MessageDataType;
-import com.prometis.appbuilder.restclient.code.ValueType;
+import com.prometis.appbuilder.app.executor.rest.HttpMethod;
+import com.prometis.appbuilder.app.restclient.*;
+import com.prometis.appbuilder.app.restclient.code.BodyMessageFormat;
+import com.prometis.appbuilder.app.restclient.code.ContentType;
+import com.prometis.appbuilder.app.restclient.code.MessageDataType;
+import com.prometis.appbuilder.app.restclient.code.ValueType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

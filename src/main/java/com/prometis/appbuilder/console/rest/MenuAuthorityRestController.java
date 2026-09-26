@@ -1,9 +1,9 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.view.MenuAuthority;
-import com.prometis.appbuilder.view.MenuAuthorityRepository;
-import com.prometis.appbuilder.view.MenuRepository;
-import com.prometis.appbuilder.view.domain.Menu;
+import com.prometis.appbuilder.app.view.MenuAuthority;
+import com.prometis.appbuilder.app.view.MenuAuthorityRepository;
+import com.prometis.appbuilder.app.view.MenuRepository;
+import com.prometis.appbuilder.app.view.domain.Menu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

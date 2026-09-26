@@ -1,8 +1,8 @@
 package com.prometis.appbuilder;
 
-import com.prometis.appbuilder.security.filter.ConsoleSecurityFilter;
-import com.prometis.appbuilder.security.service.AuthService;
-import com.prometis.appbuilder.security.config.SecurityProperties;
+import com.prometis.appbuilder.app.security.filter.ConsoleSecurityFilter;
+import com.prometis.appbuilder.app.security.service.AuthService;
+import com.prometis.appbuilder.app.security.config.SecurityProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

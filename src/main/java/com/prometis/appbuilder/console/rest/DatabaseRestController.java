@@ -1,13 +1,13 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.datasource.ConnectValidation;
-import com.prometis.appbuilder.datasource.LookupKey;
-import com.prometis.appbuilder.datasource.database.DataSourceDatabaseRegister;
-import com.prometis.appbuilder.datasource.database.DataSourceDatabaseMeta;
-import com.prometis.appbuilder.datasource.database.DataSourceDatabaseValidator;
-import com.prometis.appbuilder.datasource.database.DatabaseKind;
-import com.prometis.appbuilder.datasource.database.schema.ColumnSchema;
-import com.prometis.appbuilder.datasource.database.schema.TableSchemaReader;
+import com.prometis.appbuilder.app.datasource.ConnectValidation;
+import com.prometis.appbuilder.app.datasource.LookupKey;
+import com.prometis.appbuilder.app.datasource.database.DataSourceDatabaseRegister;
+import com.prometis.appbuilder.app.datasource.database.DataSourceDatabaseMeta;
+import com.prometis.appbuilder.app.datasource.database.DataSourceDatabaseValidator;
+import com.prometis.appbuilder.app.datasource.database.DatabaseKind;
+import com.prometis.appbuilder.app.datasource.database.schema.ColumnSchema;
+import com.prometis.appbuilder.app.datasource.database.schema.TableSchemaReader;
 import com.prometis.appbuilder.console.repository.ConsoleDatabaseMetaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

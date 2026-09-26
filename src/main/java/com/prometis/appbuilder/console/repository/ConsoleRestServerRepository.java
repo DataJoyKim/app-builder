@@ -1,6 +1,6 @@
 package com.prometis.appbuilder.console.repository;
 
-import com.prometis.appbuilder.datasource.restserver.DataSourceRestServer;
+import com.prometis.appbuilder.app.datasource.restserver.DataSourceRestServer;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

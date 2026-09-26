@@ -1,8 +1,8 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.datasource.ConnectValidation;
-import com.prometis.appbuilder.datasource.filestorage.*;
-import com.prometis.appbuilder.executor.file.StorageType;
+import com.prometis.appbuilder.app.datasource.ConnectValidation;
+import com.prometis.appbuilder.app.datasource.filestorage.*;
+import com.prometis.appbuilder.app.executor.file.StorageType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

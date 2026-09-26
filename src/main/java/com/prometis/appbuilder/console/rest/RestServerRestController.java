@@ -1,9 +1,9 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.datasource.ConnectValidation;
-import com.prometis.appbuilder.datasource.restserver.DataSourceRestServer;
-import com.prometis.appbuilder.datasource.restserver.DataSourceRestServerRegister;
-import com.prometis.appbuilder.datasource.restserver.DataSourceRestServerValidator;
+import com.prometis.appbuilder.app.datasource.ConnectValidation;
+import com.prometis.appbuilder.app.datasource.restserver.DataSourceRestServer;
+import com.prometis.appbuilder.app.datasource.restserver.DataSourceRestServerRegister;
+import com.prometis.appbuilder.app.datasource.restserver.DataSourceRestServerValidator;
 import com.prometis.appbuilder.console.repository.ConsoleRestServerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

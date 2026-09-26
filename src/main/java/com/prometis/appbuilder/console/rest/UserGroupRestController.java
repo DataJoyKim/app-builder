@@ -1,8 +1,8 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.user.UserGroup;
-import com.prometis.appbuilder.user.UserGroupRepository;
-import com.prometis.appbuilder.user.dto.UserGroupDto;
+import com.prometis.appbuilder.app.user.UserGroup;
+import com.prometis.appbuilder.app.user.UserGroupRepository;
+import com.prometis.appbuilder.app.user.dto.UserGroupDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

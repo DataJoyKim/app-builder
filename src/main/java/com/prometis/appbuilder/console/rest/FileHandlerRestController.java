@@ -1,8 +1,8 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.file.*;
-import com.prometis.appbuilder.file.code.FileActionType;
-import com.prometis.appbuilder.restapi.code.FileContentEncoding;
+import com.prometis.appbuilder.app.file.*;
+import com.prometis.appbuilder.app.file.code.FileActionType;
+import com.prometis.appbuilder.app.restapi.code.FileContentEncoding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,11 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController("console.FileHandlerRestController")
 @RequestMapping("/console/api/file")

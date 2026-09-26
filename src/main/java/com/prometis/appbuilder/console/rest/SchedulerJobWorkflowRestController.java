@@ -1,11 +1,11 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.scheduler.SchedulerJobRepository;
-import com.prometis.appbuilder.scheduler.SchedulerJobWorkflowRepository;
-import com.prometis.appbuilder.scheduler.domain.SchedulerJob;
-import com.prometis.appbuilder.scheduler.domain.SchedulerJobWorkflow;
-import com.prometis.appbuilder.workflow.Workflow;
-import com.prometis.appbuilder.workflow.WorkflowRepository;
+import com.prometis.appbuilder.app.scheduler.SchedulerJobRepository;
+import com.prometis.appbuilder.app.scheduler.SchedulerJobWorkflowRepository;
+import com.prometis.appbuilder.app.scheduler.domain.SchedulerJob;
+import com.prometis.appbuilder.app.scheduler.domain.SchedulerJobWorkflow;
+import com.prometis.appbuilder.app.workflow.Workflow;
+import com.prometis.appbuilder.app.workflow.WorkflowRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

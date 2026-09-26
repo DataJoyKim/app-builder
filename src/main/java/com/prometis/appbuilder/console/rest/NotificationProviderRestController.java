@@ -1,9 +1,8 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.datasource.ConnectValidation;
-import com.prometis.appbuilder.datasource.notification.*;
-import com.prometis.appbuilder.datasource.notification.*;
-import com.prometis.appbuilder.executor.notification.NotificationType;
+import com.prometis.appbuilder.app.datasource.ConnectValidation;
+import com.prometis.appbuilder.app.datasource.notification.*;
+import com.prometis.appbuilder.app.executor.notification.NotificationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

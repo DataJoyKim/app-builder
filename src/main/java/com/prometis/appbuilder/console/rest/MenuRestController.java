@@ -1,10 +1,10 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.view.MenuRepository;
-import com.prometis.appbuilder.view.ViewObjectRepository;
-import com.prometis.appbuilder.view.domain.Menu;
-import com.prometis.appbuilder.view.domain.ViewObject;
-import com.prometis.appbuilder.view.dto.MenuDto;
+import com.prometis.appbuilder.app.view.MenuRepository;
+import com.prometis.appbuilder.app.view.ViewObjectRepository;
+import com.prometis.appbuilder.app.view.domain.Menu;
+import com.prometis.appbuilder.app.view.domain.ViewObject;
+import com.prometis.appbuilder.app.view.dto.MenuDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

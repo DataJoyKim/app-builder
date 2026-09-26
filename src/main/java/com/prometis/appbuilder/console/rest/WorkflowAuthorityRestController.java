@@ -1,9 +1,9 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.workflow.Workflow;
-import com.prometis.appbuilder.workflow.WorkflowAuthority;
-import com.prometis.appbuilder.workflow.WorkflowAuthorityRepository;
-import com.prometis.appbuilder.workflow.WorkflowRepository;
+import com.prometis.appbuilder.app.workflow.Workflow;
+import com.prometis.appbuilder.app.workflow.WorkflowAuthority;
+import com.prometis.appbuilder.app.workflow.WorkflowAuthorityRepository;
+import com.prometis.appbuilder.app.workflow.WorkflowRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

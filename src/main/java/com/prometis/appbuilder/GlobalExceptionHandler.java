@@ -1,7 +1,7 @@
 package com.prometis.appbuilder;
 
-import com.prometis.appbuilder.dto.ResponseMessage;
-import com.prometis.appbuilder.security.exception.SecurityBusinessException;
+import com.prometis.appbuilder.app.dto.ResponseMessage;
+import com.prometis.appbuilder.app.security.exception.SecurityBusinessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

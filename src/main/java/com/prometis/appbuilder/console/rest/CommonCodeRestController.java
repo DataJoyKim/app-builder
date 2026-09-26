@@ -1,9 +1,9 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.code.CommonCode;
-import com.prometis.appbuilder.code.CommonCodeKind;
-import com.prometis.appbuilder.code.CommonCodeKindRepository;
-import com.prometis.appbuilder.code.CommonCodeRepository;
+import com.prometis.appbuilder.app.code.CommonCode;
+import com.prometis.appbuilder.app.code.CommonCodeKind;
+import com.prometis.appbuilder.app.code.CommonCodeKindRepository;
+import com.prometis.appbuilder.app.code.CommonCodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

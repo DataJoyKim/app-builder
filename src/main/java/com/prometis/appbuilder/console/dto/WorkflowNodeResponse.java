@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.console.dto;
 
-import com.prometis.appbuilder.node.code.ErrorResolveType;
-import com.prometis.appbuilder.node.code.FunctionType;
+import com.prometis.appbuilder.app.node.code.ErrorResolveType;
+import com.prometis.appbuilder.app.node.code.FunctionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

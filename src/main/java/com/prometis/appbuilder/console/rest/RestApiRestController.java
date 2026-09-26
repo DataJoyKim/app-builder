@@ -1,11 +1,11 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.restapi.RestApi;
-import com.prometis.appbuilder.restapi.RestApiDocumentService;
-import com.prometis.appbuilder.restapi.RestApiParameterRepository;
-import com.prometis.appbuilder.restapi.RestApiRepository;
-import com.prometis.appbuilder.restapi.RestApiService;
-import com.prometis.appbuilder.restapi.RestApiValidationException;
+import com.prometis.appbuilder.app.restapi.RestApi;
+import com.prometis.appbuilder.app.restapi.RestApiDocumentService;
+import com.prometis.appbuilder.app.restapi.RestApiParameterRepository;
+import com.prometis.appbuilder.app.restapi.RestApiRepository;
+import com.prometis.appbuilder.app.restapi.RestApiService;
+import com.prometis.appbuilder.app.restapi.RestApiValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

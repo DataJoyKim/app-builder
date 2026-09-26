@@ -1,7 +1,6 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.user.*;
-import com.prometis.appbuilder.user.*;
+import com.prometis.appbuilder.app.user.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

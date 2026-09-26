@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.console.repository;
 
-import com.prometis.appbuilder.datasource.database.DataSourceDatabaseMeta;
-import com.prometis.appbuilder.datasource.database.DatabaseKind;
+import com.prometis.appbuilder.app.datasource.database.DataSourceDatabaseMeta;
+import com.prometis.appbuilder.app.datasource.database.DatabaseKind;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

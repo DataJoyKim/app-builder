@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.security.domain.Authority;
-import com.prometis.appbuilder.security.repository.AuthorityRepository;
+import com.prometis.appbuilder.app.security.domain.Authority;
+import com.prometis.appbuilder.app.security.repository.AuthorityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

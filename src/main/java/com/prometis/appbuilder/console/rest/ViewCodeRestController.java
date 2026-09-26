@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.view.ViewCodeRepository;
-import com.prometis.appbuilder.view.domain.ViewCode;
+import com.prometis.appbuilder.app.view.ViewCodeRepository;
+import com.prometis.appbuilder.app.view.domain.ViewCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

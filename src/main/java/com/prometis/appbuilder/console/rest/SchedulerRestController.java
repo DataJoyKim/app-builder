@@ -1,6 +1,6 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.scheduler.SchedulerManagementService;
+import com.prometis.appbuilder.app.scheduler.SchedulerManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

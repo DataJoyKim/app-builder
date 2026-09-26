@@ -1,11 +1,10 @@
 package com.prometis.appbuilder.superadmin;
 
-import com.prometis.appbuilder.security.domain.Authority;
-import com.prometis.appbuilder.security.repository.AuthorityRepository;
-import com.prometis.appbuilder.security.domain.UserGroupAuthority;
-import com.prometis.appbuilder.security.repository.UserGroupAuthorityRepository;
-import com.prometis.appbuilder.user.*;
-import com.prometis.appbuilder.user.*;
+import com.prometis.appbuilder.app.security.domain.Authority;
+import com.prometis.appbuilder.app.security.repository.AuthorityRepository;
+import com.prometis.appbuilder.app.security.domain.UserGroupAuthority;
+import com.prometis.appbuilder.app.security.repository.UserGroupAuthorityRepository;
+import com.prometis.appbuilder.app.user.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,9 +1,9 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.query.*;
-import com.prometis.appbuilder.query.code.AutoValueType;
-import com.prometis.appbuilder.query.code.InOut;
-import com.prometis.appbuilder.query.code.ParamType;
+import com.prometis.appbuilder.app.query.*;
+import com.prometis.appbuilder.app.query.code.AutoValueType;
+import com.prometis.appbuilder.app.query.code.InOut;
+import com.prometis.appbuilder.app.query.code.ParamType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

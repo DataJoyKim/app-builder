@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.user.User;
-import com.prometis.appbuilder.user.UserRepository;
+import com.prometis.appbuilder.app.user.User;
+import com.prometis.appbuilder.app.user.UserRepository;
 import com.prometis.core.crypto.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

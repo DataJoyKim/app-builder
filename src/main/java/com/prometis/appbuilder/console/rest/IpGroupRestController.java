@@ -1,13 +1,13 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.security.ip.IpAddress;
-import com.prometis.appbuilder.security.ip.IpAddressMatcher;
-import com.prometis.appbuilder.security.ip.IpAddressRepository;
-import com.prometis.appbuilder.security.ip.IpGroup;
-import com.prometis.appbuilder.security.ip.IpGroupRepository;
-import com.prometis.appbuilder.util.DataTypeUtil;
-import com.prometis.appbuilder.workflow.WorkflowIpGroup;
-import com.prometis.appbuilder.workflow.WorkflowIpGroupRepository;
+import com.prometis.appbuilder.app.security.ip.IpAddress;
+import com.prometis.appbuilder.app.security.ip.IpAddressMatcher;
+import com.prometis.appbuilder.app.security.ip.IpAddressRepository;
+import com.prometis.appbuilder.app.security.ip.IpGroup;
+import com.prometis.appbuilder.app.security.ip.IpGroupRepository;
+import com.prometis.appbuilder.app.util.DataTypeUtil;
+import com.prometis.appbuilder.app.workflow.WorkflowIpGroup;
+import com.prometis.appbuilder.app.workflow.WorkflowIpGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

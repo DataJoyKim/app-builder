@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.view.ViewActionRepository;
-import com.prometis.appbuilder.view.domain.ViewAction;
+import com.prometis.appbuilder.app.view.ViewActionRepository;
+import com.prometis.appbuilder.app.view.domain.ViewAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

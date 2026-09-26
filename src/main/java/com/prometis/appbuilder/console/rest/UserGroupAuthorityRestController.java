@@ -1,11 +1,11 @@
 package com.prometis.appbuilder.console.rest;
 
-import com.prometis.appbuilder.security.domain.Authority;
-import com.prometis.appbuilder.security.domain.UserGroupAuthority;
-import com.prometis.appbuilder.security.repository.AuthorityRepository;
-import com.prometis.appbuilder.security.repository.UserGroupAuthorityRepository;
-import com.prometis.appbuilder.user.UserGroup;
-import com.prometis.appbuilder.user.UserGroupRepository;
+import com.prometis.appbuilder.app.security.domain.Authority;
+import com.prometis.appbuilder.app.security.domain.UserGroupAuthority;
+import com.prometis.appbuilder.app.security.repository.AuthorityRepository;
+import com.prometis.appbuilder.app.security.repository.UserGroupAuthorityRepository;
+import com.prometis.appbuilder.app.user.UserGroup;
+import com.prometis.appbuilder.app.user.UserGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
