@@ -1,0 +1,765 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #wfsql-app {
+        height: 100vh;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        padding: 14px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #wfsql-app .wf-card {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #wfsql-app .wf-tabs {
+        display: flex;
+        gap: 2px;
+        padding: 8px 16px 0;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex: 0 0 auto;
+        margin: 0;
+        list-style: none;
+    }
+
+    #wfsql-app .wf-tabs .nav-link {
+        border: none;
+        border-radius: 7px 7px 0 0;
+        padding: 8px 16px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #6b7280;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    #wfsql-app .wf-tabs .nav-link.active {
+        background: #fff;
+        color: #1d4ed8;
+        box-shadow: inset 0 -2px 0 #4A90E2;
+    }
+
+    #wfsql-app .wf-tab-content {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    #wfsql-app .wf-tab-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eef0f2;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 1;
+    }
+
+    #wfsql-app .wf-tab-toolbar h4 {
+        margin: 0;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #wfsql-app .wf-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #wfsql-app .wf-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #wfsql-app .wf-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #wfsql-app .wf-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #wfsql-app .wf-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #wfsql-app .wf-btn-success {
+        background: #16a34a;
+        border-color: #16a34a;
+        color: #fff;
+    }
+
+    #wfsql-app .wf-btn-success:hover {
+        background: #15803d;
+    }
+
+    #wfsql-app .wf-detail-body {
+        padding: 16px;
+    }
+
+    #wfsql-app .wf-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    #wfsql-app .wf-section:last-child {
+        margin-bottom: 0;
+    }
+
+    #wfsql-app .wf-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #wfsql-app .wf-section-header i {
+        color: #4A90E2;
+    }
+
+    #wfsql-app .wf-section-body {
+        padding: 14px;
+    }
+
+    #wfsql-app .wf-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 0;
+    }
+
+    #wfsql-app .wf-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #wfsql-app .wf-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #wfsql-app .wf-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #wfsql-app .wf-section-grid .form-control:disabled {
+        background: #f8f9fa;
+        color: #6b7280;
+    }
+
+    #wfsql-app .wf-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #wfsql-app .CodeMirror {
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+    }
+
+    /* ---- 인라인 편집 테이블 (jsGrid 대체) ---- */
+    #wfsql-app .wf-table-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    #wfsql-app .wf-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+    }
+
+    #wfsql-app .wf-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+    #wfsql-app .wf-table thead th {
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        text-align: left;
+        padding: 8px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        white-space: nowrap;
+    }
+
+    #wfsql-app .wf-table tbody td {
+        border-bottom: 1px solid #f1f3f5;
+        padding: 6px 8px;
+        vertical-align: middle;
+    }
+
+    #wfsql-app .wf-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    #wfsql-app .wf-table tbody tr:hover {
+        background: #fafbfc;
+    }
+
+    #wfsql-app .wf-cell-input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 6px;
+        font-size: 12.5px;
+        padding: 5px 8px;
+        background: #fff;
+    }
+
+    #wfsql-app .wf-cell-input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #wfsql-app .wf-table-action-col {
+        width: 34px;
+        text-align: center;
+    }
+
+    #wfsql-app .wf-row-del-btn {
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 6px;
+        width: 26px;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #dc2626;
+    }
+
+    #wfsql-app .wf-row-del-btn:hover {
+        background: #fef2f2;
+    }
+
+    #wfsql-app .wf-table-empty {
+        text-align: center;
+        color: #9199a3;
+        padding: 20px;
+    }
+
+    /* ---- 실행 결과 콘솔 ---- */
+    #wfsql-app .wf-console {
+        width: 100%;
+        box-sizing: border-box;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 12.5px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 12px;
+        resize: vertical;
+    }
+</style>
+<script th:fragment="script">
+    App.codes = {
+        "YN_CD":[
+            {code:"true",name:"Y"},
+            {code:"false",name:"N"}
+        ],
+        "PARAM_TYPE":[
+            {code:"STRING",name:"String"},
+            {code:"NUMBER",name:"Number"},
+            {code:"DATE",name:"Date"}
+        ],
+        "IN_OUT":[
+            {code:"IN",name:"IN"},
+            {code:"OUT",name:"OUT"}
+        ],
+        "AUTO_VALUE_TYPE":[
+            {code:"DEFAULT",name:"기본"},
+            {code:"STATIC_VALUE",name:"static 값"},
+            {code:"RESERVED_WORD",name:"예약어"}
+        ],
+        "COLUMN_TYPE":[
+            {code:"STRING",name:"String"},
+            {code:"NUMBER",name:"Number"},
+            {code:"DATE",name:"Date"},
+            {code:"DATETIME",name:"Datetime"}
+        ]
+    };
+
+    /* ================= 인라인 편집 테이블 (jsGrid 대체) =================
+       columns: [{field,label,type:'text'|'number'|'select'|'check',width,options,editable}]
+       사용법: new EditableTable('containerId', columns) 후 setData/getData/addRow */
+    class EditableTable {
+        constructor(containerId, columns) {
+            this.containerId = containerId;
+            this.columns = columns;
+            this.data = [];
+            this.render();
+        }
+
+        setData(data) {
+            this.data = (data || []).map(d => Object.assign({}, d));
+            this.render();
+        }
+
+        getData() {
+            return this.data;
+        }
+
+        addRow(defaults) {
+            this.data.push(Object.assign({}, defaults));
+            this.render();
+        }
+
+        removeRow(index) {
+            this.data.splice(index, 1);
+            this.render();
+        }
+
+        render() {
+            const $container = $('#' + this.containerId);
+            $container.empty();
+
+            const $table = $('<table class="wf-table"></table>');
+            const $theadRow = $('<tr></tr>');
+            for (const col of this.columns) {
+                $theadRow.append($('<th></th>').text(col.label));
+            }
+            $theadRow.append('<th class="wf-table-action-col"></th>');
+            $table.append($('<thead></thead>').append($theadRow));
+
+            const $tbody = $('<tbody></tbody>');
+            if (this.data.length === 0) {
+                $tbody.append(`<tr><td colspan="${this.columns.length + 1}" class="wf-table-empty">데이터가 없습니다.</td></tr>`);
+            }
+
+            this.data.forEach((row, idx) => {
+                const $tr = $('<tr></tr>');
+                for (const col of this.columns) {
+                    const $td = $('<td></td>');
+                    if (col.editable === false) {
+                        $td.text(row[col.field] != null ? row[col.field] : '');
+                    }
+                    else if (col.type === 'select') {
+                        const $select = $('<select class="wf-cell-input"></select>');
+                        for (const opt of col.options) {
+                            $select.append($('<option></option>').attr('value', opt.code).text(opt.name));
+                        }
+                        $select.val(row[col.field]);
+                        $select.on('change', (e) => { row[col.field] = $(e.target).val(); });
+                        $td.append($select);
+                    }
+                    else if (col.type === 'check') {
+                        const $chk = $('<input type="checkbox" class="wf-cell-checkbox">');
+                        $chk.prop('checked', !!row[col.field]);
+                        $chk.on('change', (e) => { row[col.field] = e.target.checked; });
+                        $td.append($chk);
+                    }
+                    else {
+                        const $input = $(`<input type="${col.type === 'number' ? 'number' : 'text'}" class="wf-cell-input">`);
+                        $input.val(row[col.field] != null ? row[col.field] : '');
+                        $input.on('input', (e) => { row[col.field] = $(e.target).val(); });
+                        $td.append($input);
+                    }
+                    $tr.append($td);
+                }
+
+                const $actionTd = $('<td class="wf-table-action-col"></td>');
+                const $delBtn = $('<button type="button" class="wf-row-del-btn" title="삭제"><i class="fas fa-times"></i></button>');
+                $delBtn.on('click', () => this.removeRow(idx));
+                $actionTd.append($delBtn);
+                $tr.append($actionTd);
+
+                $tbody.append($tr);
+            });
+
+            $table.append($tbody);
+            $container.append($table);
+        }
+    }
+
+    let sqlEditor;
+    let functionName;
+    let queryParameterGrid;
+    let executeGrid;
+
+    $( document ).ready(function() {
+        init();
+    });
+
+    function init() {
+        setDatSourceAsDatabase();
+
+        sqlEditor = initCodeEditor('query','text/x-sql');
+        sqlEditor.setSize("100%", "320px");
+
+        queryParameterGrid = new EditableTable('queryParameterGrid', [
+            {field:'paramName', label:'파라미터명', type:'text'},
+            {field:'paramType', label:'타입', type:'select', options:App.codes['PARAM_TYPE']},
+            {field:'autoValueType', label:'자동값유형', type:'select', options:App.codes['AUTO_VALUE_TYPE']},
+            {field:'inOut', label:'IN/OUT', type:'select', options:App.codes['IN_OUT']}
+        ]);
+
+        executeGrid = new EditableTable('executeGrid', [
+            {field:'key', label:'파라미터', type:'text'},
+            {field:'value', label:'값', type:'text'}
+        ]);
+
+        App.modalPopup.receiveParam('FUNC_REQUEST', function(data){
+            if(!data.functionName) {
+                alert('기능코드가 존재하지않습니다.');
+            }
+
+            functionName = data.functionName;
+            getQuery(functionName);
+        });
+
+        $('#execute-tab').on('shown.bs.tab', function(){
+            syncExecuteParams();
+        });
+    }
+
+    function newParameter() {
+        queryParameterGrid.addRow({
+            paramName:"(파라미터명)",
+            paramType:"STRING",
+            autoValueType:"DEFAULT",
+            inOut:"IN"
+        });
+    }
+
+    function extractSqlParamNames() {
+        const query = sqlEditor.getValue();
+        const regex = /#\{\s*([a-zA-Z0-9_]+)\s*\}/g;
+
+        const foundNames = [];
+        let match;
+        while ((match = regex.exec(query)) !== null) {
+            if (!foundNames.includes(match[1])) {
+                foundNames.push(match[1]);
+            }
+        }
+        return foundNames;
+    }
+
+    function autoAddParameters() {
+        const foundNames = extractSqlParamNames();
+
+        const keptData = queryParameterGrid.getData().filter(row => foundNames.includes(row.paramName));
+        const keptNames = keptData.map(row => row.paramName);
+
+        for (const paramName of foundNames) {
+            if (!keptNames.includes(paramName)) {
+                keptData.push({
+                    paramName: paramName,
+                    paramType: "STRING",
+                    autoValueType: "DEFAULT",
+                    inOut: "IN"
+                });
+            }
+        }
+
+        queryParameterGrid.setData(keptData);
+    }
+
+    function syncExecuteParams() {
+        const foundNames = extractSqlParamNames();
+
+        const keptData = executeGrid.getData().filter(row => foundNames.includes(row.key));
+        const keptKeys = keptData.map(row => row.key);
+
+        for (const paramName of foundNames) {
+            if (!keptKeys.includes(paramName)) {
+                keptData.push({
+                    key: paramName,
+                    value: ""
+                });
+            }
+        }
+
+        executeGrid.setData(keptData);
+    }
+
+    function initCodeEditor(id,mode) {
+        let textarea = document.getElementById(id);
+
+        return CodeMirror.fromTextArea(textarea, {
+            lineNumbers: true,
+            lineWrapping: true,
+            theme: "darcula",
+            mode: mode,
+            val: textarea.value
+        });
+    }
+
+    function setDatSourceAsDatabase() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/datasource/database`, {},
+            function(response){
+                let codes = new Array();
+                for(let i=0; i<response.length; i++) {
+                    codes.push({code:response[i].dataSourceName,name:response[i].displayName});
+                }
+
+                App.util.setCodeBox("query-dataSourceName", codes, {useFirstItem:true, firstItemLabel:'선택', firstItemValue:''});
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function execute() {
+        let executeTarget = $("#query-queryName").val();
+
+        let contents = {};
+        const gridData = executeGrid.getData();
+
+        for(const data of gridData) {
+            if(data.value == "null") {
+                contents[data.key] = null;
+            }
+            else {
+                contents[data.key] = data.value;
+            }
+        }
+
+        httpClient.get(`/${APPLICATION_ID}/console/api/query/${executeTarget}/execute`,contents,
+            function(response){
+                $("#responseData").val(JSON.stringify(response,null,3));
+            },
+            function(error){
+                $("#responseData").val(JSON.stringify(error.responseJSON,null,3));
+            }
+        );
+
+    }
+
+    function copyResult() {
+        const text = $("#responseData").val();
+        if (!text) return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text);
+        } else {
+            const $textarea = $("#responseData");
+            $textarea.trigger('select');
+            document.execCommand('copy');
+        }
+    }
+
+    function getQuery(functionName) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/query`, {queryName:`${functionName}`},
+            function(response){
+                let data = response[0];
+                if(data) {
+                    setQueryContent(data);
+                    queryParameterGrid.setData(data.queryParams);
+                }
+                else {
+                    setQueryContent({
+                        id:'',
+                        queryName:functionName,
+                        displayName:'',
+                        dataSourceName:'',
+                        query:'',
+                    });
+                    queryParameterGrid.setData([]);
+                }
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function getQueryContent() {
+        return {
+            id: $("#query-id").val(),
+            queryName: $("#query-queryName").val(),
+            displayName: $("#query-displayName").val(),
+            dataSourceName: $("#query-dataSourceName").val(),
+            query: sqlEditor.getValue()
+        }
+    }
+
+    function setQueryContent(params) {
+        $("#query-id").val(params.id);
+        $("#query-queryName").val(params.queryName);
+        $("#query-displayName").val(params.displayName);
+        $("#query-dataSourceName").val(params.dataSourceName);
+        sqlEditor.setValue(params.query);
+    }
+
+    function save() {
+        httpClient.post(`/${APPLICATION_ID}/console/api/query/save`,{},
+            {
+                query:getQueryContent(),
+                queryParams:queryParameterGrid.getData()
+            },
+            function(response){
+                alert("저장완료되었습니다.");
+                getQuery($("#query-queryName").val());
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function deleteQuery() {
+      let id = $("#query-id").val();
+
+      httpClient.delete(`/${APPLICATION_ID}/console/api/query/${id}`, {},
+          function(response){
+              alert("삭제 되었습니다.");
+              getQuery($("#query-queryName").val());
+          },
+          function(error){
+              alert('error');
+          }
+      );
+    }
+</script>
+<div id="wfsql-app" th:fragment="view">
+    <div class="wf-card">
+        <ul class="nav wf-tabs" id="detail-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="workflow-def-tab" data-toggle="pill" href="#workflow-def" role="tab" aria-controls="workflow-def" aria-selected="true">정의</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="execute-tab" data-toggle="pill" href="#execute" role="tab" aria-controls="execute" aria-selected="false">실행</a>
+            </li>
+        </ul>
+        <div class="tab-content wf-tab-content" id="detail-tabContent">
+
+            <div class="tab-pane fade show active" id="workflow-def" role="tabpanel" aria-labelledby="workflow-def-tab">
+                <div class="wf-tab-toolbar">
+                    <h4>SQL 정의</h4>
+                    <div class="wf-panel-tools">
+                        <button type="button" class="wf-btn wf-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                    </div>
+                </div>
+                <div class="wf-detail-body">
+                    <input type="hidden" id="query-id">
+
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                        <div class="wf-section-grid">
+                            <div class="form-group col-4">
+                                <label for="query-queryName">쿼리명</label>
+                                <input type="text" class="form-control" id="query-queryName" autocomplete="off" disabled>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="query-displayName">화면노출명</label>
+                                <input type="text" class="form-control" id="query-displayName" autocomplete="off">
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="query-dataSourceName">데이터소스</label>
+                                <select class="form-control" id="query-dataSourceName"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-database"></i><span>SQL</span></div>
+                        <div class="wf-section-body">
+                            <textarea id="query" name="query" style="display:none;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-list"></i><span>SQL 파라미터</span></div>
+                        <div class="wf-section-body">
+                            <div class="wf-table-toolbar">
+                                <button type="button" class="wf-btn" onclick="autoAddParameters()"><i class="fas fa-magic"></i>자동파라미터추가</button>
+                                <button type="button" class="wf-btn" onclick="newParameter()"><i class="fas fa-plus"></i>파라미터 추가</button>
+                            </div>
+                            <div class="wf-table-wrap" id="queryParameterGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="execute" role="tabpanel" aria-labelledby="execute-tab">
+                <div class="wf-tab-toolbar">
+                    <h4>실행 (정의 검증용)</h4>
+                    <div class="wf-panel-tools">
+                        <button type="button" class="wf-btn" onclick="executeGrid.addRow({})"><i class="fas fa-plus"></i>파라미터 추가</button>
+                        <button type="button" class="wf-btn wf-btn-success" onclick="execute()"><i class="fas fa-play"></i>실행</button>
+                    </div>
+                </div>
+                <div class="wf-detail-body">
+                    <div class="wf-section">
+                        <div class="wf-section-header"><i class="fas fa-sliders-h"></i><span>실행 파라미터</span></div>
+                        <div class="wf-section-body">
+                            <div class="wf-table-wrap" id="executeGrid"></div>
+                        </div>
+                    </div>
+                    <div class="wf-section">
+                        <div class="wf-section-header">
+                            <i class="fas fa-terminal"></i><span>실행 결과</span>
+                            <button type="button" class="wf-btn" style="margin-left:auto;" onclick="copyResult()"><i class="fas fa-copy"></i>복사</button>
+                        </div>
+                        <div class="wf-section-body">
+                            <textarea class="wf-console" id="responseData" rows="14" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</html>

@@ -12,7 +12,7 @@ class WorkflowClient {
 
         $.ajax({
             type: 'POST',
-            url: '/workflow',
+            url: `/${APPLICATION_ID}/workflow`,
             dataType: 'json',
             contentType: 'application/json; charset=utf8',
             data: JSON.stringify(requestMessage),

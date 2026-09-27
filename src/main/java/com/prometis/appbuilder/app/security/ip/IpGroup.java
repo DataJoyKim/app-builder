@@ -11,12 +11,15 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="IP_GROUP_UQ",columnNames={"groupCode"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="IP_GROUP_UQ",columnNames={"applicationId","groupCode"})})
 @Entity
 public class IpGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String groupCode;

@@ -1,0 +1,32 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="layout">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <div th:replace="~{/console/platform/layout/navbar::navbar-left}"></div>
+        <div th:replace="~{/console/platform/layout/navbar::navbar-right}"></div>
+    </nav>
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div th:replace="~{/console/platform/layout/sidebar::sidebar-logo}"></div>
+        <div th:replace="~{/console/platform/layout/sidebar::sidebar-menu}"></div>
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper iframe-mode" data-widget="iframe" data-loading-screen="750">
+        <div th:replace="~{/console/platform/layout/content::tab-header}"></div>
+        <div class="tab-content">
+            <div th:replace="~{/console/platform/layout/content::index-content}"></div>
+            <div th:replace="~{/console/platform/layout/content::tab-loading}"></div>
+        </div>
+    </div>
+    <!-- /.content-wrapper -->
+    <footer class="main-footer">
+        <div th:replace="~{/console/platform/layout/footer::footer}"></div>
+    </footer>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+    </aside>
+</div>

@@ -3,9 +3,9 @@ package com.prometis.appbuilder.app.workflow;
 import com.prometis.core.exception.ErrorMessage;
 
 public enum WorkflowErrorMessage implements ErrorMessage {
-    NOT_SETTING_AUTHORITY(500, "E-WORKFLOW-001", "권한 설정이 되어있지않습니다. 관리자에게 문의해주세요."),
-    NOT_HAS_AUTHORITIES(400, "E-WORKFLOW-002", "권한을 가지고있지않습니다."),
-    PERMISSION_DENIED(400, "E-WORKFLOW-003", "접근권한이 존재하지않습니다."),
+    NOT_SETTING_PERMISSION(500, "E-WORKFLOW-001", "권한 설정이 되어있지않습니다. 관리자에게 문의해주세요."),
+    NOT_HAS_PERMISSIONS(400, "E-WORKFLOW-002", "권한을 가지고있지않습니다."),
+    PERMISSION_DENIED(403, "E-WORKFLOW-003", "접근권한이 존재하지않습니다."),
     NOT_FOUND_WORKFLOW(404, "E-WORKFLOW-004", "워크플로우가 존재하지않습니다."),
     FAILURE_CONDITION_EVALUATE(500, "E-WORKFLOW-005", "조건분기 판정식 실행에 실패하였습니다."),
     EXCEED_MAX_EXECUTE_STEP(500, "E-WORKFLOW-006", "실행 단계가 너무 많습니다. 노드 연결이 순환되고있는지 확인해주세요."),
@@ -15,6 +15,8 @@ public enum WorkflowErrorMessage implements ErrorMessage {
     INVALID_MULTIPART_FILE_PART(400, "E-WORKFLOW-010", "업로드 파일은 'files' 파트로 보내주세요."),
     NOT_ALLOWED_IP(403, "E-WORKFLOW-011", "허용되지않은 IP 에서의 접근입니다."),
     NOT_ALLOWED_DOMAIN(403, "E-WORKFLOW-012", "허용되지않은 도메인에서의 접근입니다."),
+    NOT_FOUND_APP(404, "E-WORKFLOW-013", "애플리케이션이 존재하지않습니다."),
+    FAILED_AUTHENTICATION(401, "E-WORKFLOW-014", "인증 실패하였습니다."),
     ;
     private Integer status;
     private String errorCode;

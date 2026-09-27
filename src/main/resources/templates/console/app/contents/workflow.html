@@ -1,0 +1,485 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+</style>
+<script th:fragment="script">
+
+        $( document ).ready(function() {
+            init();
+        });
+
+        function init() {
+            let codes = {
+                "FunctionType":[
+                    {code:"ENTITY",name:"Entity"},
+                    {code:"SQL",name:"SQL"},
+                    {code:"REST_CLIENT",name:"Rest Client"}
+                ],
+                "YnCd":[
+                    {code:"true",name:"Y"},
+                    {code:"false",name:"N"}
+                ]
+            };
+
+            setCodes(codes);
+
+            grid.initSheet('jsGrid1', "100%","600px",
+            [
+                {name: "id", title:"ID", type: "number", width: 50 },
+                {name: "workflowCode", title:"workflow 명", type: "text", width: 150 },
+                {name: "displayName", title:"화면노출명", type: "text", width: 200 }
+            ],
+            function(args) {
+                selectedContent(args.item);
+                $("#validWorkflowCode").val(args.item.workflowCode);
+                grid.setSheetData('workflowExecute', [{"key":"_seq","value":"1"},{"key":"_status","value":"R"}]);
+            });
+
+            grid.initSheet('workflowNodeGrid', "100%","500px",
+            [
+                {name: "id", title:"ID", type: "number", width: 20, editing: false, inserting: false},
+                {name: "functionType", title:"type", type: "select", width: 50, items: codes["FunctionType"], valueField: "code", textField: "name" },
+                {name: "functionName", title:"function", type: "text", width: 100},
+                {name: "requestMessageId", title:"요청메시지ID", type: "text", width: 100},
+                {name: "responseMessageId", title:"응답메시지ID", type: "text", width: 100},
+                {name: "isLogging", title:"로깅", type: "checkbox", width: 50},
+                {name: "orderNum", title:"순서", type: "number", width: 30},
+                { type: "control", editButton: true, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                    insertWorkflowNode($("#id").val(), args.item);
+                },
+                onItemUpdated: function(args) {
+                    updateWorkflowNode($("#id").val(),args.item);
+                },
+                onItemDeleting: function(args) {
+                    deleteWorkflowNode($("#id").val(), args.item);
+                }
+            });
+
+            grid.initSheet('workflowExecute', "300px","300px",
+            [
+                {name: "key", title:"key", type: "text", width: 100},
+                {name: "value", title:"value", type: "text", width: 100},
+                { type: "control", editButton: false, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                },
+                onItemUpdated: function(args) {
+                },
+                onItemDeleting: function(args) {
+                }
+            });
+
+            grid.initSheet('workflowPermissionGrid', "100%","500px",
+            [
+                {name: "id", title:"ID", type: "number", width: 20, editing: false, inserting: false},
+                {name: "permissionCode", title:"권한코드", type: "text", width: 150},
+                { type: "control", editButton: true, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                    insertWorkflowPermission($("#id").val(), args.item);
+                },
+                onItemUpdated: function(args) {
+                    updateWorkflowPermission($("#id").val(),args.item);
+                },
+                onItemDeleting: function(args) {
+                    deleteWorkflowPermission($("#id").val(), args.item);
+                }
+            });
+
+            getWorkflow();
+        }
+
+        function setCodes(codes) {
+            App.util.setCodeBox("useAuthValidation", codes["YnCd"]);
+        }
+
+        function save() {
+            let id = $("#id").val();
+
+            if(isEmpty(id))
+                insertContent();
+            else
+                updateContent(id);
+        }
+
+        function getWorkflow() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/workflow`, {},
+                function(response){
+                    grid.setSheetData('jsGrid1', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function selectedContent(item) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/workflow/${item.id}`, {},
+                function(response){
+                    setContentData(response);
+                    getWorkflowNode(item.id);
+                    getWorkflowPermission(item.id);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertContent() {
+            httpClient.post(`/${APPLICATION_ID}/console/api/workflow`,{},getContent(),
+                function(response){
+                    alert("저장완료되었습니다.");
+                    getWorkflow();
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateContent(id) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/workflow/${id}`, {}, getContent(),
+              function(response){
+                  alert("저장완료되었습니다.");
+                  getWorkflow();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteContent() {
+          let id = $("#id").val();
+
+          httpClient.delete(`/${APPLICATION_ID}/console/api/workflow/${id}`, {},
+              function(response){
+                  alert("삭제 처리 완료되었습니다.");
+                  getWorkflow();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function setContentData(response) {
+            setContent({
+                id:response.id,
+                workflowCode:response.workflowCode,
+                displayName:response.displayName,
+                note:response.note,
+                useAuthValidation:String(response.useAuthValidation)
+              });
+        }
+
+        function getContent() {
+            return {
+                id: $("#id").val(),
+                workflowCode: $("#workflowCode").val(),
+                displayName: $("#displayName").val(),
+                note: $("#note").val(),
+                useAuthValidation:$("#useAuthValidation").val()
+            }
+        }
+
+        function setContent(params) {
+            $("#id").val(params.id);
+            $("#workflowCode").val(params.workflowCode);
+            $("#displayName").val(params.displayName);
+            $("#note").val(params.note);
+            $("#useAuthValidation").val(params.useAuthValidation);
+          }
+
+          function newContent(){
+            setContent({
+                id:'',
+                workflowCode:'',
+                displayName:'',
+                note:'',
+                useAuthValidation:''
+                });
+          }
+
+        function getWorkflowNode(workflowId) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/workflow-node`, {workflowId:workflowId},
+                function(response){
+                    grid.setSheetData('workflowNodeGrid', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertWorkflowNode(workflowId, item) {
+            httpClient.post(`/${APPLICATION_ID}/console/api/workflow-node`,{},
+                {
+                   workflowId:workflowId,
+                   functionName:item.functionName,
+                   functionType:item.functionType,
+                   orderNum:item.orderNum,
+                   isLogging:item.isLogging,
+                   requestMessageId:item.requestMessageId,
+                   responseMessageId:item.responseMessageId
+                },
+                function(response){
+                    alert("생성 완료되었습니다.");
+                    getWorkflowNode(workflowId);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateWorkflowNode(workflowId, item) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/workflow-node/${item.id}`, {},
+              {
+                   workflowId:workflowId,
+                   functionName:item.functionName,
+                   functionType:item.functionType,
+                   orderNum:item.orderNum,
+                   isLogging:item.isLogging,
+                   requestMessageId:item.requestMessageId,
+                   responseMessageId:item.responseMessageId
+              },
+              function(response){
+                  alert("변경 완료되었습니다.");
+                  getWorkflowNode(workflowId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteWorkflowNode(workflowId, item) {
+          httpClient.delete(`/${APPLICATION_ID}/console/api/workflow-node/${item.id}`, {},
+              function(response){
+                  alert("삭제 완료되었습니다.");
+                  getWorkflowNode(workflowId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function execute() {
+            let workflowCode = $("#validworkflowCode").val();
+            let requestMessageId = $("#requestMessageId").val();
+
+            let contents = {};
+            let gridData = grid.getSheetData("workflowExecute");
+            console.log('gridData',gridData);
+            for(let i=0; i<gridData.length; i++) {
+                let value = gridData[i]["value"];
+                if(value == "null") {
+                    contents[gridData[i]["key"]] = null;
+                }
+                else {
+                    contents[gridData[i]["key"]] = value;
+                }
+            }
+
+            let body = {};
+            body[requestMessageId] = contents;
+            console.log('body',body);
+
+            httpClient.post(`/${APPLICATION_ID}/workflow`,{},
+                {
+                   header:{workflowCode:workflowCode},
+                   body:body
+                },
+                function(response){
+                    $("#responseData").val(JSON.stringify(response,null,3));
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function getWorkflowPermission(workflowId) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/workflow-permission`, {workflowId:workflowId},
+                function(response){
+                    grid.setSheetData('workflowPermissionGrid', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertWorkflowPermission(workflowId, item) {
+            httpClient.post(`/${APPLICATION_ID}/console/api/workflow-permission`,{},
+                {
+                   workflowId:workflowId,
+                   permissionCode:item.permissionCode
+                },
+                function(response){
+                    alert("생성 완료되었습니다.");
+                    getWorkflowPermission(workflowId);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateWorkflowPermission(workflowId, item) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/workflow-permission/${item.id}`, {},
+              {
+                   workflowId:workflowId,
+                   permissionCode:item.permissionCode
+              },
+              function(response){
+                  alert("변경 완료되었습니다.");
+                  getWorkflowPermission(workflowId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteWorkflowPermission(workflowId, item) {
+          httpClient.delete(`/${APPLICATION_ID}/console/api/workflow-permission/${item.id}`, {},
+              function(response){
+                  alert("삭제 완료되었습니다.");
+                  getWorkflowPermission(workflowId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+    </script>
+<div th:fragment="view">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Workflow</h3>
+                    <div class="card-tools">
+                        <mf-action-button id="search" actionName="getWorkflow()" icon="fas fa-search"></mf-action-button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="jsGrid1"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <ul class="nav nav-tabs" id="workflow-tab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="workflow-detail-tab" data-toggle="pill" href="#workflow-detail" role="tab" aria-controls="workflow-detail" aria-selected="true">상세내용</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="workflow-access-control-tab" data-toggle="pill" href="#workflow-access-control" role="tab" aria-controls="workflow-access-control" aria-selected="false">접근제어</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="workflow-valid-tab" data-toggle="pill" href="#workflow-valid" role="tab" aria-controls="workflow-valid" aria-selected="false">실행</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="workflow-tabContent">
+                    <div class="tab-pane fade show active" id="workflow-detail" role="tabpanel" aria-labelledby="workflow-detail-tab">
+                        <div class="card-header">
+                            <h3 class="card-title">상세 내용</h3>
+                            <div class="card-tools">
+                                <mf-action-button id="new" actionName="newContent()" icon="fas fa-plus"></mf-action-button>
+                                <mf-action-button id="save" actionName="save()" icon="fas fa-save"></mf-action-button>
+                                <mf-action-button id="delete" actionName="deleteContent()" icon="fas fa-trash"></mf-action-button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <mf-text-input id="id" label="ID" enable="false"></mf-text-input>
+                                </div>
+                                <div class="col-md-3">
+                                    <mf-text-input id="workflowCode" label="workflow 명" enable="true"></mf-text-input>
+                                </div>
+                                <div class="col-md-3">
+                                    <mf-text-input id="displayName" label="화면 노출명" enable="true" ></mf-text-input>
+                                </div>
+                                <div class="col-md-1">
+                                    <mf-select id="useAuthValidation" label="인증사용" enable="true" useFirstItem="true" firstItemLabel="" firstItemValue=""></mf-select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <mf-text-input id="note" label="note" enable="true"></mf-text-input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="workflowNodeGrid"></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="workflow-access-control" role="tabpanel" aria-labelledby="workflow-access-control-tab">
+                        <div class="card-header">
+                            <h3 class="card-title">접근제어</h3>
+                            <div class="card-tools">
+                                <mf-action-button id="execute" actionName="execute()" icon="fas fa-check"></mf-action-button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="workflowPermissionGrid"></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="workflow-valid" role="tabpanel" aria-labelledby="workflow-valid-tab">
+                        <div class="card-header">
+                            <h3 class="card-title">실행</h3>
+                            <div class="card-tools">
+                                <mf-action-button id="execute" actionName="execute()" icon="fas fa-check"></mf-action-button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <mf-text-input id="validWorkflowCode" label="워크플로우 코드" enable="true"></mf-text-input>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <mf-text-input id="requestMessageId" label="요청메시지ID" enable="true" ></mf-text-input>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div id="workflowExecute"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>응답 데이터</label>
+                                        <textarea id="responseData"  rows="20" cols="100"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

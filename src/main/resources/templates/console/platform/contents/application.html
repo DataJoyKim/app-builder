@@ -1,0 +1,1039 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<style th:fragment="style">
+    #application-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #application-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #application-app .ds-list-panel,
+    #application-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #application-app .ds-list-panel {
+        flex: 0 0 380px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #application-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #application-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #application-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #application-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #application-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #application-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #application-app .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #application-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #application-app .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #application-app .ds-btn-danger {
+        color: #dc2626;
+    }
+
+    #application-app .ds-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    /* ---- 목록: ag-Grid 대신 검색+카드형 리스트로 직접 렌더링 ---- */
+    #application-app .ds-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #application-app .ds-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #application-app .ds-list-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #application-app .ds-list-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #application-app .ds-list-body {
+        max-height: 560px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #application-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #application-app .ds-list-item:hover {
+        background: #fafbfc;
+    }
+
+    #application-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #application-app .ds-list-item-avatar {
+        flex: 0 0 auto;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #eef5ff;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    #application-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #application-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #application-app .ds-list-item.selected .ds-list-item-name {
+        color: #1d4ed8;
+    }
+
+    #application-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #application-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #application-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    /* ---- 상세 설정 ---- */
+    #application-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    #application-app .ds-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    #application-app .ds-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #application-app .ds-section-header i {
+        color: #4A90E2;
+    }
+
+    #application-app .ds-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 0;
+    }
+
+    #application-app .ds-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #application-app .ds-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #application-app .ds-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #application-app .ds-section-grid .form-control:disabled {
+        background: #f8f9fa;
+        color: #6b7280;
+    }
+
+    #application-app .ds-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #application-app .ds-field-hint {
+        display: block;
+        margin-top: 4px;
+        font-size: 11px;
+        color: #9199a3;
+    }
+
+    /* ---- 애플리케이션ID → 서비스 경로 미리보기 ---- */
+    #application-app .ds-path-preview {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        margin-top: 6px;
+        padding: 6px 9px;
+        border: 1px dashed #d7dbe0;
+        border-radius: 7px;
+        background: #fbfbfc;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    #application-app .ds-path-preview > i {
+        flex: 0 0 auto;
+        color: #9199a3;
+        font-size: 11px;
+    }
+
+    #application-app .ds-path-url {
+        min-width: 0;
+        font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+        color: #6b7280;
+        word-break: break-all;
+    }
+
+    #application-app .ds-path-prefix {
+        font-weight: 700;
+        color: #1d4ed8;
+        background: #eef5ff;
+        border-radius: 4px;
+        padding: 0 3px;
+    }
+
+    #application-app .ds-path-preview.empty .ds-path-prefix {
+        font-weight: 400;
+        font-style: italic;
+        color: #9199a3;
+        background: transparent;
+        padding: 0;
+    }
+
+    #application-app .ds-path-preview.invalid {
+        border-color: #fca5a5;
+        background: #fef2f2;
+    }
+
+    #application-app .ds-path-preview.invalid .ds-path-prefix {
+        color: #dc2626;
+        background: #fee2e2;
+    }
+
+    #application-app .ds-field-hint.invalid {
+        color: #dc2626;
+    }
+
+    #application-app .ds-section-grid textarea.form-control {
+        resize: vertical;
+        min-height: 90px;
+    }
+
+    #application-app .ds-status {
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 999px;
+        letter-spacing: .02em;
+    }
+
+    #application-app .ds-status.active {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    #application-app .ds-status.inactive {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    #application-app .ds-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        background: #fff;
+    }
+
+    #application-app .ds-btn-primary:disabled {
+        background: #4A90E2;
+    }
+
+    #application-app .ds-tool-divider {
+        width: 1px;
+        height: 18px;
+        background: #e5e7eb;
+        margin: 0 2px;
+    }
+
+    /* ---- 애플리케이션 관리자 ---- */
+    #application-app .ds-section + .ds-section {
+        margin-top: 16px;
+    }
+
+    #application-app .ds-section-header .ds-section-tools {
+        margin-left: auto;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    #application-app .ds-admin-list .ds-list-item {
+        cursor: default;
+    }
+
+    #application-app .ds-admin-list .ds-list-item:hover {
+        background: transparent;
+    }
+
+    #application-app .ds-admin-list .ds-list-empty {
+        padding: 28px 16px;
+    }
+
+    #application-app .ds-role {
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: #eef5ff;
+        color: #1d4ed8;
+    }
+
+    /* ---- 관리자 생성 팝업 (사용자 검색) ---- */
+    #application-app .ds-modal .modal-content {
+        border: 0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #application-app .ds-modal .modal-header {
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #application-app .ds-modal .modal-title {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    #application-app .ds-modal-target {
+        padding: 8px 16px;
+        font-size: 12px;
+        color: #6b7280;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #application-app .ds-modal-target strong {
+        color: #1d4ed8;
+    }
+
+    #application-app .ds-modal .ds-list-body {
+        max-height: 360px;
+        min-height: 160px;
+    }
+
+    #application-app .ds-list-item.disabled {
+        cursor: not-allowed;
+        opacity: .55;
+    }
+
+    #application-app .ds-modal .modal-footer {
+        padding: 10px 16px;
+        border-top: 1px solid #eef0f2;
+        justify-content: space-between;
+    }
+
+    #application-app .ds-modal-hint {
+        font-size: 11.5px;
+        color: #9199a3;
+    }
+</style>
+<script th:fragment="script">
+        let APPLICATION_LIST = [];
+        let SELECTED_APPLICATION_ID = null;
+        // 서버에 저장된 상태의 선택 애플리케이션 (입력 중인 값이 아니라 저장된 applicationId 로 접속/관리자 지정을 한다)
+        let CURRENT_APPLICATION = null;
+        let ADMIN_LIST = [];
+        let ADMIN_USER_LIST = [];
+        let SELECTED_ADMIN_USER_ID = null;
+
+        const STATUS_LABEL = {
+            ACTIVE: '사용',
+            INACTIVE: '미사용'
+        };
+
+        // 서버(ApplicationIdPolicy)의 검증 규칙과 동일하게 유지
+        const APPLICATION_ID_PATTERN = /^[a-z0-9_-]+$/;
+        const APPLICATION_ID_HINT = "영문 소문자, 숫자, '_', '-'만 사용할 수 있습니다.";
+        // 예약 경로 목록은 서버에서 받아온다 (application.yml platform.application.reserved-ids)
+        let RESERVED_IDS = [];
+
+        $( document ).ready(function() {
+            console.log('version.0.0.1');
+            init();
+        });
+
+        function init() {
+            $("#adminUserModal").on('shown.bs.modal', function() {
+                $("#adminUserSearch").trigger('focus');
+            });
+
+            newContent();
+            getReservedIds();
+            getList();
+        }
+
+        function getReservedIds() {
+            httpClient.get(`/console/api/application/reserved-ids`, {},
+                function(response){
+                    RESERVED_IDS = response || [];
+                    renderPathPreview();
+                },
+                function(error){
+                    // 목록을 못 받아도 저장 시 서버에서 다시 검증하므로 화면 경고만 생략한다
+                    console.warn('reserved-ids load failed', error);
+                }
+            );
+        }
+
+        function getList() {
+            httpClient.get(`/console/api/application`, {},
+                function(response){
+                    APPLICATION_LIST = response || [];
+                    renderApplicationList($("#applicationSearch").val());
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function renderApplicationList(keyword) {
+            const kw = (keyword || '').trim().toLowerCase();
+            const filtered = APPLICATION_LIST.filter(function(item) {
+                if(!kw) return true;
+                return (item.applicationId || '').toLowerCase().includes(kw)
+                    || (item.name || '').toLowerCase().includes(kw);
+            });
+
+            const $body = $("#applicationListBody");
+            $body.empty();
+
+            if(filtered.length === 0) {
+                const $empty = $(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-cubes"></i>
+                        <span></span>
+                    </div>
+                `);
+                $empty.find('span').text(APPLICATION_LIST.length === 0 ? '등록된 애플리케이션이 없습니다.' : '검색 결과가 없습니다.');
+                $body.append($empty);
+                return;
+            }
+
+            for(const item of filtered) {
+                const initial = (item.name || item.applicationId || '?').trim().charAt(0).toUpperCase();
+                const $item = $(`
+                    <div class="ds-list-item" data-id="${item.id}">
+                        <span class="ds-list-item-avatar"></span>
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                        <span class="ds-status"></span>
+                    </div>
+                `);
+
+                $item.find('.ds-list-item-avatar').text(initial);
+                $item.find('.ds-list-item-name').text(item.name || item.applicationId);
+                $item.find('.ds-list-item-code').text(item.applicationId);
+                $item.find('.ds-status')
+                    .addClass(item.status === 'ACTIVE' ? 'active' : 'inactive')
+                    .text(STATUS_LABEL[item.status] || item.status || '-');
+
+                if(String(item.id) === String(SELECTED_APPLICATION_ID)) {
+                    $item.addClass('selected');
+                }
+
+                $item.on('click', function() {
+                    selectApplication(item.id);
+                });
+
+                $body.append($item);
+            }
+        }
+
+        function selectApplication(id) {
+            const item = APPLICATION_LIST.find(a => String(a.id) === String(id));
+            if(!item) return;
+
+            SELECTED_APPLICATION_ID = id;
+            $("#applicationListBody .ds-list-item").removeClass('selected');
+            $(`#applicationListBody .ds-list-item[data-id="${id}"]`).addClass('selected');
+
+            selectedContent(item);
+        }
+
+        function selectedContent(item) {
+            httpClient.get(`/console/api/application/${item.id}`, {},
+                function(response){
+                    setContent(response);
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function isEmpty(v) {
+            return (v == undefined || v == null || v == '');
+        }
+
+        function alertError(error) {
+            const message = error && error.responseJSON && error.responseJSON.message;
+            alert(message || 'error');
+        }
+
+        function save() {
+            let id = $("#id").val();
+
+            if(isEmpty(id))
+                insertContent();
+            else
+                updateContent(id);
+        }
+
+        function insertContent() {
+            httpClient.post(`/console/api/application`,{},getContent(),
+                function(response){
+                    alert("저장완료되었습니다.");
+                    SELECTED_APPLICATION_ID = response.id;
+                    setContent(response);
+                    getList();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function updateContent(id) {
+          httpClient.put(`/console/api/application/${id}`, {}, getContent(),
+              function(response){
+                  alert("저장완료되었습니다.");
+                  setContent(response);
+                  getList();
+              },
+              function(error){
+                  alertError(error);
+              }
+          );
+        }
+
+        function deleteContent() {
+          let id = $("#id").val();
+
+          if(isEmpty(id)) {
+              alert("삭제할 애플리케이션을 선택해주세요.");
+              return;
+          }
+
+          if(!confirm("선택한 애플리케이션을 삭제하시겠습니까?")) return;
+
+          httpClient.delete(`/console/api/application/${id}`, {},
+              function(response){
+                  alert("삭제 처리 완료되었습니다.");
+                  newContent();
+                  getList();
+              },
+              function(error){
+                  alertError(error);
+              }
+          );
+        }
+
+        function getContent() {
+            return {
+                id: $("#id").val(),
+                applicationId: $("#applicationId").val(),
+                name: $("#name").val(),
+                status: $("#status").val(),
+                description: $("#description").val()
+            }
+        }
+
+        function setContent(params) {
+            $("#id").val(params.id);
+            $("#applicationId").val(params.applicationId);
+            $("#name").val(params.name);
+            $("#status").val(params.status || 'ACTIVE');
+            $("#description").val(params.description);
+            renderPathPreview();
+
+            CURRENT_APPLICATION = isEmpty(params.id) ? null : params;
+            renderApplicationActions();
+            getAdminList();
+          }
+
+        // ---- 애플리케이션 / 애플리케이션 콘솔 접속 ----
+        function renderApplicationActions() {
+            const disabled = CURRENT_APPLICATION === null;
+            $("#openApplicationBtn, #openApplicationConsoleBtn, #openAdminModalBtn").prop('disabled', disabled);
+        }
+
+        function openApplication() {
+            if(CURRENT_APPLICATION === null) return;
+            window.open(`/${encodeURIComponent(CURRENT_APPLICATION.applicationId)}`, '_blank');
+        }
+
+        function openApplicationConsole() {
+            if(CURRENT_APPLICATION === null) return;
+            window.open(`/${encodeURIComponent(CURRENT_APPLICATION.applicationId)}/console`, '_blank');
+        }
+
+        // ---- 애플리케이션 관리자 ----
+        function getAdminList() {
+            if(CURRENT_APPLICATION === null) {
+                ADMIN_LIST = [];
+                renderAdminList();
+                return;
+            }
+
+            const applicationId = CURRENT_APPLICATION.id;
+            httpClient.get(`/console/api/application/${applicationId}/admin`, {},
+                function(response){
+                    // 응답 전에 다른 애플리케이션을 선택했으면 버린다
+                    if(CURRENT_APPLICATION === null || CURRENT_APPLICATION.id !== applicationId) return;
+
+                    ADMIN_LIST = response || [];
+                    renderAdminList();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function renderAdminList() {
+            const $body = $("#adminListBody");
+            $body.empty();
+
+            if(ADMIN_LIST.length === 0) {
+                const $empty = $(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-user-shield"></i>
+                        <span></span>
+                    </div>
+                `);
+                $empty.find('span').text(CURRENT_APPLICATION === null
+                    ? '애플리케이션을 저장한 뒤 관리자를 지정할 수 있습니다.'
+                    : '지정된 관리자가 없습니다.');
+                $body.append($empty);
+                return;
+            }
+
+            for(const item of ADMIN_LIST) {
+                const $item = $(`
+                    <div class="ds-list-item">
+                        <span class="ds-list-item-avatar"></span>
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                        <span class="ds-role">관리자</span>
+                    </div>
+                `);
+
+                const name = item.userName || item.loginId || `(삭제된 사용자 #${item.userId})`;
+                $item.find('.ds-list-item-avatar').text(name.trim().charAt(0).toUpperCase());
+                $item.find('.ds-list-item-name').text(name);
+                $item.find('.ds-list-item-code').text([item.loginId, item.email].filter(v => !isEmpty(v)).join(' · '));
+
+                $body.append($item);
+            }
+        }
+
+        function openAdminModal() {
+            if(CURRENT_APPLICATION === null) {
+                alert("관리자를 지정할 애플리케이션을 선택해주세요.");
+                return;
+            }
+
+            SELECTED_ADMIN_USER_ID = null;
+            ADMIN_USER_LIST = [];
+            $("#adminUserSearch").val('');
+            $("#adminModalTarget").text(`${CURRENT_APPLICATION.name} (${CURRENT_APPLICATION.applicationId})`);
+            renderAdminUserList('');
+            renderCreateAdminButton();
+
+            $("#adminUserModal").modal('show');
+
+            httpClient.get(`/console/api/user`, {},
+                function(response){
+                    ADMIN_USER_LIST = response || [];
+                    renderAdminUserList($("#adminUserSearch").val());
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function isAdmin(userId) {
+            return ADMIN_LIST.some(a => String(a.userId) === String(userId));
+        }
+
+        function renderAdminUserList(keyword) {
+            const kw = (keyword || '').trim().toLowerCase();
+            const filtered = ADMIN_USER_LIST.filter(function(item) {
+                if(!kw) return true;
+                return (item.loginId || '').toLowerCase().includes(kw)
+                    || (item.userName || '').toLowerCase().includes(kw)
+                    || (item.email || '').toLowerCase().includes(kw);
+            });
+
+            const $body = $("#adminUserListBody");
+            $body.empty();
+
+            if(filtered.length === 0) {
+                const $empty = $(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-user-slash"></i>
+                        <span></span>
+                    </div>
+                `);
+                $empty.find('span').text(ADMIN_USER_LIST.length === 0 ? '등록된 사용자가 없습니다.' : '검색 결과가 없습니다.');
+                $body.append($empty);
+                return;
+            }
+
+            for(const item of filtered) {
+                const alreadyAdmin = isAdmin(item.id);
+                const $item = $(`
+                    <div class="ds-list-item" data-id="${item.id}">
+                        <span class="ds-list-item-avatar"></span>
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                    </div>
+                `);
+
+                const name = item.userName || item.loginId || '?';
+                $item.find('.ds-list-item-avatar').text(name.trim().charAt(0).toUpperCase());
+                $item.find('.ds-list-item-name').text(name);
+                $item.find('.ds-list-item-code').text([item.loginId, item.email].filter(v => !isEmpty(v)).join(' · '));
+
+                if(alreadyAdmin) {
+                    $item.addClass('disabled').append('<span class="ds-role">이미 관리자</span>');
+                } else {
+                    if(String(item.id) === String(SELECTED_ADMIN_USER_ID)) {
+                        $item.addClass('selected');
+                    }
+
+                    $item.on('click', function() {
+                        selectAdminUser(item.id);
+                    });
+                }
+
+                $body.append($item);
+            }
+        }
+
+        function selectAdminUser(id) {
+            SELECTED_ADMIN_USER_ID = id;
+            $("#adminUserListBody .ds-list-item").removeClass('selected');
+            $(`#adminUserListBody .ds-list-item[data-id="${id}"]`).addClass('selected');
+            renderCreateAdminButton();
+        }
+
+        function renderCreateAdminButton() {
+            $("#createAdminBtn").prop('disabled', SELECTED_ADMIN_USER_ID === null);
+        }
+
+        function createAdmin() {
+            if(CURRENT_APPLICATION === null) return;
+
+            if(SELECTED_ADMIN_USER_ID === null) {
+                alert("관리자로 지정할 사용자를 선택해주세요.");
+                return;
+            }
+
+            httpClient.post(`/console/api/application/${CURRENT_APPLICATION.id}/admin`, {}, {userId: SELECTED_ADMIN_USER_ID},
+                function(response){
+                    alert("관리자로 지정되었습니다.");
+                    $("#adminUserModal").modal('hide');
+                    getAdminList();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        // applicationId는 서비스 경로의 prefix로 쓰인다 (예: ehr → https://test.domain.com/ehr)
+        function renderPathPreview() {
+            const applicationId = ($("#applicationId").val() || '').trim();
+            const isBlank = applicationId === '';
+
+            let error = null;
+            if(!isBlank && !APPLICATION_ID_PATTERN.test(applicationId)) {
+                error = /[A-Z]/.test(applicationId)
+                    ? `대문자는 사용할 수 없습니다. ${APPLICATION_ID_HINT}`
+                    : `사용할 수 없는 문자가 있습니다. ${APPLICATION_ID_HINT}`;
+            } else if(RESERVED_IDS.includes(applicationId)) {
+                error = `'${applicationId}'은(는) 시스템에서 사용하는 경로라 쓸 수 없습니다.`;
+            }
+
+            $("#applicationPathOrigin").text(`${window.location.origin}/`);
+            $("#applicationPathPrefix").text(isBlank ? '{applicationId}' : applicationId);
+
+            $("#applicationPathPreview")
+                .toggleClass('empty', isBlank)
+                .toggleClass('invalid', error !== null);
+
+            $("#applicationIdHint")
+                .toggleClass('invalid', error !== null)
+                .text(error || APPLICATION_ID_HINT);
+        }
+
+          function newContent(){
+            SELECTED_APPLICATION_ID = null;
+            $("#applicationListBody .ds-list-item").removeClass('selected');
+
+            setContent({
+                id:'',
+                applicationId:'',
+                name:'',
+                status:'ACTIVE',
+                description:''
+              });
+          }
+    </script>
+<div id="application-app" th:fragment="view">
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-cubes"></i> 애플리케이션 목록</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="getList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                </div>
+            </div>
+            <div class="ds-list-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="applicationSearch" placeholder="애플리케이션ID, 이름으로 검색" oninput="renderApplicationList(this.value)">
+            </div>
+            <div class="ds-list-body" id="applicationListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-cube"></i> 상세 내용</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" id="openApplicationBtn" onclick="openApplication()" title="애플리케이션 홈을 새 탭으로 엽니다" disabled><i class="fas fa-external-link-alt"></i>애플리케이션 접속</button>
+                    <button type="button" class="ds-btn" id="openApplicationConsoleBtn" onclick="openApplicationConsole()" title="애플리케이션 콘솔을 새 탭으로 엽니다" disabled><i class="fas fa-tools"></i>애플리케이션콘솔 접속</button>
+                    <span class="ds-tool-divider"></span>
+                    <button type="button" class="ds-btn" onclick="newContent()"><i class="fas fa-plus"></i>신규</button>
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                    <button type="button" class="ds-btn ds-btn-danger" onclick="deleteContent()"><i class="fas fa-trash"></i>삭제</button>
+                </div>
+            </div>
+
+            <div class="ds-detail-body">
+                <input type="hidden" id="id">
+
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                    <div class="ds-section-grid">
+                        <div class="form-group col-4">
+                            <label for="applicationId">애플리케이션ID</label>
+                            <input type="text" class="form-control" id="applicationId" autocomplete="off" placeholder="예: ehr" oninput="renderPathPreview()">
+                            <div class="ds-path-preview empty" id="applicationPathPreview" title="서비스 접속 경로">
+                                <i class="fas fa-link"></i>
+                                <span class="ds-path-url"><span id="applicationPathOrigin"></span><span class="ds-path-prefix" id="applicationPathPrefix">{applicationId}</span></span>
+                            </div>
+                            <span class="ds-field-hint" id="applicationIdHint">영문 소문자, 숫자, '_', '-'만 사용할 수 있습니다.</span>
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="name">애플리케이션명</label>
+                            <input type="text" class="form-control" id="name" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="status">상태</label>
+                            <select class="form-control" id="status">
+                                <option value="ACTIVE">사용 (ACTIVE)</option>
+                                <option value="INACTIVE">미사용 (INACTIVE)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-12">
+                            <label for="description">설명</label>
+                            <textarea class="form-control" id="description" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ds-section">
+                    <div class="ds-section-header">
+                        <i class="fas fa-user-shield"></i><span>애플리케이션 관리자</span>
+                        <div class="ds-section-tools">
+                            <button type="button" class="ds-btn ds-btn-primary" id="openAdminModalBtn" onclick="openAdminModal()" disabled><i class="fas fa-user-plus"></i>관리자생성</button>
+                        </div>
+                    </div>
+                    <div class="ds-admin-list" id="adminListBody"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal fade ds-modal" id="adminUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> 관리자 생성</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="ds-modal-target">대상 애플리케이션: <strong id="adminModalTarget"></strong></div>
+                <div class="ds-list-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="adminUserSearch" placeholder="로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderAdminUserList(this.value)">
+                </div>
+                <div class="ds-list-body" id="adminUserListBody"></div>
+                <div class="modal-footer">
+                    <span class="ds-modal-hint">이미 애플리케이션 사용자면 권한이 관리자로 변경됩니다.</span>
+                    <div class="ds-panel-tools">
+                        <button type="button" class="ds-btn" data-dismiss="modal">취소</button>
+                        <button type="button" class="ds-btn ds-btn-primary" id="createAdminBtn" onclick="createAdmin()" disabled><i class="fas fa-check"></i>생성</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

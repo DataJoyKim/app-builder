@@ -25,8 +25,8 @@ public class RestApiDocumentService {
     private final WorkflowNodeRepository workflowNodeRepository;
     private final WorkflowErrorResponseRepository workflowErrorResponseRepository;
 
-    public Map<String, Object> document() {
-        List<RestApi> restApis = new ArrayList<>(restApiRepository.findAll());
+    public Map<String, Object> document(String applicationId) {
+        List<RestApi> restApis = new ArrayList<>(restApiRepository.findByApplicationId(applicationId));
         restApis.sort(Comparator
                 .comparing(RestApi::getPath, Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparing(api -> api.getHttpMethod() == null ? 0 : api.getHttpMethod().ordinal()));
@@ -37,7 +37,8 @@ public class RestApiDocumentService {
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("urlPrefix", RestApi.URL_PREFIX);
+        // 실제 호출 주소의 앞부분. 경로변수 등 API 경로(path)는 이 뒤에 붙는다.
+        result.put("urlPrefix", "/" + applicationId + RestApi.URL_PREFIX);
         result.put("apis", apis);
         result.put("commonErrors", commonErrors());
 
@@ -49,7 +50,7 @@ public class RestApiDocumentService {
         document.put("restApi", restApi);
         document.put("parameters", restApiParameterRepository.findByRestApiIdOrderByOrderNum(restApi.getId()));
 
-        Optional<Workflow> workflow = workflowRepository.findByWorkflowCode(restApi.getWorkflowCode());
+        Optional<Workflow> workflow = workflowRepository.findByApplicationIdAndWorkflowCode(restApi.getApplicationId(), restApi.getWorkflowCode());
         if(workflow.isEmpty()) {
             document.put("workflow", null);
             document.put("responseMessageIds", List.of());
@@ -82,8 +83,8 @@ public class RestApiDocumentService {
     /**
      * 워크플로우가 성공 응답의 contents 에 담을 수 있는 응답메시지ID. 콘솔의 응답 설정에서 고를 수 있게 보여준다.
      */
-    public List<String> responseMessageIdsOf(String workflowCode) {
-        return workflowRepository.findByWorkflowCode(workflowCode)
+    public List<String> responseMessageIdsOf(String applicationId, String workflowCode) {
+        return workflowRepository.findByApplicationIdAndWorkflowCode(applicationId, workflowCode)
                 .map(this::responseMessageIdsOf)
                 .orElse(List.of());
     }

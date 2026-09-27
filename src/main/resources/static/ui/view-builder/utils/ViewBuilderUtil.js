@@ -13,7 +13,7 @@ class ViewBuilderUtil {
                 window.location.reload();
             },
             share: function () {
-                const url = location.origin + "/pages/" + App.objectCode;
+                const url = location.origin + "/" + APPLICATION_ID + "/pages/" + App.objectCode;
 
                 navigator.clipboard.writeText(url)
                     .then(() => {

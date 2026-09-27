@@ -1,0 +1,337 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #layout-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #layout-app .ds-detail-panel {
+        max-width: 900px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #layout-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #layout-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #layout-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #layout-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #4A90E2;
+        background: #4A90E2;
+        color: #fff;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #layout-app .ds-btn:hover {
+        background: #3d7fce;
+    }
+
+    #layout-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    #layout-app .ds-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    #layout-app .ds-section:last-child {
+        margin-bottom: 0;
+    }
+
+    #layout-app .ds-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #layout-app .ds-section-header i {
+        color: #4A90E2;
+    }
+
+    #layout-app .ds-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 0;
+    }
+
+    #layout-app .ds-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #layout-app .ds-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #layout-app .ds-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #layout-app .ds-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #layout-app .ds-color-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #layout-app .ds-color-input input[type="color"] {
+        width: 34px;
+        height: 30px;
+        padding: 2px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        background: #fff;
+        cursor: pointer;
+        flex: 0 0 auto;
+    }
+</style>
+<script th:fragment="script">
+        $( document ).ready(function() {
+            console.log('version.0.0.1');
+            init();
+        });
+
+        function init() {
+            var codes = {
+                "Boolean":[
+                    {code:"true",name:"true"},
+                    {code:"false",name:"false"}
+                ]
+            };
+
+            setCodes(codes);
+
+            getList();
+        }
+
+        function setCodes(codes) {
+            App.util.setCodeBox("useAuthValidation", codes["Boolean"]);
+            App.util.setCodeBox("useProfile", codes["Boolean"]);
+            App.util.setCodeBox("useLogo", codes["Boolean"]);
+        }
+
+        function getList() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/layout`, {},
+                function(response){
+                    if(!isEmpty(response)) {
+                        setContentData(response[0]);
+                    }
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function isEmpty(v) {
+            return (v == undefined || v == null || v == '');
+        }
+
+        function save() {
+            let id = $("#id").val();
+
+            if(isEmpty(id))
+                insertContent();
+            else
+                updateContent(id);
+        }
+
+        function insertContent() {
+            httpClient.post(`/${APPLICATION_ID}/console/api/layout`,{},getContent(),
+                function(response){
+                    alert("저장완료되었습니다.");
+                    getList();
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateContent(id) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/layout/${id}`, {}, getContent(),
+              function(response){
+                  alert("저장완료되었습니다.");
+                  getList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteContent() {
+          let id = $("#id").val();
+
+          httpClient.delete(`/${APPLICATION_ID}/console/api/layout/${id}`, {},
+              function(response){
+                  alert("삭제 처리 완료되었습니다.");
+                  getList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function setContentData(response) {
+            setContent(response);
+        }
+
+        function getContent() {
+            return {
+                id: $("#id").val(),
+                useAuthValidation: $("#useAuthValidation").val(),
+                useProfile: $("#useProfile").val(),
+                useLogo: $("#useLogo").val(),
+                logoText: $("#logoText").val(),
+                logoBackgroundColor: $("#logoBackgroundColor").val(),
+                logoLink: $("#logoLink").val(),
+                logoImg: $("#logoImg").val(),
+                layoutTitle: $("#layoutTitle").val(),
+                homeObjectCode: $("#homeObjectCode").val()
+            }
+        }
+
+        function setContent(params) {
+            $("#id").val(params.id);
+            $("#useAuthValidation").val(String(params.useAuthValidation));
+            $("#useProfile").val(String(params.useProfile));
+            $("#useLogo").val(String(params.useLogo));
+            $("#logoText").val(params.logoText);
+            $("#logoBackgroundColor").val(params.logoBackgroundColor);
+            $("#logoColorPicker").val(params.logoBackgroundColor || '#4A90E2');
+            $("#logoLink").val(params.logoLink);
+            $("#logoImg").val(params.logoImg);
+            $("#layoutTitle").val(params.layoutTitle);
+            $("#homeObjectCode").val(params.homeObjectCode);
+          }
+    </script>
+<div id="layout-app" th:fragment="view">
+    <div class="ds-detail-panel">
+        <div class="ds-panel-header">
+            <h3><i class="fas fa-window-maximize"></i> Layout 설정</h3>
+            <button type="button" class="ds-btn" onclick="save()"><i class="fas fa-save"></i>저장</button>
+        </div>
+
+        <div class="ds-detail-body">
+            <input type="hidden" id="id">
+
+            <div class="ds-section">
+                <div class="ds-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                <div class="ds-section-grid">
+                    <div class="form-group col-6">
+                        <label for="layoutTitle">레이아웃 title</label>
+                        <input type="text" class="form-control" id="layoutTitle" autocomplete="off">
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="homeObjectCode">Home 오브젝트코드</label>
+                        <input type="text" class="form-control" id="homeObjectCode" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-section">
+                <div class="ds-section-header"><i class="fas fa-shield-alt"></i><span>인증 / 화면 요소</span></div>
+                <div class="ds-section-grid">
+                    <div class="form-group col-4">
+                        <label for="useAuthValidation">인증사용</label>
+                        <select class="form-control" id="useAuthValidation"></select>
+                    </div>
+                    <div class="form-group col-4">
+                        <label for="useProfile">프로필사용</label>
+                        <select class="form-control" id="useProfile"></select>
+                    </div>
+                    <div class="form-group col-4">
+                        <label for="useLogo">로고사용</label>
+                        <select class="form-control" id="useLogo"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-section">
+                <div class="ds-section-header"><i class="fas fa-image"></i><span>로고</span></div>
+                <div class="ds-section-grid">
+                    <div class="form-group col-3">
+                        <label for="logoBackgroundColor">로고 색상</label>
+                        <div class="ds-color-input">
+                            <input type="color" id="logoColorPicker" onchange="$('#logoBackgroundColor').val(this.value)">
+                            <input type="text" class="form-control" id="logoBackgroundColor" autocomplete="off" oninput="$('#logoColorPicker').val(this.value)">
+                        </div>
+                    </div>
+                    <div class="form-group col-3">
+                        <label for="logoText">로고 텍스트</label>
+                        <input type="text" class="form-control" id="logoText" autocomplete="off">
+                    </div>
+                    <div class="form-group col-3">
+                        <label for="logoLink">로고 link</label>
+                        <input type="text" class="form-control" id="logoLink" autocomplete="off">
+                    </div>
+                    <div class="form-group col-3">
+                        <label for="logoImg">로고 img</label>
+                        <input type="text" class="form-control" id="logoImg" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

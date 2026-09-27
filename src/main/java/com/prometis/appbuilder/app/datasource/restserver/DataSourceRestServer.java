@@ -15,12 +15,15 @@ import org.springframework.web.client.RestClient;
 @AllArgsConstructor
 @Builder
 @Getter
-@Table(uniqueConstraints = {@UniqueConstraint(name="DATA_SOURCE_REST_SERVER_UQ",columnNames={"DATA_SOURCE_NAME"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="DATA_SOURCE_REST_SERVER_UQ",columnNames={"APPLICATION_ID","DATA_SOURCE_NAME"})})
 @Entity
 public class DataSourceRestServer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String dataSourceName;

@@ -35,8 +35,8 @@ public class FileService {
 
     private final FileHandlerRepository fileHandlerRepository;
 
-    public FileResult execute(String handlerName, FileRequest request) {
-        Optional<FileHandler> handlerOptional = fileHandlerRepository.findByHandlerName(handlerName);
+    public FileResult execute(String applicationId, String handlerName, FileRequest request) {
+        Optional<FileHandler> handlerOptional = fileHandlerRepository.findByApplicationIdAndHandlerName(applicationId, handlerName);
 
         if(handlerOptional.isEmpty()) {
             return FileResult.failure("요청한 리소스가 존재하지않습니다. [code:" + handlerName + "]");
@@ -46,7 +46,7 @@ public class FileService {
         Map<String, Object> params = (request.getParams() == null) ? Map.of() : request.getParams();
 
         try {
-            FileStorage fileStorage = DataSourceFileStorageRegister.getDataSource(LookupKey.generateKey(handler.getDataSourceName()));
+            FileStorage fileStorage = DataSourceFileStorageRegister.getDataSource(LookupKey.generateKey(handler.getApplicationId(), handler.getDataSourceName()));
 
             if(fileStorage == null) {
                 throw new FileStorageException("등록되지않은 파일저장소 데이터소스입니다. [" + handler.getDataSourceName() + "]");

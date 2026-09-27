@@ -1,0 +1,668 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+</style>
+<script th:fragment="script">
+        let exeResponseDataEditor, exeBodyJsonEditor;
+
+        $( document ).ready(function() {
+            init();
+        });
+
+        function setCodeBoxDataSource() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/datasource/rest-server`, {},
+                function(response){
+                    let codes = new Array();
+                    for(let i=0; i<response.length; i++) {
+                        codes.push({code:response[i].dataSourceName,name:response[i].displayName});
+                    }
+
+                     App.util.setCodeBox("dataSourceName", codes);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function init() {
+            setCodeBoxDataSource();
+
+            let codes = {
+                "Method":[
+                    {code:"GET",name:"GET"},
+                    {code:"POST",name:"POST"},
+                    {code:"PUT",name:"PUT"},
+                    {code:"DELETE",name:"DELETE"}
+                ],
+                "ContentType":[
+                    {code:"APPLICATION_JSON",name:"application/json"},
+                    {code:"APPLICATION_FORM_URLENCODED",name:"application/x-www-form-urlencoded"},
+                    {code:"TEXT_PLAIN",name:"text/plain"}
+                ],
+                "BodyMessageFormat":[
+                    {code:"ARRAY",name:"Array"},
+                    {code:"OBJECT",name:"Object"}
+                ],
+                "DataType":[
+                    {code:"STRING",name:"String"},
+                    {code:"NUMBER",name:"Number"},
+                    {code:"BOOLEAN",name:"Boolean"},
+                    {code:"OBJECT",name:"Object"},
+                    {code:"ARRAY",name:"Array"}
+                ],
+                "AutoValueType":[
+                    {code:"DEFAULT",name:"기본"},
+                    {code:"STATIC_VALUE",name:"static 값"},
+                    {code:"RESERVED_WORD",name:"예약어"}
+                ]
+            };
+
+             App.util.setCodeBox("method", codes["Method"]);
+             App.util.setCodeBox("contentType", codes["ContentType"]);
+             App.util.setCodeBox("bodyMessageFormat", codes["BodyMessageFormat"]);
+
+            setListGrid(codes);
+            setContentGrid(codes);
+            setExecuteGrid(codes);
+
+            getRestClient();
+        }
+
+         document.addEventListener("DOMContentLoaded", function () {
+            exeBodyJsonEditor = initJsonEditor("exeBodyJson");
+            exeResponseDataEditor = initJsonEditor("responseData");
+
+            setTimeout(() => exeBodyJsonEditor.refresh(), 300);
+            setTimeout(() => exeResponseDataEditor.refresh(), 300);
+         });
+
+        function setListGrid(codes) {
+            grid.initSheet('jsGrid1', "100%","600px",
+            [
+                {name: "id", title:"ID", type: "number", width: 50 },
+                {name: "clientName", title:"client 명", type: "text", width: 150 },
+                {name: "displayName", title:"화면노출명", type: "text", width: 200 }
+            ],
+            function(args) {
+                selectedContent(args.item);
+            });
+
+        }
+
+        function setContentGrid(codes) {
+            grid.initSheet('queryParamsGrid', "100%","500px",
+            [
+                {name: "id", title:"ID", type: "number", width: 20, editing: false, inserting: false},
+                {name: "paramName", title:"파라미터명", type: "text", width: 100},
+                {name: "autoValueType", title:"자동값 유형", type: "select", width: 50, items: codes["AutoValueType"], valueField: "code", textField: "name" },
+                {name: "autoValue", title:"자동값", type: "text", width: 100},
+                { type: "control", editButton: true, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                    insertQueryParam($("#id").val(), args.item);
+                },
+                onItemUpdated: function(args) {
+                    updateQueryParam($("#id").val(),args.item);
+                },
+                onItemDeleting: function(args) {
+                    deleteQueryParam($("#id").val(), args.item);
+                }
+            });
+
+            grid.initSheet('headersGrid', "100%","500px",
+            [
+                {name: "id", title:"ID", type: "number", width: 20, editing: false, inserting: false},
+                {name: "name", title:"key", type: "text", width: 100},
+                {name: "headerValue", title:"value", type: "text", width: 100},
+                { type: "control", editButton: true, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                    insertHeader($("#id").val(), args.item);
+                },
+                onItemUpdated: function(args) {
+                    updateHeader($("#id").val(),args.item);
+                },
+                onItemDeleting: function(args) {
+                    deleteHeader($("#id").val(), args.item);
+                }
+            });
+
+            grid.initSheet('bodyGrid', "100%","500px",
+            [
+                {name: "id", title:"ID", type: "number", width: 20, editing: false, inserting: false},
+                {name: "paramName", title:"파라미터명", type: "text", width: 100},
+                {name: "parentParamName", title:"부모 파라미터명", type: "text", width: 100},
+                {name: "dataType", title:"데이터유형", type: "select", width: 50, items: codes["DataType"], valueField: "code", textField: "name" },
+                {name: "autoValueType", title:"자동값 유형", type: "select", width: 50, items: codes["AutoValueType"], valueField: "code", textField: "name" },
+                {name: "autoValue", title:"자동값", type: "text", width: 100},
+                {name: "orderNum", title:"순서", type: "number", width: 30},
+                { type: "control", editButton: true, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                    insertBody($("#id").val(), args.item);
+                },
+                onItemUpdated: function(args) {
+                    updateBody($("#id").val(),args.item);
+                },
+                onItemDeleting: function(args) {
+                    deleteBody($("#id").val(), args.item);
+                }
+            });
+        }
+
+        function setExecuteGrid(codes) {
+
+            grid.initSheet('exeParamsGrid', "300px","300px",
+            [
+                {name: "key", title:"key", type: "text", width: 100},
+                {name: "value", title:"value", type: "text", width: 100},
+                { type: "control", editButton: false, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                },
+                onItemUpdated: function(args) {
+                },
+                onItemDeleting: function(args) {
+                }
+            });
+        }
+
+        function save() {
+            let id = $("#id").val();
+
+            if(isEmpty(id))
+                insertContent();
+            else
+                updateContent(id);
+        }
+
+        function getRestClient() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/rest-client`, {},
+                function(response){
+                    grid.setSheetData('jsGrid1', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function selectedContent(item) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/rest-client/${item.id}`, {},
+                function(response){
+                    setContentData(response);
+                    getQueryParam(item.id);
+                    getHeader(item.id);
+                    getBody(item.id);
+                    $("#exeClientName").val(item.clientName);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertContent() {
+            httpClient.post(`/${APPLICATION_ID}/console/api/rest-client`,{},getContent(),
+                function(response){
+                    alert("저장완료되었습니다.");
+                    getRestClient();
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateContent(id) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/rest-client/${id}`, {}, getContent(),
+              function(response){
+                  alert("저장완료되었습니다.");
+                  getRestClient();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteContent() {
+          let id = $("#id").val();
+
+          httpClient.delete(`/${APPLICATION_ID}/console/api/rest-client/${id}`, {},
+              function(response){
+                  alert("삭제 처리 완료되었습니다.");
+                  getRestClient();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function setContentData(response) {
+            setContent({
+                id:response.id,
+                clientName:response.clientName,
+                displayName:response.displayName,
+                dataSourceName:response.dataSourceName,
+                method:response.method,
+                path:response.path,
+                contentType:response.contentType,
+                bodyMessageFormat:response.bodyMessageFormat
+              });
+        }
+
+        function getContent() {
+            return {
+                id: $("#id").val(),
+                clientName: $("#clientName").val(),
+                displayName: $("#displayName").val(),
+                dataSourceName: $("#dataSourceName").val(),
+                method: $("#method").val(),
+                path: $("#path").val(),
+                contentType: $("#contentType").val(),
+                bodyMessageFormat: $("#bodyMessageFormat").val()
+            }
+        }
+
+        function setContent(params) {
+            $("#id").val(params.id);
+            $("#clientName").val(params.clientName);
+            $("#displayName").val(params.displayName);
+            $("#dataSourceName").val(params.dataSourceName);
+            $("#method").val(params.method);
+            $("#path").val(params.path);
+            $("#contentType").val(params.contentType);
+            $("#bodyMessageFormat").val(params.bodyMessageFormat);
+          }
+
+          function newContent(){
+            setContent({
+                id:'',
+                clientName:'',
+                displayName:'',
+                dataSourceName:'',
+                method:'',
+                path:'',
+                contentType:'',
+                bodyMessageFormat:''
+                });
+          }
+
+        function getQueryParam(clientId) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/rest-client/query-param/${clientId}`, {},
+                function(response){
+                    grid.setSheetData('queryParamsGrid', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertQueryParam(clientId, item) {
+            httpClient.post(`/${APPLICATION_ID}/console/api/rest-client/query-param`,{},
+                {
+                   clientId:clientId,
+                   paramName:item.paramName,
+                   autoValueType:item.autoValueType,
+                   autoValue:item.autoValue
+                },
+                function(response){
+                    alert("생성 완료되었습니다.");
+                    getQueryParam(clientId);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateQueryParam(clientId,item) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/rest-client/query-param/${item.id}`, {},
+              {
+                   paramName:item.paramName,
+                   autoValueType:item.autoValueType,
+                   autoValue:item.autoValue
+              },
+              function(response){
+                  alert("변경 완료되었습니다.");
+                  getQueryParam(clientId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteQueryParam(clientId, item) {
+          httpClient.delete(`/${APPLICATION_ID}/console/api/rest-client/query-param/${item.id}`, {},
+              function(response){
+                  alert("삭제 완료되었습니다.");
+                  getQueryParam(clientId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+
+        function getHeader(clientId) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/rest-client/header/${clientId}`, {},
+                function(response){
+                    grid.setSheetData('headersGrid', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertHeader(clientId, item) {
+            httpClient.post(`/${APPLICATION_ID}/console/api/rest-client/header`,{},
+                {
+                   clientId:clientId,
+                   name:item.name,
+                   headerValue:item.headerValue
+                },
+                function(response){
+                    alert("생성 완료되었습니다.");
+                    getHeader(clientId);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateHeader(clientId,item) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/rest-client/header/${item.id}`, {},
+              {
+                   name:item.name,
+                   headerValue:item.headerValue
+              },
+              function(response){
+                  alert("변경 완료되었습니다.");
+                  getHeader(clientId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteHeader(clientId, item) {
+          httpClient.delete(`/${APPLICATION_ID}/console/api/rest-client/header/${item.id}`, {},
+              function(response){
+                  alert("삭제 완료되었습니다.");
+                  getHeader(clientId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+
+        function getBody(clientId) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/rest-client/body/${clientId}`, {},
+                function(response){
+                    grid.setSheetData('bodyGrid', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertBody(clientId, item) {
+            httpClient.post(`/${APPLICATION_ID}/console/api/rest-client/body`,{},
+                {
+                   clientId:clientId,
+                   paramName:item.paramName,
+                   parentParamName:item.parentParamName,
+                   dataType:item.dataType,
+                   autoValueType:item.autoValueType,
+                   orderNum:item.orderNum,
+                   autoValue:item.autoValue
+                },
+                function(response){
+                    alert("생성 완료되었습니다.");
+                    getBody(clientId);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateBody(clientId,item) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/rest-client/body/${item.id}`, {},
+              {
+                   paramName:item.paramName,
+                   parentParamName:item.parentParamName,
+                   dataType:item.dataType,
+                   autoValueType:item.autoValueType,
+                   orderNum:item.orderNum,
+                   autoValue:item.autoValue
+              },
+              function(response){
+                  alert("변경 완료되었습니다.");
+                  getBody(clientId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteBody(clientId, item) {
+          httpClient.delete(`/${APPLICATION_ID}/console/api/rest-client/body/${item.id}`, {},
+              function(response){
+                  alert("삭제 완료되었습니다.");
+                  getBody(clientId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function execute() {
+            let clientName = $("#exeClientName").val();
+
+            let contents = {};
+            let gridData = grid.getSheetData("exeParamsGrid");
+
+            for(let i=0; i<gridData.length; i++) {
+                let value = gridData[i]["value"];
+                if(value == "null") {
+                    contents[gridData[i]["key"]] = null;
+                }
+                else {
+                    contents[gridData[i]["key"]] = value;
+                }
+            }
+
+            let bodyJson = exeBodyJsonEditor.getValue();
+            if(bodyJson == '') {
+                bodyJson = null;
+            }
+
+            httpClient.post(`/${APPLICATION_ID}/console/api/rest-client/${clientName}/execute`,contents, bodyJson,
+                function(response){
+                    exeResponseDataEditor.setValue(JSON.stringify(response,null,3));
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function initJsonEditor(id) {
+            let textarea = document.getElementById(id);
+
+            return CodeMirror.fromTextArea(textarea, {
+                theme: "darcula", // 원하는 테마 적용
+                lineNumbers: true, // 라인 번호 표시
+                matchBrackets: true, // 괄호 자동 매칭
+                autoCloseBrackets: true, // 괄호 자동 닫기
+                mode: "application/json"
+            });
+        }
+    </script>
+<div th:fragment="view">
+    <div class="row">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Rest Client</h3>
+                        <div class="card-tools">
+                            <mf-action-button id="search" actionName="getRestClient()" icon="fas fa-search"></mf-action-button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="jsGrid1"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card">
+                    <ul class="nav nav-tabs" id="tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="detail-tab" data-toggle="pill" href="#detail" role="tab" aria-controls="detail" aria-selected="true">상세내용</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="valid-tab" data-toggle="pill" href="#valid" role="tab" aria-controls="valid" aria-selected="false">실행</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="service-tabContent">
+                        <div class="tab-pane fade show active" id="detail" role="tabpanel" aria-labelledby="detail-tab">
+                            <div class="card-header">
+                                <h3 class="card-title">상세 내용</h3>
+
+                                <div class="card-tools">
+                                    <mf-action-button id="new" actionName="newContent()" icon="fas fa-plus"></mf-action-button>
+                                    <mf-action-button id="save" actionName="save()" icon="fas fa-save"></mf-action-button>
+                                    <mf-action-button id="delete" actionName="deleteContent()" icon="fas fa-trash"></mf-action-button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-1">
+                                        <mf-text-input id="id" label="ID" enable="false"></mf-text-input>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <mf-text-input id="clientName" label="client 명" enable="true"></mf-text-input>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <mf-text-input id="displayName" label="화면 노출명" enable="true" ></mf-text-input>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <mf-select id="dataSourceName" label="dataSource" enable="true" useFirstItem="true" firstItemLabel="" firstItemValue=""></mf-select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <mf-select id="method" label="method" enable="true" useFirstItem="true" firstItemLabel="" firstItemValue=""></mf-select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <mf-text-input id="path" label="path" enable="true" ></mf-text-input>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <mf-select id="contentType" label="contentType" enable="true" useFirstItem="true" firstItemLabel="" firstItemValue=""></mf-select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <mf-select id="bodyMessageFormat" label="body 포맷" enable="true" useFirstItem="true" firstItemLabel="" firstItemValue=""></mf-select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-9 col-sm-10">
+                                        <div class="tab-content" id="vert-tabs-right-tabContent">
+                                            <div class="tab-pane fade show active" id="queryParams" role="tabpanel" aria-labelledby="queryParams-tab">
+                                                <div id="queryParamsGrid"></div>
+                                            </div>
+                                            <div class="tab-pane fade" id="headers" role="tabpanel" aria-labelledby="headers-tab">
+                                                <div id="headersGrid"></div>
+                                            </div>
+                                            <div class="tab-pane fade" id="body" role="tabpanel" aria-labelledby="body-tab">
+                                                <div id="bodyGrid"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3 col-sm-2">
+                                        <div class="nav flex-column nav-tabs nav-tabs-right h-100" id="vert-tabs-right-tab" role="tablist" aria-orientation="vertical">
+                                            <a class="nav-link active" id="queryParams-tab" data-toggle="pill" href="#queryParams" role="tab" aria-controls="queryParams" aria-selected="true">Query Params</a>
+                                            <a class="nav-link" id="headers-tab" data-toggle="pill" href="#headers" role="tab" aria-controls="headers" aria-selected="false">Headers</a>
+                                            <a class="nav-link" id="body-tab" data-toggle="pill" href="#body" role="tab" aria-controls="body" aria-selected="false">Body</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="valid" role="tabpanel" aria-labelledby="valid-tab">
+                            <div class="card-header">
+                                <h3 class="card-title">실행</h3>
+                                <div class="card-tools">
+                                    <mf-action-button id="execute" actionName="execute()" icon="fas fa-check"></mf-action-button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <mf-text-input id="exeClientName" label="client 명" enable="true"></mf-text-input>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-9 col-sm-10">
+                                        <div class="tab-content" id="vert-tabs-right-tabContent2">
+                                            <div class="tab-pane fade show active" id="exeParams" role="tabpanel" aria-labelledby="exeParams-tab">
+                                                <div id="exeParamsGrid"></div>
+                                            </div>
+                                            <div class="tab-pane fade" id="exeBody" role="tabpanel" aria-labelledby="exeBody-tab">
+                                                <label>Request Body</label>
+                                                <textarea id="exeBodyJson"  rows="15" style="width:500px"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3 col-sm-2">
+                                        <div class="nav flex-column nav-tabs nav-tabs-right h-100" id="vert-tabs-right-tab2" role="tablist" aria-orientation="vertical">
+                                            <a class="nav-link active" id="exeParams-tab" data-toggle="pill" href="#exeParams" role="tab" aria-controls="exeParams" aria-selected="true">파라미터</a>
+                                            <a class="nav-link" id="exeBody-tab" data-toggle="pill" href="#exeBody" role="tab" aria-controls="exeBody" aria-selected="false">Body</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <label>응답 데이터</label>
+                                <textarea id="responseData"  rows="40"  style="width:500px"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>

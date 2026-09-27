@@ -12,7 +12,7 @@ public class DataSourceFileStorageValidator {
     public ConnectValidation validateConnect(DataSourceFileStorage metadata, Map<LookupKey, FileStorage> dataSourceMap) {
         ConnectValidation validate = new ConnectValidation();
 
-        LookupKey lookupKey = LookupKey.generateKey(metadata.getDataSourceName());
+        LookupKey lookupKey = LookupKey.generateKey(metadata.getApplicationId(), metadata.getDataSourceName());
 
         FileStorage fileStorage = dataSourceMap.get(lookupKey);
 

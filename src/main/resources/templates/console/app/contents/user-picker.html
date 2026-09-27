@@ -1,0 +1,229 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #user-picker-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #user-picker-app .ds-list-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+
+    #user-picker-app .ds-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #user-picker-app .ds-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #user-picker-app .ds-list-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #user-picker-app .ds-list-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #user-picker-app .ds-list-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    #user-picker-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #user-picker-app .ds-list-item:hover {
+        background: #eef5ff;
+    }
+
+    #user-picker-app .ds-list-item-avatar {
+        flex: 0 0 auto;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #eef5ff;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    #user-picker-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #user-picker-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #user-picker-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #user-picker-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #user-picker-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+</style>
+<script th:fragment="script">
+    let USER_PICKER_LIST = [];
+
+    $( document ).ready(function() {
+        init();
+    });
+
+    function init() {
+        getList();
+
+        $("#userPickerSearch").on('input', function() {
+            renderUserPickerList(this.value);
+        });
+
+        $("#userPickerSearch").trigger('focus');
+    }
+
+    function getList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/user`, {},
+            function(response){
+                USER_PICKER_LIST = response || [];
+                renderUserPickerList($("#userPickerSearch").val());
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderUserPickerList(keyword) {
+        const kw = (keyword || '').trim().toLowerCase();
+        const filtered = USER_PICKER_LIST.filter(function(item) {
+            if(!kw) return true;
+            return (item.loginId || '').toLowerCase().includes(kw)
+                || (item.userName || '').toLowerCase().includes(kw);
+        });
+
+        const $body = $("#userPickerListBody");
+        $body.empty();
+
+        if(filtered.length === 0) {
+            const $empty = $(`
+                <div class="ds-list-empty">
+                    <i class="fas fa-user-slash"></i>
+                    <span></span>
+                </div>
+            `);
+            $empty.find('span').text(USER_PICKER_LIST.length === 0 ? '등록된 사용자가 없습니다.' : '검색 결과가 없습니다.');
+            $body.append($empty);
+            return;
+        }
+
+        for(const item of filtered) {
+            const initial = (item.userName || item.loginId || '?').trim().charAt(0).toUpperCase();
+            const $item = $(`
+                <div class="ds-list-item" data-id="${item.id}">
+                    <span class="ds-list-item-avatar"></span>
+                    <div class="ds-list-item-main">
+                        <span class="ds-list-item-name"></span>
+                        <span class="ds-list-item-code"></span>
+                    </div>
+                </div>
+            `);
+
+            $item.find('.ds-list-item-avatar').text(initial);
+            $item.find('.ds-list-item-name').text(item.userName || item.loginId);
+            $item.find('.ds-list-item-code').text(item.loginId);
+
+            $item.on('click', function() {
+                selectUser(item.id);
+            });
+
+            $body.append($item);
+        }
+    }
+
+    function selectUser(id) {
+        const item = USER_PICKER_LIST.find(a => String(a.id) === String(id));
+        if(!item) return;
+
+        App.modalPopup.sendParamToParent('USER_PICKER_RESULT', {
+            id: item.id,
+            loginId: item.loginId,
+            userName: item.userName
+        });
+        App.modalPopup.close();
+    }
+</script>
+<div id="user-picker-app" th:fragment="view">
+    <div class="ds-list-panel">
+        <div class="ds-list-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="userPickerSearch" placeholder="로그인ID, 성명으로 검색" autocomplete="off">
+        </div>
+        <div class="ds-list-body" id="userPickerListBody"></div>
+    </div>
+</div>
+</html>

@@ -133,7 +133,7 @@ class Button extends ViewObject {
                 return;
             }
 
-            this.utils.modalPopup.open('/console/action',{title:'Action 팝업',messageId:'ACTION_REQUEST'},{objectCode:objectCode});
+            this.utils.modalPopup.open(`/${APPLICATION_ID}/console/action`,{title:'Action 팝업',messageId:'ACTION_REQUEST'},{objectCode:objectCode});
             this.utils.modalPopup.receiveParam('ACTION_RESULT', function(data){
                 if(data.actionName) {
                     optionPanel.setValue(data.actionName);

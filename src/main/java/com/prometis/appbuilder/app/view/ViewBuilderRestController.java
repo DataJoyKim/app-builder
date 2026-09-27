@@ -4,14 +4,14 @@ import com.prometis.appbuilder.app.code.CodeRequest;
 import com.prometis.appbuilder.app.code.CodeResponse;
 import com.prometis.appbuilder.app.code.CodeService;
 import com.prometis.appbuilder.app.code.CodeType;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
-import com.prometis.appbuilder.app.security.exception.SecurityBusinessException;
-import com.prometis.appbuilder.app.security.service.AuthService;
-import com.prometis.appbuilder.app.security.token.TokenCookie;
 import com.prometis.appbuilder.app.view.domain.*;
 import com.prometis.appbuilder.app.view.dto.MenuDto;
 import com.prometis.appbuilder.app.view.dto.ProfileDto;
 import com.prometis.appbuilder.app.view.dto.ViewDto;
+import com.prometis.appbuilder.platform.application.ApplicationGuard;
+import com.prometis.appbuilder.platform.application.ApplicationNotFoundException;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.exception.SecurityBusinessException;
 import com.prometis.core.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,42 +25,50 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping
+@RequestMapping("/{applicationId}")
 public class ViewBuilderRestController {
     @Autowired
     MenuService menuService;
     @Autowired
     LayoutService layoutService;
     @Autowired
-    AuthService authService;
-    @Autowired
     ViewObjectService viewObjectService;
     @Autowired
     CodeService codeService;
+    @Autowired
+    ApplicationGuard applicationGuard;
+    @Autowired
+    ViewGuard viewGuard;
 
     @GetMapping("/api/menu/tree")
-    public ResponseEntity<?> getMenu(@RequestParam("parentMenuCd") String parentMenuCd) {
-        List<MenuDto> menuList = menuService.getMenuTree(parentMenuCd);
+    public ResponseEntity<?> getMenu(
+            @PathVariable("applicationId") String applicationId,
+            @RequestParam("parentMenuCd") String parentMenuCd
+    ) {
+        List<MenuDto> menuList = menuService.getMenuTree(applicationId, parentMenuCd);
 
         return new ResponseEntity<>(menuList, HttpStatus.OK);
     }
     @GetMapping("/api/menu/root")
-    public ResponseEntity<?> getMenuRoot(HttpServletRequest request) {
+    public ResponseEntity<?> getMenuRoot(
+            HttpServletRequest request,
+            @PathVariable("applicationId") String applicationId
+    ) {
         AuthenticatedUser user;
         try {
-            user = authService.authentication(TokenCookie.resolveAccessToken(request));
+            user = viewGuard.check(request, applicationId);
         }
         catch (SecurityBusinessException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        List<MenuDto> menuList = menuService.getMenuRoot(user);
+        List<MenuDto> menuList = menuService.getMenuRoot(applicationId, user);
 
         return new ResponseEntity<>(menuList, HttpStatus.OK);
     }
     @GetMapping("/api/layout")
-    public ResponseEntity<?> getLayout() {
-        Layout response = layoutService.getLayout();
+    public ResponseEntity<?> getLayout(@PathVariable("applicationId") String applicationId) {
+        Layout response = layoutService.getLayout(applicationId);
         if(response == null) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
@@ -68,10 +76,13 @@ public class ViewBuilderRestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     @GetMapping("/api/profile")
-    public ResponseEntity<?> getProfile(HttpServletRequest request) {
+    public ResponseEntity<?> getProfile(
+            HttpServletRequest request,
+            @PathVariable("applicationId") String applicationId
+    ) {
         AuthenticatedUser user;
         try {
-            user = authService.authentication(TokenCookie.resolveAccessToken(request));
+            user = viewGuard.check(request, applicationId);
         }
         catch (SecurityBusinessException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -85,33 +96,31 @@ public class ViewBuilderRestController {
     @GetMapping("/pages/{objectCode}/definition")
     public ResponseEntity<?> getPageDefinition(
             HttpServletRequest request,
+            @PathVariable("applicationId") String applicationId,
             @PathVariable("objectCode") String objectCode
     ) {
-        ViewObject viewObject = viewObjectService.getViewObject(objectCode);
-
-        if(Boolean.TRUE.equals(viewObject.getUseAuthValidation())) {
-            AuthenticatedUser user;
-            try {
-                user = authService.authentication(TokenCookie.resolveAccessToken(request));
-            } catch (SecurityBusinessException e) {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
-
-            if(Boolean.TRUE.equals(viewObject.getUseAuthorityValidation())) {
-                try {
-                    viewObjectService.validateAuthorization(user, viewObject);
-                }
-                catch (BusinessException e) {
-                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-                }
-            }
+        try {
+            applicationGuard.check(applicationId);
+        }
+        catch (ApplicationNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        ViewObjectContent viewObjectContent = viewObjectService.getViewObjectContent(objectCode);
+        ViewObject viewObject = viewObjectService.getViewObject(applicationId, objectCode);
 
-        List<ViewAction> viewActions = viewObjectService.getViewActions(objectCode);
+        try {
+            viewGuard.check(request,applicationId,viewObject);
+        }
+        catch (BusinessException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
-        List<ViewCode> viewCodes = viewObjectService.getViewCodes(objectCode);
+        ViewObjectContent viewObjectContent = viewObjectService.getViewObjectContent(applicationId, objectCode);
+
+        //TODO viewContent로 통합필요
+        List<ViewAction> viewActions = viewObjectService.getViewActions(applicationId, objectCode);
+
+        List<ViewCode> viewCodes = viewObjectService.getViewCodes(applicationId, objectCode);
 
         List<CodeRequest> params = new ArrayList<>();
         for(ViewCode viewCode : viewCodes) {
@@ -121,7 +130,7 @@ public class ViewBuilderRestController {
             params.add(codeRequest);
         }
 
-        Map<String, List<CodeResponse>> codeMap = (params.isEmpty()) ? new HashMap<>() : codeService.getCode(params);
+        Map<String, List<CodeResponse>> codeMap = (params.isEmpty()) ? new HashMap<>() : codeService.getCode(applicationId, params);
 
         return new ResponseEntity<>(ViewDto.builder()
                 .viewObject(viewObject)

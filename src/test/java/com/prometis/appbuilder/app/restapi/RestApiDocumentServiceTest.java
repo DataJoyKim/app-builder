@@ -46,6 +46,7 @@ class RestApiDocumentServiceTest {
 
     private RestApi restApi(String apiCode, HttpMethodType method, String path, String workflowCode) {
         return RestApi.builder()
+                .applicationId("ehr")
                 .apiCode(apiCode)
                 .displayName(apiCode)
                 .httpMethod(method)
@@ -59,6 +60,7 @@ class RestApiDocumentServiceTest {
     @SuppressWarnings("unchecked")
     public void 문서에는_워크플로우의_응답메시지와_업무오류가_함께_담긴다() {
         Workflow workflow = workflowRepository.save(Workflow.builder()
+                .applicationId("ehr")
                 .workflowCode("WF_DOC")
                 .displayName("문서 워크플로우")
                 .useAuthValidation(true)
@@ -83,8 +85,8 @@ class RestApiDocumentServiceTest {
         restApiRepository.save(restApi("DOC_LIST", HttpMethodType.GET, "/docs", "WF_DOC"));
         restApiRepository.save(restApi("DOC_MISSING", HttpMethodType.GET, "/a-missing", "WF_NOT_EXISTS"));
 
-        Map<String, Object> document = restApiDocumentService.document();
-        assertEquals(RestApi.URL_PREFIX, document.get("urlPrefix"));
+        Map<String, Object> document = restApiDocumentService.document("ehr");
+        assertEquals("/ehr" + RestApi.URL_PREFIX, document.get("urlPrefix"));
 
         List<Map<String, Object>> apis = (List<Map<String, Object>>) document.get("apis");
 

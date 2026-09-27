@@ -18,7 +18,7 @@ class View {
     init(objectCode, viewData) {
         const self = this;
 
-        this.utils.httpClient.get(`/pages/${objectCode}/definition`,{},
+        this.utils.httpClient.get(`/${APPLICATION_ID}/pages/${objectCode}/definition`,{},
             function(response){
                 let view;
                 if(viewData) {

@@ -17,7 +17,7 @@ public class DataSourceNotificationRegister {
 
         for(NotificationProvider meta : metadataList) {
             try {
-                dataSourceMap.put(LookupKey.generateKey(meta.getDataSourceName()), meta.createDataSource());
+                dataSourceMap.put(LookupKey.generateKey(meta.getApplicationId(), meta.getDataSourceName()), meta.createDataSource());
                 log.info("BusinessDataSource - initialized businessDataSource : [{}]", meta.getDataSourceName());
             }
             catch (Exception e) {
@@ -38,7 +38,7 @@ public class DataSourceNotificationRegister {
     public static void registry(NotificationProvider meta) throws NotificationCreationException {
         NotificationSender dataSource = meta.createDataSource();
 
-        LookupKey lookupKey = LookupKey.generateKey(meta.getDataSourceName());
+        LookupKey lookupKey = LookupKey.generateKey(meta.getApplicationId(), meta.getDataSourceName());
 
         dataSourceMap.put(lookupKey, dataSource);
     }

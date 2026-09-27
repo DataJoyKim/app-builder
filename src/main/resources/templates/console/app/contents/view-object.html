@@ -1,0 +1,608 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #viewobject-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #viewobject-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #viewobject-app .ds-list-panel,
+    #viewobject-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #viewobject-app .ds-list-panel {
+        flex: 0 0 380px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #viewobject-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #viewobject-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #viewobject-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #viewobject-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #viewobject-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #viewobject-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #viewobject-app .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #viewobject-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #viewobject-app .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #viewobject-app .ds-btn-danger {
+        color: #dc2626;
+    }
+
+    #viewobject-app .ds-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    /* ---- 목록: ag-Grid 대신 검색+카드형 리스트로 직접 렌더링 ---- */
+    #viewobject-app .ds-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #viewobject-app .ds-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #viewobject-app .ds-list-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #viewobject-app .ds-list-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #viewobject-app .ds-list-body {
+        max-height: 560px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #viewobject-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #viewobject-app .ds-list-item:hover {
+        background: #fafbfc;
+    }
+
+    #viewobject-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #viewobject-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #viewobject-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #viewobject-app .ds-list-item.selected .ds-list-item-name {
+        color: #1d4ed8;
+    }
+
+    #viewobject-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #viewobject-app .ds-type-chip {
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+    }
+
+    #viewobject-app .ds-type-chip.type-FILE {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    #viewobject-app .ds-type-chip.type-VIEW_BUILDER {
+        background: #eef5ff;
+        color: #1d4ed8;
+    }
+
+    #viewobject-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #viewobject-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    /* ---- 상세 설정 ---- */
+    #viewobject-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    #viewobject-app .ds-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    #viewobject-app .ds-section:last-child {
+        margin-bottom: 0;
+    }
+
+    #viewobject-app .ds-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #viewobject-app .ds-section-header i {
+        color: #4A90E2;
+    }
+
+    #viewobject-app .ds-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 0;
+    }
+
+    #viewobject-app .ds-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #viewobject-app .ds-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #viewobject-app .ds-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #viewobject-app .ds-section-grid .form-control:disabled {
+        background: #f8f9fa;
+        color: #6b7280;
+    }
+
+    #viewobject-app .ds-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+</style>
+<script th:fragment="script">
+        let OBJECT_LIST = [];
+        let SELECTED_OBJECT_ID = null;
+
+        $( document ).ready(function() {
+            console.log('version.0.0.3');
+            init();
+        });
+
+        function init() {
+            var codes = {
+                "ObjectType":[
+                    {code:"FILE",name:"파일"},
+                    {code:"VIEW_BUILDER",name:"화면빌더"}
+                ],
+                "Boolean":[
+                    {code:"true",name:"true"},
+                    {code:"false",name:"false"}
+                ]
+            };
+
+            setCodes(codes);
+            getList();
+        }
+
+        function setCodes(codes) {
+            App.util.setCodeBox("type", codes["ObjectType"], {useFirstItem:true, firstItemLabel:'선택', firstItemValue:''});
+            App.util.setCodeBox("useAuthValidation", codes["Boolean"]);
+            App.util.setCodeBox("usePermissionValidation", codes["Boolean"]);
+            App.util.setCodeBox("useToolbar", codes["Boolean"]);
+        }
+
+        function typeLabel(type) {
+            const labels = {FILE:'파일', VIEW_BUILDER:'화면빌더'};
+            return labels[type] || type;
+        }
+
+        function getList() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/object`, {},
+                function(response){
+                    OBJECT_LIST = response || [];
+                    renderObjectList($("#objectSearch").val());
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function renderObjectList(keyword) {
+            const kw = (keyword || '').trim().toLowerCase();
+            const filtered = OBJECT_LIST.filter(function(item) {
+                if(!kw) return true;
+                return (item.objectCode || '').toLowerCase().includes(kw)
+                    || (item.objectName || '').toLowerCase().includes(kw);
+            });
+
+            const $body = $("#objectListBody");
+            $body.empty();
+
+            if(filtered.length === 0) {
+                const $empty = $(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-inbox"></i>
+                        <span></span>
+                    </div>
+                `);
+                $empty.find('span').text(OBJECT_LIST.length === 0 ? '등록된 Object가 없습니다.' : '검색 결과가 없습니다.');
+                $body.append($empty);
+                return;
+            }
+
+            for(const item of filtered) {
+                const $item = $(`
+                    <div class="ds-list-item" data-id="${item.id}">
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                        <span class="ds-type-chip type-${item.type}"></span>
+                    </div>
+                `);
+
+                $item.find('.ds-list-item-name').text(item.objectName || item.objectCode);
+                $item.find('.ds-list-item-code').text(item.objectCode);
+                $item.find('.ds-type-chip').text(typeLabel(item.type));
+
+                if(String(item.id) === String(SELECTED_OBJECT_ID)) {
+                    $item.addClass('selected');
+                }
+
+                $item.on('click', function() {
+                    selectObject(item.id);
+                });
+
+                $body.append($item);
+            }
+        }
+
+        function selectObject(id) {
+            const item = OBJECT_LIST.find(a => String(a.id) === String(id));
+            if(!item) return;
+
+            SELECTED_OBJECT_ID = id;
+            $("#objectListBody .ds-list-item").removeClass('selected');
+            $(`#objectListBody .ds-list-item[data-id="${id}"]`).addClass('selected');
+
+            selectedContent(item);
+        }
+
+        function selectedContent(item) {
+            httpClient.get(`/${APPLICATION_ID}/console/api/object/${item.id}`, {},
+                function(response){
+                    setContentData(response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function isEmpty(v) {
+            return (v == undefined || v == null || v == '');
+        }
+
+        function save() {
+            let id = $("#id").val();
+
+            if(isEmpty(id))
+                insertContent();
+            else
+                updateContent(id);
+        }
+
+        function insertContent() {
+            httpClient.post(`/${APPLICATION_ID}/console/api/object`,{},getContent(),
+                function(response){
+                    alert("저장완료되었습니다.");
+                    getList();
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateContent(id) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/object/${id}`, {}, getContent(),
+              function(response){
+                  alert("저장완료되었습니다.");
+                  getList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteContent() {
+          let id = $("#id").val();
+
+          httpClient.delete(`/${APPLICATION_ID}/console/api/object/${id}`, {},
+              function(response){
+                  alert("삭제 처리 완료되었습니다.");
+                  SELECTED_OBJECT_ID = null;
+                  getList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function setContentData(response) {
+            setContent({
+                id:response.id,
+                objectCode:response.objectCode,
+                objectName:response.objectName,
+                type:response.type,
+                path:response.path,
+                usePermissionValidation:response.usePermissionValidation,
+                useAuthValidation:response.useAuthValidation,
+                useToolbar:response.useToolbar
+              });
+        }
+
+        function getContent() {
+            return {
+                id: $("#id").val(),
+                objectCode: $("#objectCode").val(),
+                objectName: $("#objectName").val(),
+                type: $("#type").val(),
+                path: $("#path").val(),
+                useAuthValidation: $("#useAuthValidation").val(),
+                usePermissionValidation: $("#usePermissionValidation").val(),
+                useToolbar: $("#useToolbar").val()
+            }
+        }
+
+        function setContent(params) {
+            $("#id").val(params.id);
+            $("#objectCode").val(params.objectCode);
+            $("#objectName").val(params.objectName);
+            $("#type").val(params.type);
+            $("#path").val(params.path);
+            $("#useAuthValidation").val(String(params.useAuthValidation));
+            $("#usePermissionValidation").val(String(params.usePermissionValidation));
+            $("#useToolbar").val(String(params.useToolbar));
+          }
+
+          function newContent(){
+            SELECTED_OBJECT_ID = null;
+            $("#objectListBody .ds-list-item").removeClass('selected');
+
+            setContent({
+                id:'',
+                objectCode:'',
+                objectName:'',
+                type:'',
+                path:'',
+                usePermissionValidation:'true',
+                useAuthValidation:'true',
+                useToolbar:'true'
+              });
+          }
+
+          function apply() {
+            let params = {
+                objectCode: $("#objectCode").val(),
+                objectName: $("#objectName").val()
+            };
+
+            App.modalPopup.sendParamToParent('OBJECT_RESULT', params);
+            App.modalPopup.close();
+          }
+    </script>
+<div id="viewobject-app" th:fragment="view">
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-cube"></i> Object 목록</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="apply()"><i class="fas fa-check"></i>선택</button>
+                    <button type="button" class="ds-btn" onclick="getList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                </div>
+            </div>
+            <div class="ds-list-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="objectSearch" placeholder="오브젝트코드, 오브젝트명으로 검색" oninput="renderObjectList(this.value)">
+            </div>
+            <div class="ds-list-body" id="objectListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-sliders-h"></i> 상세 내용</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="newContent()"><i class="fas fa-plus"></i>신규</button>
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                    <button type="button" class="ds-btn ds-btn-danger" onclick="deleteContent()"><i class="fas fa-trash"></i>삭제</button>
+                </div>
+            </div>
+
+            <div class="ds-detail-body">
+                <input type="hidden" id="id">
+
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                    <div class="ds-section-grid">
+                        <div class="form-group col-6">
+                            <label for="objectCode">오브젝트코드</label>
+                            <input type="text" class="form-control" id="objectCode" autocomplete="off">
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="objectName">오브젝트명</label>
+                            <input type="text" class="form-control" id="objectName" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="type">유형</label>
+                            <select class="form-control" id="type"></select>
+                        </div>
+                        <div class="form-group col-8">
+                            <label for="path">경로</label>
+                            <input type="text" class="form-control" id="path" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-shield-alt"></i><span>인증 / 권한 / 화면 요소</span></div>
+                    <div class="ds-section-grid">
+                        <div class="form-group col-4">
+                            <label for="useAuthValidation">인증사용</label>
+                            <select class="form-control" id="useAuthValidation"></select>
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="usePermissionValidation">권한검증사용</label>
+                            <select class="form-control" id="usePermissionValidation"></select>
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="useToolbar">Toolbar 사용</label>
+                            <select class="form-control" id="useToolbar"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</html>

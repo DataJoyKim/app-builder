@@ -17,6 +17,9 @@ public class SchedulerJob {
     @Column(nullable = false, length = 100)
     private String jobCode;
 
+    @Column(nullable = false, length = 100)
+    private String applicationId;
+
     @Column(nullable = false, length = 200)
     private String jobName;
 

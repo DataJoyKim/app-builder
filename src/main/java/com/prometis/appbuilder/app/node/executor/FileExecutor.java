@@ -9,7 +9,7 @@ import com.prometis.appbuilder.app.node.NodeConfig;
 import com.prometis.appbuilder.app.node.NodeExecutor;
 import com.prometis.appbuilder.app.node.NodeResult;
 import com.prometis.appbuilder.app.node.code.ResultType;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -55,7 +55,7 @@ public class FileExecutor implements NodeExecutor {
                         .multipartFile(multipartFile)
                         .build();
 
-                FileResult result = fileService.execute(functionName, fileRequest);
+                FileResult result = fileService.execute(header.getApplicationId(), functionName, fileRequest);
 
                 if(result.getResultCode() == FileResultCode.FAILURE) {
                     resultType = ResultType.FAILURE;
@@ -74,7 +74,7 @@ public class FileExecutor implements NodeExecutor {
                         .params(param)
                         .build();
 
-                FileResult result = fileService.execute(functionName, fileRequest);
+                FileResult result = fileService.execute(header.getApplicationId(), functionName, fileRequest);
 
                 if(result.getResultCode() == FileResultCode.FAILURE) {
                     resultType = ResultType.FAILURE;

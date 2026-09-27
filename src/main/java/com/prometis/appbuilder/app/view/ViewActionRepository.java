@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ViewActionRepository extends JpaRepository<ViewAction, Long> {
-    List<ViewAction> findByObjectCode(String objectCode);
+    List<ViewAction> findByApplicationIdAndObjectCode(String applicationId, String objectCode);
 }

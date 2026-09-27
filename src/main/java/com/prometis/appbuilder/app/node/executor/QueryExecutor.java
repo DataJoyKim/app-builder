@@ -8,7 +8,7 @@ import com.prometis.appbuilder.app.node.code.ResultType;
 import com.prometis.appbuilder.app.query.QueryRequest;
 import com.prometis.appbuilder.app.query.QueryResult;
 import com.prometis.appbuilder.app.query.QueryService;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +34,7 @@ public class QueryExecutor implements NodeExecutor {
                                         .contents(param)
                                         .build();
 
-            QueryResult queryResults = queryService.execute(functionName, queryParams);
+            QueryResult queryResults = queryService.execute(header.getApplicationId(), functionName, queryParams);
 
             for(Map<String,Object> result : queryResults.getResults()) {
                 result.put(config.getRequestMessageSeqKey(), seq);

@@ -383,7 +383,7 @@ class BarLineChart extends ViewObject {
 
         this.optionPanel.clickEvent('seriesSetting',(e) => {
             const changeOptionValue = super.changeOptionValue;
-            App.modalPopup.open('/console/view-chart-item',{title:'차트항목 설정 팝업',size:"modal-lg",messageId:'CHART_ITEM_REQUEST'},{seriesSetting:options.seriesSetting});
+            App.modalPopup.open(`/${APPLICATION_ID}/console/view-chart-item`,{title:'차트항목 설정 팝업',size:"modal-lg",messageId:'CHART_ITEM_REQUEST'},{seriesSetting:options.seriesSetting});
             App.modalPopup.receiveParam('CHART_ITEM_RESULT',function(data){
                 if(data.seriesSetting) {
                     changeOptionValue($el, options, 'seriesSetting', data.seriesSetting);

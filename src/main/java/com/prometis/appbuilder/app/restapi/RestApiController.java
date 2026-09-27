@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 콘솔에서 정의한 REST API 의 실제 진입점. 경로별 핸들러를 따로 두지 않고 URL_PREFIX/** 를 한 곳에서 받아 정의를 찾아 실행한다.
+ * 콘솔에서 정의한 REST API 의 실제 진입점. 경로별 핸들러를 따로 두지 않고 /{applicationId}URL_PREFIX/** 를 한 곳에서 받아 정의를 찾아 실행한다.
+ * applicationId 는 RestApiExecuteService 가 URL 경로에서 직접 추출한다.
  */
 @RestController
 @RequiredArgsConstructor
@@ -23,13 +24,12 @@ public class RestApiController {
     private final RestApiExecuteService restApiExecuteService;
 
     @RequestMapping(
-            value = {RestApi.URL_PREFIX, RestApi.URL_PREFIX + "/**"},
+            value = {"/{applicationId}" + RestApi.URL_PREFIX, "/{applicationId}" + RestApi.URL_PREFIX + "/**"},
             method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}
     )
     public ResponseEntity<?> handle(
             HttpServletRequest request,
             HttpServletResponse response,
-            // 본문은 JSON 이 깨져 있어도 스키마 에러로 알려주기 위해 문자열로 받아 직접 파싱한다.
             @RequestBody(required = false) String body
     ) {
         RestApiResult result = restApiExecuteService.execute(request, response, body);

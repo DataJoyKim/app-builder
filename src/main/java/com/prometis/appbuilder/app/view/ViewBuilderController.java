@@ -1,13 +1,10 @@
 package com.prometis.appbuilder.app.view;
 
-import com.prometis.appbuilder.app.security.config.SecurityProperties;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
-import com.prometis.appbuilder.app.security.exception.SecurityBusinessException;
-import com.prometis.appbuilder.app.security.service.AuthService;
-import com.prometis.appbuilder.app.security.token.TokenCookie;
 import com.prometis.appbuilder.app.view.code.ObjectType;
 import com.prometis.appbuilder.app.view.domain.Layout;
 import com.prometis.appbuilder.app.view.domain.ViewObject;
+import com.prometis.appbuilder.platform.application.ApplicationGuard;
+import com.prometis.appbuilder.platform.application.ApplicationNotFoundException;
 import com.prometis.core.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,31 +15,42 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.io.IOException;
-
 @Controller
-@RequestMapping
+@RequestMapping("/{applicationId}")
 public class ViewBuilderController {
     @Autowired
     LayoutService layoutService;
     @Autowired
     ViewObjectService viewObjectService;
     @Autowired
-    AuthService authService;
+    ViewGuard viewGuard;
     @Autowired
-    SecurityProperties securityProperties;
+    ApplicationGuard applicationGuard;
 
     @GetMapping("")
-    public String moveAppIndex(HttpServletRequest request, HttpServletResponse httpResponse) throws IOException {
-        Layout layout = layoutService.getLayout();
+    public String moveAppIndex(
+            HttpServletRequest request,
+            HttpServletResponse httpResponse,
+            @PathVariable("applicationId") String applicationId
+    ) {
+        try {
+            applicationGuard.check(applicationId);
+        }
+        catch (ApplicationNotFoundException e) {
+            return "/error/error404";
+        }
 
-        if(Boolean.TRUE.equals(layout.getUseAuthValidation())) {
-            AuthenticatedUser user = null;
-            try {
-                user = authService.authentication(TokenCookie.resolveAccessToken(request));
-            }
-            catch (SecurityBusinessException e) {
+        Layout layout = layoutService.getLayout(applicationId);
+
+        try {
+            viewGuard.check(request, applicationId, layout);
+        }
+        catch (BusinessException e) {
+            if(e.getStatus() == 401) {
                 return "/error/error401";
+            }
+            else {
+                return "/error/error403";
             }
         }
 
@@ -52,28 +60,30 @@ public class ViewBuilderController {
     public String moveAppPages(
             HttpServletRequest request,
             Model model,
+            @PathVariable("applicationId") String applicationId,
             @PathVariable("objectCode") String objectCode
     ) {
-        ViewObject viewObject = viewObjectService.getViewObject(objectCode);
+        try {
+            applicationGuard.check(applicationId);
+        }
+        catch (ApplicationNotFoundException e) {
+            return "/error/error404";
+        }
+
+        ViewObject viewObject = viewObjectService.getViewObject(applicationId, objectCode);
         if(viewObject == null) {
             return "/error/error404";
         }
 
-        if(Boolean.TRUE.equals(viewObject.getUseAuthValidation())) {
-            AuthenticatedUser user;
-            try {
-                user = authService.authentication(TokenCookie.resolveAccessToken(request));
-            } catch (SecurityBusinessException e) {
+        try {
+            viewGuard.check(request, applicationId, viewObject);
+        }
+        catch (BusinessException e) {
+            if(e.getStatus() == 401) {
                 return "/error/error401";
             }
-
-            if(Boolean.TRUE.equals(viewObject.getUseAuthorityValidation())) {
-                try {
-                    viewObjectService.validateAuthorization(user, viewObject);
-                }
-                catch (BusinessException e) {
-                    return "/error/error403";
-                }
+            else {
+                return "/error/error403";
             }
         }
 

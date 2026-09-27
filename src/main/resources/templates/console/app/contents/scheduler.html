@@ -1,0 +1,1329 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #scheduler-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #scheduler-app .engine-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+    }
+
+    #scheduler-app .engine-bar-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    #scheduler-app .engine-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 700;
+    }
+
+    #scheduler-app .engine-badge.running {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    #scheduler-app .engine-badge.stopped {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    #scheduler-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #scheduler-app .ds-list-panel,
+    #scheduler-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #scheduler-app .ds-list-panel {
+        flex: 0 0 360px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #scheduler-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #scheduler-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #scheduler-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #scheduler-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #scheduler-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #scheduler-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #scheduler-app .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #scheduler-app .ds-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    #scheduler-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #scheduler-app .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #scheduler-app .ds-btn-danger {
+        color: #dc2626;
+    }
+
+    #scheduler-app .ds-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    #scheduler-app .ds-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #scheduler-app .ds-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #scheduler-app .ds-list-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #scheduler-app .ds-list-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #scheduler-app .ds-list-body {
+        max-height: 560px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #scheduler-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #scheduler-app .ds-list-item:hover {
+        background: #fafbfc;
+    }
+
+    #scheduler-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #scheduler-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #scheduler-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #scheduler-app .ds-list-item.selected .ds-list-item-name {
+        color: #1d4ed8;
+    }
+
+    #scheduler-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #scheduler-app .ds-list-item-cron,
+    #scheduler-app .ds-list-item-run-time {
+        font-size: 10.5px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-top: 2px;
+    }
+
+    #scheduler-app .ds-list-item-cron-value {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        color: #6b7280;
+    }
+
+    #scheduler-app .ds-list-item-status {
+        flex: 0 0 auto;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
+    #scheduler-app .ds-list-item-status.on {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    #scheduler-app .ds-list-item-status.off {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    #scheduler-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #scheduler-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    #scheduler-app .ds-tabs {
+        display: flex;
+        gap: 2px;
+        padding: 8px 16px 0;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #scheduler-app .ds-tabs .nav-link {
+        border: none;
+        border-radius: 7px 7px 0 0;
+        padding: 8px 16px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #6b7280;
+        background: transparent;
+    }
+
+    #scheduler-app .ds-tabs .nav-link.active {
+        background: #fff;
+        color: #1d4ed8;
+        box-shadow: inset 0 -2px 0 #4A90E2;
+    }
+
+    #scheduler-app .ds-tab-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #scheduler-app .ds-tab-toolbar h4 {
+        margin: 0;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #scheduler-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    #scheduler-app .ds-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    #scheduler-app .ds-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #scheduler-app .ds-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #scheduler-app .ds-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #scheduler-app .ds-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #scheduler-app .cron-part-row {
+        display: flex;
+        width:30%;
+        gap: 6px;
+    }
+
+    #scheduler-app .cron-part {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+    }
+
+    #scheduler-app .cron-part .form-control {
+        text-align: center;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    #scheduler-app .cron-part-label {
+        display: block;
+        margin-top: 3px;
+        font-size: 10.5px;
+        color: #9199a3;
+    }
+
+    #scheduler-app .cron-preview {
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    #scheduler-app .cron-preview.error {
+        color: #dc2626;
+    }
+
+    #scheduler-app .cron-preview ol {
+        margin: 4px 0 0;
+        padding-left: 18px;
+    }
+
+    #scheduler-app .rel-body {
+        padding: 16px;
+    }
+
+    #scheduler-app .rel-add-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 12px;
+        background: #fbfbfc;
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    #scheduler-app .rel-add-form .form-group {
+        margin-bottom: 0;
+    }
+
+    #scheduler-app .rel-add-form label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    #scheduler-app .rel-add-form .form-control {
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+
+    #scheduler-app .rel-add-actions {
+        display: flex;
+        gap: 6px;
+        margin-left: auto;
+    }
+
+    #scheduler-app .rel-list {
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    #scheduler-app .rel-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    #scheduler-app .rel-row:last-child {
+        border-bottom: none;
+    }
+
+    #scheduler-app .rel-row:hover {
+        background: #fafbfc;
+    }
+
+    #scheduler-app .rel-row-main {
+        flex: 1 1 auto;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    #scheduler-app .rel-row-field {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        max-width: 320px;
+    }
+
+    #scheduler-app .rel-field-label {
+        font-size: 10px;
+        color: #9199a3;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #scheduler-app .rel-field-value {
+        color: #1f2937;
+        font-weight: 600;
+        font-size: 12.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #scheduler-app .rel-field-value.success {
+        color: #059669;
+    }
+
+    #scheduler-app .rel-field-value.failure {
+        color: #dc2626;
+    }
+
+    #scheduler-app .rel-row-actions {
+        display: flex;
+        gap: 4px;
+        flex: 0 0 auto;
+    }
+
+    #scheduler-app .rel-icon-btn {
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 6px;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #374151;
+        font-size: 11px;
+    }
+
+    #scheduler-app .rel-icon-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #scheduler-app .rel-icon-btn.danger {
+        color: #dc2626;
+    }
+
+    #scheduler-app .rel-icon-btn.danger:hover {
+        background: #fef2f2;
+    }
+
+    #scheduler-app .rel-empty {
+        padding: 24px;
+        text-align: center;
+        color: #9199a3;
+        font-size: 12.5px;
+    }
+
+    #scheduler-app textarea.form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+        padding: 6px 10px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+    }
+</style>
+<script th:fragment="script">
+    let SCHEDULER_JOB_LIST = [];
+    let SELECTED_JOB_ID = null;
+    let SJ_WORKFLOW_LIST = [];
+    let SJ_WORKFLOW_EDIT_ID = null;
+    let SJ_PICKED_WORKFLOW = null;
+    let cronPreviewTimer = null;
+
+    $( document ).ready(function() {
+        init();
+    });
+
+    function init() {
+        getEngineStatus();
+        getList();
+
+        App.modalPopup.receiveParam('WORKFLOW_PICKER_RESULT', function(data){
+            if(!data || !data.id) return;
+
+            SJ_PICKED_WORKFLOW = data;
+            $("#sjWorkflowDisplayInput").val((data.displayName || data.workflowCode || '') + (data.workflowCode ? ' (' + data.workflowCode + ')' : ''));
+        });
+    }
+
+    function isEmpty(v) {
+        return (v === undefined || v === null || v === '');
+    }
+
+    /* ================= 엔진 상태 ================= */
+
+    function getEngineStatus() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/scheduler/status`, {},
+            function(response){
+                renderEngineStatus(!!response.started);
+            },
+            function(error){
+                renderEngineStatus(false);
+            }
+        );
+    }
+
+    function renderEngineStatus(started) {
+        const $badge = $("#engineStatusBadge");
+        $badge.removeClass('running stopped').addClass(started ? 'running' : 'stopped');
+        $badge.text(started ? '실행중' : '중지됨');
+
+        $("#btnEngineStart").prop('disabled', started);
+        $("#btnEngineStop").prop('disabled', !started);
+    }
+
+    function startEngine() {
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/start`, {}, {},
+            function(response){
+                getEngineStatus();
+            },
+            function(error){
+                alert('스케줄러 시작에 실패했습니다.');
+            }
+        );
+    }
+
+    function stopEngine() {
+        if(!confirm('스케줄러를 일시정지하면 모든 Job 실행이 중단됩니다. 계속하시겠습니까?')) return;
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/stop`, {}, {},
+            function(response){
+                getEngineStatus();
+            },
+            function(error){
+                alert('스케줄러 종료에 실패했습니다.');
+            }
+        );
+    }
+
+    /* ================= Job 목록 ================= */
+
+    function getList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/scheduler/job`, {},
+            function(response){
+                SCHEDULER_JOB_LIST = response || [];
+                renderJobList($("#jobSearch").val());
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderJobList(keyword) {
+        const kw = (keyword || '').trim().toLowerCase();
+        const filtered = SCHEDULER_JOB_LIST.filter(function(item) {
+            if(!kw) return true;
+            return (item.jobCode || '').toLowerCase().includes(kw)
+                || (item.jobName || '').toLowerCase().includes(kw);
+        });
+
+        const $body = $("#jobListBody");
+        $body.empty();
+
+        if(filtered.length === 0) {
+            const $empty = $(`
+                <div class="ds-list-empty">
+                    <i class="fas fa-inbox"></i>
+                    <span></span>
+                </div>
+            `);
+            $empty.find('span').text(SCHEDULER_JOB_LIST.length === 0 ? '등록된 스케줄러 Job이 없습니다.' : '검색 결과가 없습니다.');
+            $body.append($empty);
+            return;
+        }
+
+        for(const item of filtered) {
+            const $item = $(`
+                <div class="ds-list-item" data-id="${item.id}">
+                    <div class="ds-list-item-main">
+                        <span class="ds-list-item-name"></span>
+                        <span class="ds-list-item-code"></span>
+                        <span class="ds-list-item-cron"><i class="fas fa-repeat"></i> 실행주기: <span class="ds-list-item-cron-value"></span></span>
+                        <span class="ds-list-item-run-time">이전 실행: <span class="ds-list-item-prev-run"></span></span>
+                        <span class="ds-list-item-run-time">다음 실행: <span class="ds-list-item-next-run"></span></span>
+                    </div>
+                    <span class="ds-list-item-status"></span>
+                </div>
+            `);
+
+            $item.find('.ds-list-item-name').text(item.jobName || item.jobCode);
+            $item.find('.ds-list-item-code').text(item.jobCode);
+            $item.find('.ds-list-item-cron-value').text(item.cronExpression || '-');
+            $item.find('.ds-list-item-prev-run').text(item.lastExecutedAt ? formatDateTime(item.lastExecutedAt) : '-');
+            $item.find('.ds-list-item-next-run').text(item.nextFireTime ? formatDateTime(item.nextFireTime) : '-');
+            $item.find('.ds-list-item-status').addClass(item.enabled ? 'on' : 'off').text(item.enabled ? '활성' : '중지');
+
+            if(String(item.id) === String(SELECTED_JOB_ID)) {
+                $item.addClass('selected');
+            }
+
+            $item.on('click', function() {
+                selectJob(item.id);
+            });
+
+            $body.append($item);
+        }
+    }
+
+    function selectJob(id) {
+        const item = SCHEDULER_JOB_LIST.find(a => String(a.id) === String(id));
+        if(!item) return;
+
+        SELECTED_JOB_ID = id;
+        $("#jobListBody .ds-list-item").removeClass('selected');
+        $(`#jobListBody .ds-list-item[data-id="${id}"]`).addClass('selected');
+
+        selectedContent(item);
+    }
+
+    function selectedContent(item) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/scheduler/job/${item.id}`, {},
+            function(response){
+                setContentData(response);
+                getSchedulerJobWorkflow(item.id);
+                getSchedulerJobHistory(item.id);
+                toggleJobControls(true);
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    /* ================= 상세 ================= */
+
+    function save() {
+        let id = $("#id").val();
+
+        if(isEmpty(id))
+            insertContent();
+        else
+            updateContent(id);
+    }
+
+    function insertContent() {
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/job`,{},getContent(),
+            function(response){
+                alert("저장완료되었습니다.");
+                getList();
+            },
+            function(error){
+                alert(errorMessage(error, '저장에 실패했습니다.'));
+            }
+        );
+    }
+
+    function updateContent(id) {
+      httpClient.put(`/${APPLICATION_ID}/console/api/scheduler/job/${id}`, {}, getContent(),
+          function(response){
+              alert("저장완료되었습니다.");
+              getList();
+          },
+          function(error){
+              alert(errorMessage(error, '저장에 실패했습니다.'));
+          }
+      );
+    }
+
+    function deleteContent() {
+      let id = $("#id").val();
+      if(isEmpty(id)) return;
+
+      if(!confirm('삭제하시겠습니까?')) return;
+
+      httpClient.delete(`/${APPLICATION_ID}/console/api/scheduler/job/${id}`, {},
+          function(response){
+              alert("삭제 처리 완료되었습니다.");
+              SELECTED_JOB_ID = null;
+              newContent();
+              getList();
+          },
+          function(error){
+              alert('error');
+          }
+      );
+    }
+
+    function errorMessage(error, fallback) {
+        return (error && error.responseJSON && error.responseJSON.message) ? error.responseJSON.message : fallback;
+    }
+
+    function setContentData(response) {
+        setContent({
+            id:response.id,
+            jobCode:response.jobCode,
+            jobName:response.jobName,
+            cronExpression:response.cronExpression,
+            description:response.description,
+            enabled:response.enabled
+          });
+
+        previewCron(response.cronExpression);
+    }
+
+    function getContent() {
+        return {
+            id: $("#id").val(),
+            jobCode: $("#jobCode").val(),
+            jobName: $("#jobName").val(),
+            cronExpression: combineCronParts(),
+            description: $("#description").val(),
+            enabled: $("#enabled").is(':checked')
+        }
+    }
+
+    function setContent(params) {
+        $("#id").val(params.id);
+        $("#jobCode").val(params.jobCode);
+        $("#jobName").val(params.jobName);
+        $("#description").val(params.description);
+        $("#enabled").prop('checked', !!params.enabled);
+        setCronParts(params.cronExpression);
+      }
+
+      function newContent(){
+        SELECTED_JOB_ID = null;
+        $("#jobListBody .ds-list-item").removeClass('selected');
+        SJ_WORKFLOW_LIST = [];
+        renderSchedulerJobWorkflowList();
+        renderSchedulerJobHistoryList([]);
+        toggleJobControls(false);
+
+        setContent({
+            id:'',
+            jobCode:'',
+            jobName:'',
+            cronExpression:'',
+            description:'',
+            enabled:true
+          });
+
+        $("#cronPreview").html('');
+      }
+
+      function toggleJobControls(hasSelection) {
+        $("#btnJobPause, #btnJobResume, #btnJobRestart, #btnJobTrigger").prop('disabled', !hasSelection);
+      }
+
+      /* ================= cron 6필드 ================= */
+
+      const CRON_PART_IDS = ['cronSeconds','cronMinutes','cronHours','cronDay','cronMonth','cronWeekday'];
+      const CRON_PART_DEFAULTS = ['0','*','*','*','*','?'];
+
+      function setCronParts(cronExpression) {
+          const parts = (cronExpression || '').trim().split(/\s+/).filter(v => v.length > 0);
+
+          for(let i = 0; i < CRON_PART_IDS.length; i++) {
+              $('#'+CRON_PART_IDS[i]).val(parts[i] || CRON_PART_DEFAULTS[i]);
+          }
+
+          $("#cronExpression").val(combineCronParts());
+      }
+
+      function combineCronParts() {
+          const values = CRON_PART_IDS.map(function(id, i) {
+              const v = $('#'+id).val();
+              return (v === undefined || v === null || v === '') ? CRON_PART_DEFAULTS[i] : v.trim();
+          });
+
+          const combined = values.join(' ');
+          $("#cronExpression").val(combined);
+
+          return combined;
+      }
+
+      function onCronPartInput() {
+        const combined = combineCronParts();
+
+        clearTimeout(cronPreviewTimer);
+        cronPreviewTimer = setTimeout(function() {
+            previewCron(combined);
+        }, 300);
+      }
+
+      function previewCron(cronExpression) {
+        const $preview = $("#cronPreview");
+
+        if(isEmpty(cronExpression)) {
+            $preview.removeClass('error').html('');
+            return;
+        }
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/cron-preview`, {}, {cronExpression},
+            function(response){
+                let html = '<div>다음 실행 예정</div><ol>';
+                for(const dt of response) {
+                    html += `<li>${formatDateTime(dt)}</li>`;
+                }
+                html += '</ol>';
+
+                $preview.removeClass('error').html(html);
+            },
+            function(error){
+                $preview.addClass('error').text(errorMessage(error, '올바르지 않은 cron 표현식입니다.'));
+            }
+        );
+      }
+
+      function formatDateTime(value) {
+        const d = new Date(value);
+        if(isNaN(d.getTime())) return value;
+
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+
+      /* ================= Job 제어 ================= */
+
+      function pauseSelectedJob() {
+        if(!SELECTED_JOB_ID) return;
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/job/${SELECTED_JOB_ID}/pause`, {}, {},
+            function(response){ getList(); },
+            function(error){ alert(errorMessage(error, '중지에 실패했습니다.')); }
+        );
+      }
+
+      function resumeSelectedJob() {
+        if(!SELECTED_JOB_ID) return;
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/job/${SELECTED_JOB_ID}/resume`, {}, {},
+            function(response){ getList(); },
+            function(error){ alert(errorMessage(error, '시작에 실패했습니다.')); }
+        );
+      }
+
+      function restartSelectedJob() {
+        if(!SELECTED_JOB_ID) return;
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/job/${SELECTED_JOB_ID}/restart`, {}, {},
+            function(response){ alert('재시작되었습니다.'); getList(); },
+            function(error){ alert(errorMessage(error, '재시작에 실패했습니다.')); }
+        );
+      }
+
+      function triggerSelectedJob() {
+        if(!SELECTED_JOB_ID) return;
+        if(!confirm('지금 즉시 실행하시겠습니까?')) return;
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/job/${SELECTED_JOB_ID}/trigger`, {}, {},
+            function(response){
+                alert('실행 요청되었습니다. 잠시 후 실행 이력 탭에서 결과를 확인하세요.');
+                setTimeout(function() { getSchedulerJobHistory(SELECTED_JOB_ID); }, 1000);
+            },
+            function(error){ alert(errorMessage(error, '트리거에 실패했습니다.')); }
+        );
+      }
+
+      /* ================= 워크플로우 등록 ================= */
+
+      function getSchedulerJobWorkflow(schedulerJobId) {
+          httpClient.get(`/${APPLICATION_ID}/console/api/scheduler/job/workflow/${schedulerJobId}`, {},
+              function(response){
+                  for(let i=0; i<response.length; i++) {
+                      response[i].workflowId = response[i].workflow.id;
+                      response[i].workflowCode = response[i].workflow.workflowCode;
+                      response[i].workflowDisplayName = response[i].workflow.displayName;
+                  }
+
+                  SJ_WORKFLOW_LIST = response;
+                  renderSchedulerJobWorkflowList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+      }
+
+      function renderSchedulerJobWorkflowList() {
+          const $body = $("#sjWorkflowList");
+          $body.empty();
+
+          if(SJ_WORKFLOW_LIST.length === 0) {
+              $body.append('<div class="rel-empty">등록된 워크플로우가 없습니다.</div>');
+              return;
+          }
+
+          const sorted = SJ_WORKFLOW_LIST.slice().sort((a,b) => (a.orderNum||0) - (b.orderNum||0));
+
+          for(const item of sorted) {
+              const $row = $(`
+                  <div class="rel-row" data-id="${item.id}">
+                      <div class="rel-row-main">
+                          <div class="rel-row-field"><span class="rel-field-label">순서</span><span class="rel-field-value sj-order"></span></div>
+                          <div class="rel-row-field"><span class="rel-field-label">워크플로우</span><span class="rel-field-value sj-workflow-name"></span></div>
+                          <div class="rel-row-field"><span class="rel-field-label">요청메시지(JSON)</span><span class="rel-field-value sj-request-json"></span></div>
+                      </div>
+                      <div class="rel-row-actions">
+                          <button type="button" class="rel-icon-btn" title="수정"><i class="fas fa-pen"></i></button>
+                          <button type="button" class="rel-icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>
+                      </div>
+                  </div>
+              `);
+
+              $row.find('.sj-order').text(item.orderNum);
+              $row.find('.sj-workflow-name').text((item.workflowDisplayName || item.workflowCode) + ' (' + item.workflowCode + ')');
+              $row.find('.sj-request-json').text(item.requestMessageJson || '{}');
+
+              $row.find('.rel-icon-btn:not(.danger)').on('click', function() {
+                  editSchedulerJobWorkflow(item.id);
+              });
+              $row.find('.rel-icon-btn.danger').on('click', function() {
+                  if(confirm('삭제하시겠습니까?')) {
+                      deleteSchedulerJobWorkflow($("#id").val(), item);
+                  }
+              });
+
+              $body.append($row);
+          }
+      }
+
+      function openWorkflowPicker() {
+          App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-picker`, {title:'워크플로우 검색', messageId:'WORKFLOW_PICKER_REQUEST'});
+      }
+
+      function editSchedulerJobWorkflow(id) {
+          const item = SJ_WORKFLOW_LIST.find(a => String(a.id) === String(id));
+          if(!item) return;
+
+          SJ_WORKFLOW_EDIT_ID = id;
+          SJ_PICKED_WORKFLOW = {id:item.workflowId, workflowCode:item.workflowCode, displayName:item.workflowDisplayName};
+          $("#sjWorkflowDisplayInput").val((item.workflowDisplayName || item.workflowCode) + ' (' + item.workflowCode + ')');
+          $("#sjRequestMessageInput").val(item.requestMessageJson || '');
+          $("#sjOrderNumInput").val(item.orderNum);
+          $("#sjWorkflowSubmitBtn").html('<i class="fas fa-check"></i>수정');
+          $("#sjWorkflowCancelBtn").removeClass('d-none');
+      }
+
+      function cancelSchedulerJobWorkflowEdit() {
+          SJ_WORKFLOW_EDIT_ID = null;
+          SJ_PICKED_WORKFLOW = null;
+          $("#sjWorkflowDisplayInput").val('');
+          $("#sjRequestMessageInput").val('');
+          $("#sjOrderNumInput").val('');
+          $("#sjWorkflowSubmitBtn").html('<i class="fas fa-plus"></i>추가');
+          $("#sjWorkflowCancelBtn").addClass('d-none');
+      }
+
+      function submitSchedulerJobWorkflow() {
+          const schedulerJobId = $("#id").val();
+          if(!schedulerJobId) {
+              alert('먼저 스케줄러 Job을 저장해주세요.');
+              return;
+          }
+
+          if(!SJ_PICKED_WORKFLOW || !SJ_PICKED_WORKFLOW.id) {
+              alert('워크플로우를 검색하여 선택해주세요.');
+              return;
+          }
+
+          const requestMessageJson = $("#sjRequestMessageInput").val();
+          if(requestMessageJson && requestMessageJson.trim()) {
+              try {
+                  JSON.parse(requestMessageJson);
+              }
+              catch(e) {
+                  alert('요청메시지가 올바른 JSON 형식이 아닙니다.');
+                  return;
+              }
+          }
+
+          const orderNum = $("#sjOrderNumInput").val() || '0';
+          const workflowId = SJ_PICKED_WORKFLOW.id;
+
+          if(SJ_WORKFLOW_EDIT_ID) {
+              updateSchedulerJobWorkflow(schedulerJobId, SJ_WORKFLOW_EDIT_ID, {workflowId, requestMessageJson, orderNum});
+          }
+          else {
+              insertSchedulerJobWorkflow(schedulerJobId, {workflowId, requestMessageJson, orderNum});
+          }
+
+          cancelSchedulerJobWorkflowEdit();
+      }
+
+      function insertSchedulerJobWorkflow(schedulerJobId, item) {
+          httpClient.post(`/${APPLICATION_ID}/console/api/scheduler/job/workflow`,{},
+              {
+                 schedulerJobId:schedulerJobId,
+                 workflowId:item.workflowId,
+                 requestMessageJson:item.requestMessageJson,
+                 orderNum:item.orderNum
+              },
+              function(response){
+                  getSchedulerJobWorkflow(schedulerJobId);
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+      }
+
+      function updateSchedulerJobWorkflow(schedulerJobId, id, item) {
+        httpClient.put(`/${APPLICATION_ID}/console/api/scheduler/job/workflow/${id}`, {},
+            {
+                 workflowId:item.workflowId,
+                 requestMessageJson:item.requestMessageJson,
+                 orderNum:item.orderNum
+            },
+            function(response){
+                getSchedulerJobWorkflow(schedulerJobId);
+            },
+            function(error){
+                alert('error');
+            }
+        );
+      }
+
+      function deleteSchedulerJobWorkflow(schedulerJobId, item) {
+        httpClient.delete(`/${APPLICATION_ID}/console/api/scheduler/job/workflow/${item.id}`, {},
+            function(response){
+                getSchedulerJobWorkflow(schedulerJobId);
+            },
+            function(error){
+                alert('error');
+            }
+        );
+      }
+
+      /* ================= 실행 이력 ================= */
+
+      function getSchedulerJobHistory(schedulerJobId) {
+          httpClient.get(`/${APPLICATION_ID}/console/api/scheduler/job/${schedulerJobId}/history`, {},
+              function(response){
+                  renderSchedulerJobHistoryList(response || []);
+              },
+              function(error){
+                  renderSchedulerJobHistoryList([]);
+              }
+          );
+      }
+
+      function renderSchedulerJobHistoryList(list) {
+          const $body = $("#sjHistoryList");
+          $body.empty();
+
+          if(list.length === 0) {
+              $body.append('<div class="rel-empty">실행 이력이 없습니다.</div>');
+              return;
+          }
+
+          for(const item of list) {
+              const $row = $(`
+                  <div class="rel-row">
+                      <div class="rel-row-main">
+                          <div class="rel-row-field"><span class="rel-field-label">시작시각</span><span class="rel-field-value sj-h-started"></span></div>
+                          <div class="rel-row-field"><span class="rel-field-label">종료시각</span><span class="rel-field-value sj-h-finished"></span></div>
+                          <div class="rel-row-field"><span class="rel-field-label">결과</span><span class="rel-field-value sj-h-result"></span></div>
+                          <div class="rel-row-field"><span class="rel-field-label">메시지</span><span class="rel-field-value sj-h-message"></span></div>
+                      </div>
+                  </div>
+              `);
+
+              $row.find('.sj-h-started').text(item.startedAt ? formatDateTime(item.startedAt) : '-');
+              $row.find('.sj-h-finished').text(item.finishedAt ? formatDateTime(item.finishedAt) : '실행중');
+
+              const $result = $row.find('.sj-h-result');
+              if(item.success === true) {
+                  $result.addClass('success').text('성공');
+              }
+              else if(item.success === false) {
+                  $result.addClass('failure').text('실패');
+              }
+              else {
+                  $result.text('-');
+              }
+
+              $row.find('.sj-h-message').text(item.message || '-').attr('title', item.message || '');
+
+              $body.append($row);
+          }
+      }
+</script>
+<div id="scheduler-app" th:fragment="view">
+    <div class="engine-bar">
+        <div class="engine-bar-title">
+            <i class="fas fa-clock"></i>
+            <span>스케줄러 엔진</span>
+            <span id="engineStatusBadge" class="engine-badge stopped">확인중</span>
+        </div>
+        <div class="ds-panel-tools">
+            <button type="button" class="ds-btn ds-btn-primary" id="btnEngineStart" onclick="startEngine()"><i class="fas fa-play"></i>시작</button>
+            <button type="button" class="ds-btn ds-btn-danger" id="btnEngineStop" onclick="stopEngine()"><i class="fas fa-stop"></i>종료</button>
+        </div>
+    </div>
+
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-list-check"></i> Job 목록</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="newContent()"><i class="fas fa-plus"></i>신규</button>
+                    <button type="button" class="ds-btn" onclick="getList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                </div>
+            </div>
+            <div class="ds-list-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="jobSearch" placeholder="Job 코드, 명칭으로 검색" oninput="renderJobList(this.value)">
+            </div>
+            <div class="ds-list-body" id="jobListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <ul class="nav ds-tabs" id="scheduler-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="scheduler-detail-tab" data-toggle="pill" href="#scheduler-detail" role="tab" aria-controls="scheduler-detail" aria-selected="true">기본정보</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="scheduler-workflow-tab" data-toggle="pill" href="#scheduler-workflow" role="tab" aria-controls="scheduler-workflow" aria-selected="false">워크플로우 등록</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="scheduler-history-tab" data-toggle="pill" href="#scheduler-history" role="tab" aria-controls="scheduler-history" aria-selected="false">실행 이력</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="scheduler-tabContent">
+                <div class="tab-pane fade show active" id="scheduler-detail" role="tabpanel" aria-labelledby="scheduler-detail-tab">
+                    <div class="ds-tab-toolbar">
+                        <h4>기본 정보</h4>
+                        <div class="ds-panel-tools">
+                            <button type="button" class="ds-btn ds-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                            <button type="button" class="ds-btn ds-btn-danger" onclick="deleteContent()"><i class="fas fa-trash"></i>삭제</button>
+                            <button type="button" class="ds-btn" id="btnJobPause" onclick="pauseSelectedJob()" disabled><i class="fas fa-pause"></i>중지</button>
+                            <button type="button" class="ds-btn" id="btnJobResume" onclick="resumeSelectedJob()" disabled><i class="fas fa-play"></i>시작</button>
+                            <button type="button" class="ds-btn" id="btnJobRestart" onclick="restartSelectedJob()" disabled><i class="fas fa-rotate-right"></i>재시작</button>
+                            <button type="button" class="ds-btn" id="btnJobTrigger" onclick="triggerSelectedJob()" disabled><i class="fas fa-bolt"></i>트리거</button>
+                        </div>
+                    </div>
+                    <div class="ds-detail-body">
+                        <input type="hidden" id="id">
+                        <div class="ds-section-grid">
+                            <div class="form-group col-4">
+                                <label for="jobCode">Job 코드</label>
+                                <input type="text" class="form-control" id="jobCode" autocomplete="off">
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="jobName">Job 명칭</label>
+                                <input type="text" class="form-control" id="jobName" autocomplete="off">
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="enabled">사용 여부</label>
+                                <div style="padding-top:6px;">
+                                    <input type="checkbox" id="enabled"> 활성화
+                                </div>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="description">설명</label>
+                                <input type="text" class="form-control" id="description" autocomplete="off">
+                            </div>
+                            <div class="form-group col-12">
+                                <label>Cron 표현식</label>
+                                <div class="cron-part-row">
+                                    <div class="cron-part" >
+                                        <input type="text" class="form-control" id="cronSeconds" placeholder="0" autocomplete="off" oninput="onCronPartInput()">
+                                        <span class="cron-part-label">초</span>
+                                    </div>
+                                    <div class="cron-part">
+                                        <input type="text" class="form-control" id="cronMinutes" placeholder="*" autocomplete="off" oninput="onCronPartInput()">
+                                        <span class="cron-part-label">분</span>
+                                    </div>
+                                    <div class="cron-part">
+                                        <input type="text" class="form-control" id="cronHours" placeholder="*" autocomplete="off" oninput="onCronPartInput()">
+                                        <span class="cron-part-label">시</span>
+                                    </div>
+                                    <div class="cron-part">
+                                        <input type="text" class="form-control" id="cronDay" placeholder="*" autocomplete="off" oninput="onCronPartInput()">
+                                        <span class="cron-part-label">일</span>
+                                    </div>
+                                    <div class="cron-part">
+                                        <input type="text" class="form-control" id="cronMonth" placeholder="*" autocomplete="off" oninput="onCronPartInput()">
+                                        <span class="cron-part-label">월</span>
+                                    </div>
+                                    <div class="cron-part">
+                                        <input type="text" class="form-control" id="cronWeekday" placeholder="?" autocomplete="off" oninput="onCronPartInput()">
+                                        <span class="cron-part-label">요일</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="cronExpression">
+                                <div class="cron-preview" id="cronPreview"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="scheduler-workflow" role="tabpanel" aria-labelledby="scheduler-workflow-tab">
+                    <div class="ds-tab-toolbar">
+                        <h4>워크플로우 등록</h4>
+                    </div>
+                    <div class="rel-body">
+                        <div class="rel-add-form">
+                            <div class="form-group">
+                                <label for="sjWorkflowDisplayInput">워크플로우</label>
+                                <div style="display:flex;gap:6px;">
+                                    <input type="text" class="form-control" id="sjWorkflowDisplayInput" style="width:220px;" placeholder="검색하여 선택" readonly onclick="openWorkflowPicker()">
+                                    <button type="button" class="rel-icon-btn" title="워크플로우 검색" onclick="openWorkflowPicker()"><i class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="sjOrderNumInput">순서</label>
+                                <input type="number" class="form-control" id="sjOrderNumInput" style="width:80px;" value="0">
+                            </div>
+                            <div class="form-group" style="flex:1 1 260px;">
+                                <label for="sjRequestMessageInput">요청메시지 (JSON)</label>
+                                <textarea class="form-control" id="sjRequestMessageInput" rows="2" placeholder='{"REQ001":[{"key":"value"}]}'></textarea>
+                            </div>
+                            <div class="rel-add-actions">
+                                <button type="button" class="ds-btn ds-btn-primary" id="sjWorkflowSubmitBtn" onclick="submitSchedulerJobWorkflow()"><i class="fas fa-plus"></i>추가</button>
+                                <button type="button" class="ds-btn d-none" id="sjWorkflowCancelBtn" onclick="cancelSchedulerJobWorkflowEdit()">취소</button>
+                            </div>
+                        </div>
+                        <div class="rel-list" id="sjWorkflowList"></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="scheduler-history" role="tabpanel" aria-labelledby="scheduler-history-tab">
+                    <div class="ds-tab-toolbar">
+                        <h4>실행 이력 (최근 50건)</h4>
+                        <div class="ds-panel-tools">
+                            <button type="button" class="ds-btn" onclick="getSchedulerJobHistory(SELECTED_JOB_ID)"><i class="fas fa-sync-alt"></i>새로고침</button>
+                        </div>
+                    </div>
+                    <div class="rel-body">
+                        <div class="rel-list" id="sjHistoryList"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</html>

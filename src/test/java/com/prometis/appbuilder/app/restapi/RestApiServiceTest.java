@@ -17,6 +17,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -37,6 +38,7 @@ class RestApiServiceTest {
     private Map<String, Object> restApi(String apiCode, String method, String path, String bodyDataType, String bodyMessageId) {
         Map<String, Object> restApi = new HashMap<>();
         restApi.put("id", "");
+        restApi.put("applicationId", "ehr");
         restApi.put("apiCode", apiCode);
         restApi.put("displayName", apiCode + " 이름");
         restApi.put("httpMethod", method);
@@ -70,9 +72,16 @@ class RestApiServiceTest {
         return params;
     }
 
+    // 콘솔은 URL 의 applicationId 로 저장한다. 테스트에서는 API 정보에 넣어둔 값을 그 자리에 쓴다.
+    @SuppressWarnings("unchecked")
+    private RestApi save(Map<String, Object> params) throws RestApiValidationException {
+        Map<String, Object> restApi = (Map<String, Object>) params.get("restApi");
+        return restApiService.save((String) restApi.get("applicationId"), params);
+    }
+
     @Test
     public void 저장한_정의로_요청을_받아_워크플로우를_실행한다() throws Exception {
-        RestApi saved = restApiService.save(saveParams(
+        RestApi saved = save(saveParams(
                 restApi("GOAL_SAVE", "POST", "goals/{evalId}/", "OBJECT", "ME_EVAL"),
                 List.of(
                         parameter("PATH", "p1", null, "evalId", "INTEGER", true, "ME_GOALS"),
@@ -87,11 +96,11 @@ class RestApiServiceTest {
         assertEquals(4, restApiParameterRepository.findByRestApiIdOrderByOrderNum(saved.getId()).size());
 
         WorkflowService workflowService = mock(WorkflowService.class);
-        when(workflowService.execute(any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(Map.of()));
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(Map.of()));
 
         RestApiExecuteService executeService = executeService(workflowService);
 
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/rest/goals/42");
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/ehr/rest/goals/42");
         request.addHeader("x-user-id", "U01");
 
         RestApiResult.Json response = json(executeService.execute(request, new MockHttpServletResponse(),
@@ -99,7 +108,7 @@ class RestApiServiceTest {
 
         assertEquals(200, response.status());
 
-        verify(workflowService).execute(any(), any(), argThat((RequestMessage message) -> {
+        verify(workflowService).execute(any(), any(), eq("ehr"), argThat((RequestMessage message) -> {
             assertEquals("WF_GOAL_SAVE", message.getHeader().getWorkflowCode());
             assertEquals(List.of(Map.of("X-User-Id", "U01")), message.getBody().get("ME_EVAL"));
             assertEquals(List.of(Map.of("goalId", 1, "evalId", 42), Map.of("goalId", 2, "evalId", 42)), message.getBody().get("ME_GOALS"));
@@ -107,16 +116,16 @@ class RestApiServiceTest {
         }));
 
         // 경로는 맞는데 메소드가 다르면 405, 경로가 없으면 404, 스키마에 어긋나면 400, JSON 이 깨지면 400.
-        assertEquals(405, json(executeService.execute(new MockHttpServletRequest("GET", "/rest/goals/42"), null, null)).status());
-        assertEquals(404, json(executeService.execute(new MockHttpServletRequest("POST", "/rest/nothing"), null, "{}")).status());
+        assertEquals(405, json(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/goals/42"), null, null)).status());
+        assertEquals(404, json(executeService.execute(new MockHttpServletRequest("POST", "/ehr/rest/nothing"), null, "{}")).status());
 
-        MockHttpServletRequest invalid = new MockHttpServletRequest("POST", "/rest/goals/abc");
+        MockHttpServletRequest invalid = new MockHttpServletRequest("POST", "/ehr/rest/goals/abc");
         invalid.addHeader("X-User-Id", "U01");
         ResponseMessage invalidResponse = errorBody(executeService.execute(invalid, null, "{\"goals\":[]}"));
         assertEquals(400, invalidResponse.getStatus());
         assertEquals("Path Variable 'evalId' 는 INTEGER 타입이어야 합니다.", invalidResponse.getMessage());
 
-        MockHttpServletRequest broken = new MockHttpServletRequest("POST", "/rest/goals/1");
+        MockHttpServletRequest broken = new MockHttpServletRequest("POST", "/ehr/rest/goals/1");
         broken.addHeader("X-User-Id", "U01");
         ResponseMessage brokenResponse = errorBody(executeService.execute(broken, null, "{goals:"));
         assertEquals(400, brokenResponse.getStatus());
@@ -164,24 +173,24 @@ class RestApiServiceTest {
     @SuppressWarnings("unchecked")
     public void 응답메시지ID를_지정하면_그_메시지_내용만_메시지ID_키_없이_돌려준다() throws Exception {
         // 목록: ME_GOAL_LIST 의 행마다 goal_id -> goalId(INTEGER), score(NUMBER) 만.
-        restApiService.save(saveParams(jsonApi("GOAL_LIST", "/goals", "ME_GOAL_LIST", "ARRAY"), List.of(
+        save(saveParams(jsonApi("GOAL_LIST", "/goals", "ME_GOAL_LIST", "ARRAY"), List.of(
                 responseItem("r1", null, "goalId", "INTEGER", "goal_id"),
                 responseItem("r2", null, "score", "NUMBER", "")
         )));
         // 한 건: ME_GOAL_LIST 의 첫 행을 스키마 없이 그대로.
-        restApiService.save(saveParams(jsonApi("GOAL_ONE", "/goals/first", "ME_GOAL_LIST", "OBJECT"), List.of()));
+        save(saveParams(jsonApi("GOAL_ONE", "/goals/first", "ME_GOAL_LIST", "OBJECT"), List.of()));
         // 워크플로우가 만들지 않은 메시지는 목록이면 [], 한 건이면 null.
-        restApiService.save(saveParams(jsonApi("EMPTY_LIST", "/empty/list", "ME_NOT_EXECUTED", "ARRAY"), List.of()));
-        restApiService.save(saveParams(jsonApi("EMPTY_ONE", "/empty/one", "ME_NOT_EXECUTED", "OBJECT"), List.of()));
+        save(saveParams(jsonApi("EMPTY_LIST", "/empty/list", "ME_NOT_EXECUTED", "ARRAY"), List.of()));
+        save(saveParams(jsonApi("EMPTY_ONE", "/empty/one", "ME_NOT_EXECUTED", "OBJECT"), List.of()));
 
         WorkflowService workflowService = mock(WorkflowService.class);
-        when(workflowService.execute(any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents(
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents(
                 "ME_GOAL_LIST", List.of(Map.of("goal_id", "1", "score", "87.5", "secret", "x"), Map.of("goal_id", 2L)),
                 "ME_HIDDEN", List.of(Map.of("a", 1))
         )));
         RestApiExecuteService executeService = executeService(workflowService);
 
-        RestApiResult.Json response = json(executeService.execute(new MockHttpServletRequest("GET", "/rest/goals"), null, null));
+        RestApiResult.Json response = json(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/goals"), null, null));
         assertEquals(200, response.status());
 
         Map<String, Object> body = (Map<String, Object>) response.body();
@@ -196,13 +205,13 @@ class RestApiServiceTest {
         assertEquals(2L, goals.get(1).get("goalId"));
         assertNull(goals.get(1).get("score"));
 
-        Map<String, Object> one = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/rest/goals/first"), null, null)).body();
+        Map<String, Object> one = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/goals/first"), null, null)).body();
         assertEquals(Map.of("goal_id", "1", "score", "87.5", "secret", "x"), one.get("contents"));
 
-        Map<String, Object> emptyList = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/rest/empty/list"), null, null)).body();
+        Map<String, Object> emptyList = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/empty/list"), null, null)).body();
         assertEquals(List.of(), emptyList.get("contents"));
 
-        Map<String, Object> emptyOne = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/rest/empty/one"), null, null)).body();
+        Map<String, Object> emptyOne = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/empty/one"), null, null)).body();
         assertTrue(emptyOne.containsKey("contents"));
         assertNull(emptyOne.get("contents"));
     }
@@ -210,8 +219,8 @@ class RestApiServiceTest {
     @Test
     @SuppressWarnings("unchecked")
     public void 응답메시지를_설정하지_않으면_전체를_그대로_돌려주고_스키마에_어긋나면_500() throws Exception {
-        restApiService.save(saveParams(restApi("RAW", "GET", "/raw", null, null), List.of()));
-        restApiService.save(saveParams(jsonApi("TYPED", "/typed", "ME", "ARRAY"), List.of(
+        save(saveParams(restApi("RAW", "GET", "/raw", null, null), List.of()));
+        save(saveParams(jsonApi("TYPED", "/typed", "ME", "ARRAY"), List.of(
                 responseItem("r1", null, "count", "INTEGER", "")
         )));
 
@@ -221,20 +230,20 @@ class RestApiServiceTest {
         );
 
         WorkflowService workflowService = mock(WorkflowService.class);
-        when(workflowService.execute(any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(workflowContents));
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(workflowContents));
         RestApiExecuteService executeService = executeService(workflowService);
 
-        Map<String, Object> raw = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/rest/raw"), null, null)).body();
+        Map<String, Object> raw = (Map<String, Object>) json(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/raw"), null, null)).body();
         assertEquals(workflowContents, raw.get("contents"));
 
-        ResponseMessage typed = errorBody(executeService.execute(new MockHttpServletRequest("GET", "/rest/typed"), null, null));
+        ResponseMessage typed = errorBody(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/typed"), null, null));
         assertEquals(500, typed.getStatus());
         assertEquals(RestApiValidationException.RESPONSE_CODE, typed.getCode());
         assertEquals("Response 'contents[0].count' 는 INTEGER 타입이어야 합니다.", typed.getMessage());
 
         // 워크플로우가 실패하면 응답 설정과 상관없이 워크플로우 오류를 그대로 돌려준다.
-        when(workflowService.execute(any(), any(), any())).thenReturn(ResponseMessage.createErrorMessage(422, "E-BIZ", "업무 오류"));
-        ResponseMessage failed = errorBody(executeService.execute(new MockHttpServletRequest("GET", "/rest/typed"), null, null));
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createErrorMessage(422, "E-BIZ", "업무 오류"));
+        ResponseMessage failed = errorBody(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/typed"), null, null));
         assertEquals(422, failed.getStatus());
         assertEquals("E-BIZ", failed.getCode());
     }
@@ -249,7 +258,7 @@ class RestApiServiceTest {
         base64Api.put("fileNameKey", "file_name");
         base64Api.put("fileName", "default.bin");
         base64Api.put("fileContentTypeKey", "content_type");
-        restApiService.save(saveParams(base64Api, List.of()));
+        save(saveParams(base64Api, List.of()));
 
         Map<String, Object> textApi = restApi("FILE_TEXT", "GET", "/files/text", null, null);
         textApi.put("responseType", "FILE");
@@ -257,7 +266,7 @@ class RestApiServiceTest {
         textApi.put("fileContentKey", "text");
         textApi.put("fileContentEncoding", "TEXT");
         textApi.put("fileName", "보고서.csv");
-        restApiService.save(saveParams(textApi, List.of()));
+        save(saveParams(textApi, List.of()));
 
         byte[] png = new byte[]{(byte) 0x89, 'P', 'N', 'G'};
         Map<String, Object> row = new HashMap<>();
@@ -267,52 +276,84 @@ class RestApiServiceTest {
         row.put("text", "a,b\n1,2");
 
         WorkflowService workflowService = mock(WorkflowService.class);
-        when(workflowService.execute(any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents("ME_FILE", List.of(row))));
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents("ME_FILE", List.of(row))));
         RestApiExecuteService executeService = executeService(workflowService);
 
         RestApiResponseMapper.FileContent base64 = assertInstanceOf(RestApiResult.File.class,
-                executeService.execute(new MockHttpServletRequest("GET", "/rest/files/base64"), null, null)).content();
+                executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/files/base64"), null, null)).content();
         assertArrayEquals(png, base64.bytes());
         assertEquals("logo.png", base64.fileName());
         // Content-Type 컬럼이 비어있으면 파일명 확장자로 정한다.
         assertEquals("image/png", base64.contentType().toString());
 
         RestApiResponseMapper.FileContent text = assertInstanceOf(RestApiResult.File.class,
-                executeService.execute(new MockHttpServletRequest("GET", "/rest/files/text"), null, null)).content();
+                executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/files/text"), null, null)).content();
         assertEquals("a,b\n1,2", new String(text.bytes(), java.nio.charset.StandardCharsets.UTF_8));
         assertEquals("보고서.csv", text.fileName());
 
         // 파일 메시지가 비어있으면 404, 내용이 Base64 가 아니면 500.
-        when(workflowService.execute(any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents("ME_FILE", List.of())));
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents("ME_FILE", List.of())));
         assertEquals(RestApiErrorMessage.NOT_FOUND_FILE.getCode(),
-                errorBody(executeService.execute(new MockHttpServletRequest("GET", "/rest/files/base64"), null, null)).getCode());
+                errorBody(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/files/base64"), null, null)).getCode());
 
         row.put("content", "!!!not base64!!!");
-        when(workflowService.execute(any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents("ME_FILE", List.of(row))));
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(contents("ME_FILE", List.of(row))));
         assertEquals(RestApiErrorMessage.INVALID_FILE_CONTENT.getCode(),
-                errorBody(executeService.execute(new MockHttpServletRequest("GET", "/rest/files/base64"), null, null)).getCode());
+                errorBody(executeService.execute(new MockHttpServletRequest("GET", "/ehr/rest/files/base64"), null, null)).getCode());
     }
 
     @Test
     public void 고정_경로가_경로변수보다_먼저_맞는다() throws Exception {
-        restApiService.save(saveParams(restApi("GOAL_ONE", "GET", "/goals/{goalId}", null, null),
+        save(saveParams(restApi("GOAL_ONE", "GET", "/goals/{goalId}", null, null),
                 List.of(parameter("PATH", "p1", null, "goalId", "STRING", true, "ME"))));
-        restApiService.save(saveParams(restApi("GOAL_SUMMARY", "GET", "/goals/summary", null, null), List.of()));
+        save(saveParams(restApi("GOAL_SUMMARY", "GET", "/goals/summary", null, null), List.of()));
 
         RestApiExecuteService executeService = executeService(mock(WorkflowService.class));
 
-        assertEquals("GOAL_SUMMARY", executeService.findApi(HttpMethodType.GET, "/goals/summary").restApi().getApiCode());
-        assertEquals("GOAL_ONE", executeService.findApi(HttpMethodType.GET, "/goals/7").restApi().getApiCode());
-        assertEquals(Map.of("goalId", "7"), executeService.findApi(HttpMethodType.GET, "/goals/7").pathVariables());
+        assertEquals("GOAL_SUMMARY", executeService.findApi("ehr", HttpMethodType.GET, "/goals/summary").restApi().getApiCode());
+        assertEquals("GOAL_ONE", executeService.findApi("ehr", HttpMethodType.GET, "/goals/7").restApi().getApiCode());
+        assertEquals(Map.of("goalId", "7"), executeService.findApi("ehr", HttpMethodType.GET, "/goals/7").pathVariables());
+    }
+
+    @Test
+    public void API는_요청한_애플리케이션_안에서만_찾는다() throws Exception {
+        save(saveParams(restApi("EHR_GOALS", "GET", "/goals", null, null), List.of()));
+
+        // 애플리케이션이 다르면 같은 메소드/경로여도 저장할 수 있다.
+        Map<String, Object> otherApp = restApi("ERP_GOALS", "GET", "/goals", null, null);
+        otherApp.put("applicationId", "erp");
+        save(saveParams(otherApp, List.of()));
+
+        WorkflowService workflowService = mock(WorkflowService.class);
+        when(workflowService.execute(any(), any(), any(), any())).thenReturn(ResponseMessage.createSuccessMessage(Map.of()));
+        RestApiExecuteService executeService = executeService(workflowService);
+
+        assertEquals("EHR_GOALS", executeService.findApi("ehr", HttpMethodType.GET, "/goals").restApi().getApiCode());
+        assertEquals("ERP_GOALS", executeService.findApi("erp", HttpMethodType.GET, "/goals").restApi().getApiCode());
+
+        // 정의가 없는 애플리케이션으로 들어오면 다른 애플리케이션에 같은 경로가 있어도 404 이고, 워크플로우는 실행하지 않는다.
+        assertEquals(404, json(executeService.execute(new MockHttpServletRequest("GET", "/hr/rest/goals"), null, null)).status());
+        // 다른 애플리케이션에만 있는 메소드는 405 가 아니라 404 로 본다.
+        assertEquals(404, json(executeService.execute(new MockHttpServletRequest("POST", "/hr/rest/goals"), null, "{}")).status());
+        verifyNoInteractions(workflowService);
+
+        // 요청한 애플리케이션의 워크플로우로 실행한다.
+        assertEquals(200, json(executeService.execute(new MockHttpServletRequest("GET", "/erp/rest/goals"), null, null)).status());
+        verify(workflowService).execute(any(), any(), eq("erp"), argThat((RequestMessage message) ->
+                "WF_ERP_GOALS".equals(message.getHeader().getWorkflowCode())));
     }
 
     @Test
     public void 잘못된_정의는_저장하지_않는다() throws Exception {
-        restApiService.save(saveParams(restApi("DUP", "GET", "/items/{id}", null, null),
+        save(saveParams(restApi("DUP", "GET", "/items/{id}", null, null),
                 List.of(parameter("PATH", "p1", null, "id", "STRING", true, "ME"))));
 
         assertDefinitionError("이미 사용중인 API 코드입니다. (DUP)",
                 saveParams(restApi("DUP", "GET", "/other", null, null), List.of()));
+
+        Map<String, Object> noApplication = restApi("NO_APP", "GET", "/no-app", null, null);
+        noApplication.remove("applicationId");
+        assertDefinitionError("애플리케이션ID 을(를) 입력해주세요.", saveParams(noApplication, List.of()));
 
         // 경로변수 이름만 다른 경로는 같은 요청을 받으므로 막는다.
         assertDefinitionError("같은 메소드와 경로의 API 가 이미 있습니다. (DUP : GET /items/{id})",
@@ -363,7 +404,7 @@ class RestApiServiceTest {
     }
 
     private void assertDefinitionError(String message, Map<String, Object> params) {
-        RestApiValidationException e = assertThrows(RestApiValidationException.class, () -> restApiService.save(params));
+        RestApiValidationException e = assertThrows(RestApiValidationException.class, () -> save(params));
         assertEquals(message, e.getMessage());
         assertEquals(RestApiValidationException.DEFINITION_CODE, e.getCode());
     }

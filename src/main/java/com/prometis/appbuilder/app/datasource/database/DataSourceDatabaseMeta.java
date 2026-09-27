@@ -10,12 +10,15 @@ import javax.sql.DataSource;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="DATA_SOURCE_DATABASE_META_UQ",columnNames={"DATA_SOURCE_NAME"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="DATA_SOURCE_DATABASE_META_UQ",columnNames={"APPLICATION_ID","DATA_SOURCE_NAME"})})
 @Entity
 public class DataSourceDatabaseMeta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String dataSourceName;

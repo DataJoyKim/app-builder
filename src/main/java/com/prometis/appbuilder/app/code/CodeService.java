@@ -19,7 +19,7 @@ public class CodeService {
 
     private final QueryService queryService;
 
-    public Map<String, List<CodeResponse>> getCode(List<CodeRequest> params) {
+    public Map<String, List<CodeResponse>> getCode(String applicationId, List<CodeRequest> params) {
         List<String> sqlCodes = new ArrayList<>();
         List<String> commonCodeKindCodes = new ArrayList<>();
 
@@ -32,15 +32,15 @@ public class CodeService {
             }
         }
 
-        Map<String, List<CodeResponse>> response = createCommonCode(commonCodeKindCodes);
+        Map<String, List<CodeResponse>> response = createCommonCode(applicationId, commonCodeKindCodes);
 
-        response.putAll(createSqlCode(sqlCodes));
+        response.putAll(createSqlCode(applicationId, sqlCodes));
 
         return response;
     }
 
-    private Map<String, List<CodeResponse>> createCommonCode(List<String> commonCodeKindCodes) {
-        List<CommonCode> commonCodes = commonCodeRepository.findByCodeKindCodes(commonCodeKindCodes);
+    private Map<String, List<CodeResponse>> createCommonCode(String applicationId, List<String> commonCodeKindCodes) {
+        List<CommonCode> commonCodes = commonCodeRepository.findByCodeKindCodes(applicationId, commonCodeKindCodes);
 
         Map<String, List<CommonCode>> commonCodeMap = commonCodes.stream().collect(Collectors.groupingBy(CommonCode::getCommonCodeKindCode));
 
@@ -55,14 +55,14 @@ public class CodeService {
         return response;
     }
 
-    private Map<String, List<CodeResponse>> createSqlCode(List<String> sqlCodes) {
+    private Map<String, List<CodeResponse>> createSqlCode(String applicationId, List<String> sqlCodes) {
         Map<String, List<CodeResponse>> response = new HashMap<>();
 
         for(String name : sqlCodes) {
             QueryRequest queryParam = QueryRequest.builder()
                     .build();
 
-            QueryResult queryResult = queryService.execute(name, queryParam);
+            QueryResult queryResult = queryService.execute(applicationId, name, queryParam);
 
             response.put(name, CodeResponse.ofSql(queryResult.getResults()));
         }

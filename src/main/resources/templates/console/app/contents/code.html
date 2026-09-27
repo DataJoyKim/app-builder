@@ -1,0 +1,128 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+</style>
+<script th:fragment="script">
+        let P_OBJECT_CODE;
+        $( document ).ready(function() {
+            console.log('version.0.0.1');
+            init();
+        });
+
+        function init() {
+            var codes = {
+                "CodeType":[
+                    {code:"",name:""},
+                    {code:"SQL",name:"SQL"},
+                    {code:"COMMON_CODE",name:"공통코드"}
+                ]
+            };
+
+            grid.initSheet('jsGrid1', "100%","500px",
+            [
+                {name: "id", title:"ID", type: "number", width: 50, hidden:true, editing: false, inserting: false},
+                {name: "name", title:"name", type: "text", width: 150 },
+                {name: "target", title:"target", type: "text", width: 150 },
+                {name: "type", title:"type", type: "select", width: 80, items: codes["CodeType"], valueField: "code", textField: "name" },
+                { type: "control", editButton: true, width: 30, modeSwitchButton: false }
+            ],
+            function(args) {},
+            {
+                inserting: true,
+                editing: true,
+                onItemInserting: function(args) {
+                    insertItem(args.item);
+                },
+                onItemUpdated: function(args) {
+                    updateItem(args.item);
+                },
+                onItemDeleting: function(args) {
+                    deleteItem(args.item);
+                }
+            });
+
+            App.modalPopup.receiveParam('CODE_REQUEST', function(data){
+                if(!data.objectCode) {
+                    alert('오브젝트코드가 존재하지않습니다.');
+                }
+
+                P_OBJECT_CODE = data.objectCode;
+                getList();
+            });
+        }
+
+        function getList() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/object/code`, {objectCode:P_OBJECT_CODE},
+                function(response){
+                    grid.setSheetData('jsGrid1', response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function insertItem(item) {
+            httpClient.post(`/${APPLICATION_ID}/console/api/object/code`,{},
+                {
+                   objectCode:P_OBJECT_CODE,
+                   name:item.name,
+                   target:item.target,
+                   type:item.type
+                },
+                function(response){
+                    alert("생성 완료되었습니다.");
+                    getList();
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function updateItem(item) {
+          httpClient.put(`/${APPLICATION_ID}/console/api/object/code/${item.id}`, {},
+              {
+                   objectCode:P_OBJECT_CODE,
+                   name:item.name,
+                   target:item.target,
+                   type:item.type
+              },
+              function(response){
+                  alert("변경 완료되었습니다.");
+                  getList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function deleteItem(item) {
+          httpClient.delete(`/${APPLICATION_ID}/console/api/object/code/${item.id}`, {},
+              function(response){
+                  alert("삭제 완료되었습니다.");
+                  getList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+    </script>
+<div th:fragment="view">
+    <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Code</h3>
+                        <div class="card-tools">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="jsGrid1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>

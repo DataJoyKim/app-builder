@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * 워크플로우에 허용한 도메인. 권한(WorkflowAuthority)과 같은 방식으로 워크플로우에 매핑한다.
+ * 워크플로우에 허용한 도메인. 권한(WorkflowPermission)과 같은 방식으로 워크플로우에 매핑한다.
  * 한 건도 없으면 도메인 제한을 쓰지 않는 워크플로우다.
  * domain 에는 정확한 도메인(portal.example.com) 외에 와일드카드(*.example.com, dev-*.example.com, *)도 쓸 수 있다.
  */

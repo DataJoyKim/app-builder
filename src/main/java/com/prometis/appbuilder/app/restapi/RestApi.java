@@ -9,13 +9,13 @@ import lombok.*;
 
 /**
  * 워크플로우 하나를 감싸서 외부에 공개하는 REST API 정의.
- * URL_PREFIX{path} 로 들어온 요청을 파라미터 정의(RestApiParameter)대로 검증하고 요청메시지에 담아 workflowCode 워크플로우를 실행한다.
+ * /{applicationId}URL_PREFIX{path} 로 들어온 요청을 파라미터 정의(RestApiParameter)대로 검증하고 요청메시지에 담아 workflowCode 워크플로우를 실행한다.
  */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="REST_API_UQ", columnNames={"API_CODE"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="REST_API_UQ", columnNames={"APPLICATION_ID","API_CODE"})})
 @Entity
 public class RestApi {
     public static final String URL_PREFIX = "/rest";
@@ -23,6 +23,10 @@ public class RestApi {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // 이 API 가 속한 애플리케이션. /{applicationId}URL_PREFIX{path} 로 들어온 요청만 이 API 로 찾는다.
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(name = "API_CODE", nullable = false, length = 100)
     private String apiCode;
@@ -141,6 +145,7 @@ public class RestApi {
     }
 
     public void update(
+            String applicationId,
             String apiCode,
             String displayName,
             HttpMethodType httpMethod,
@@ -151,6 +156,7 @@ public class RestApi {
             String description,
             Boolean enabled
     ) {
+        this.applicationId = applicationId;
         this.apiCode = apiCode;
         this.displayName = displayName;
         this.httpMethod = httpMethod;

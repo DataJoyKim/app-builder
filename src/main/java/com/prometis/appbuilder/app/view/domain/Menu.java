@@ -10,12 +10,14 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table
+@Table(uniqueConstraints = {@UniqueConstraint(name="MENU_UQ",columnNames={"applicationId","menuCd"})})
 @Entity
 public class Menu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, length = 100)
+    private String applicationId;
     @Column(nullable = false, length = 100)
     private String menuCd;
     @Column(nullable = false, length = 200)

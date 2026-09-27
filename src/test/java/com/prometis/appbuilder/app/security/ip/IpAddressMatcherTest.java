@@ -1,6 +1,5 @@
 package com.prometis.appbuilder.app.security.ip;
 
-import com.prometis.appbuilder.app.security.ip.IpAddressMatcher;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

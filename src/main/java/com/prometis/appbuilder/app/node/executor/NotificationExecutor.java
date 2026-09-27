@@ -9,7 +9,7 @@ import com.prometis.appbuilder.app.node.code.ResultType;
 import com.prometis.appbuilder.app.notification.NotificationRequest;
 import com.prometis.appbuilder.app.notification.NotificationResult;
 import com.prometis.appbuilder.app.notification.NotificationService;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +37,7 @@ public class NotificationExecutor implements NodeExecutor {
                     .params(param)
                     .build();
 
-            NotificationResult result = notificationService.execute(functionName, notificationRequest);
+            NotificationResult result = notificationService.execute(header.getApplicationId(), functionName, notificationRequest);
 
             if(result.getResultCode() == SendResultType.FAILURE) {
                 resultType = ResultType.FAILURE;

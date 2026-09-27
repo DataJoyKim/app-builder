@@ -14,14 +14,14 @@ import org.springframework.stereotype.Service;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
 
-    public NotificationResult execute(String notificationName, NotificationRequest params) {
+    public NotificationResult execute(String applicationId, String notificationName, NotificationRequest params) {
 
-        Notification notification = notificationRepository.findByNotificationName(notificationName)
+        Notification notification = notificationRepository.findByApplicationIdAndNotificationName(applicationId, notificationName)
                 .orElseThrow();
 
         NotificationMessage message = notification.createMessage(new ParameterExpression(), params);
 
-        NotificationSender notificationSender = DataSourceNotificationRegister.getDataSource(LookupKey.generateKey(notification.getDataSourceName()));
+        NotificationSender notificationSender = DataSourceNotificationRegister.getDataSource(LookupKey.generateKey(notification.getApplicationId(), notification.getDataSourceName()));
 
         if(notification.getEnableSend() != null && notification.getEnableSend()) {
             SendResult sendResult = notificationSender.send(notificationName, message.getTo(), message.getSubject(), message.getContent());

@@ -8,7 +8,7 @@ import com.prometis.appbuilder.app.entity.code.EntityResultCode;
 import com.prometis.appbuilder.app.node.NodeExecutor;
 import com.prometis.appbuilder.app.node.NodeResult;
 import com.prometis.appbuilder.app.node.code.ResultType;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +26,7 @@ public class EntityExecutor implements NodeExecutor {
                                         .contents(params)
                                         .build();
 
-        EntityResult results = entityService.execute(functionName, entityParams);
+        EntityResult results = entityService.execute(header.getApplicationId(), functionName, entityParams);
 
         return NodeResult.builder()
                 .resultType(EntityResultCode.SUCCESS.equals(results.getResultCode()) ? ResultType.SUCCESS : ResultType.FAILURE)

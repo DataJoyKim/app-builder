@@ -1,7 +1,7 @@
 package com.prometis.appbuilder.app.node;
 
 import com.prometis.appbuilder.app.dto.RequestMessage;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 
 import java.util.List;
 import java.util.Map;

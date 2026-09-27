@@ -12,6 +12,8 @@ import com.prometis.appbuilder.app.node.code.FunctionType;
 import com.prometis.appbuilder.app.restapi.code.FileContentEncoding;
 import com.prometis.appbuilder.app.workflow.Workflow;
 import com.prometis.appbuilder.app.workflow.WorkflowRepository;
+import com.prometis.appbuilder.platform.application.Application;
+import com.prometis.appbuilder.platform.application.ApplicationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -41,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @AutoConfigureMockMvc
 class WorkflowMultipartUploadTest {
+    private static final String APPLICATION_ID = "ehr";
     private static final String DATA_SOURCE = "LOCAL_FILES";
     private static final String WORKFLOW_CODE = "WF_FILE_UPLOAD";
     private static final String HANDLER_NAME = "UPLOAD_BOARD_FILE";
@@ -48,6 +51,8 @@ class WorkflowMultipartUploadTest {
     @TempDir
     Path rootPath;
 
+    @Autowired
+    ApplicationRepository applicationRepository;
     @Autowired
     MockMvc mockMvc;
     @Autowired
@@ -59,12 +64,18 @@ class WorkflowMultipartUploadTest {
 
     @BeforeEach
     void setUp() {
+        // 워크플로우 실행은 애플리케이션이 있어야 한다(ApplicationGuard)
+        if(applicationRepository.findByApplicationId(APPLICATION_ID).isEmpty()) {
+            applicationRepository.save(Application.builder().applicationId(APPLICATION_ID).name(APPLICATION_ID).status("ACTIVE").build());
+        }
+
         // 테스트마다 같은 정의를 다시 넣으므로 먼저 비운다. (H2 인메모리 DB 를 테스트끼리 공유한다)
         workflowNodeRepository.deleteAll();
         workflowRepository.deleteAll();
         fileHandlerRepository.deleteAll();
 
         DataSourceFileStorageRegister.initialize(List.of(DataSourceFileStorage.builder()
+                .applicationId(APPLICATION_ID)
                 .dataSourceName(DATA_SOURCE)
                 .displayName("로컬 파일")
                 .storageType(StorageType.LOCAL)
@@ -74,6 +85,7 @@ class WorkflowMultipartUploadTest {
         fileHandlerRepository.save(FileHandler.builder()
                 .handlerName(HANDLER_NAME)
                 .displayName("게시판 첨부 업로드")
+                .applicationId(APPLICATION_ID)
                 .dataSourceName(DATA_SOURCE)
                 .actionType(FileActionType.UPLOAD)
                 // 업로드된 파일의 원본 파일명으로 저장한다.
@@ -83,6 +95,7 @@ class WorkflowMultipartUploadTest {
                 .build());
 
         Workflow workflow = workflowRepository.save(Workflow.builder()
+                .applicationId(APPLICATION_ID)
                 .workflowCode(WORKFLOW_CODE)
                 .displayName("첨부파일 업로드")
                 .useAuthValidation(false)
@@ -105,7 +118,7 @@ class WorkflowMultipartUploadTest {
         byte[] content = "첨부파일 내용".getBytes(StandardCharsets.UTF_8);
         MockMultipartFile file = new MockMultipartFile("files", "첨부.txt", "text/plain", content);
 
-        MvcResult result = mockMvc.perform(multipart("/workflow")
+        MvcResult result = mockMvc.perform(multipart("/" + APPLICATION_ID + "/workflow")
                         .file(file)
                         // 파일경로에 쓸 값은 파일 노드의 요청메시지로 보낸다.
                         .param("message", "{\"header\":{\"workflowCode\":\"" + WORKFLOW_CODE + "\"},\"body\":{\"uploadParam\":[{\"boardId\":\"7\"}]}}"))
@@ -127,7 +140,7 @@ class WorkflowMultipartUploadTest {
         MockMultipartFile first = new MockMultipartFile("files", "first.txt", "text/plain", "1번".getBytes(StandardCharsets.UTF_8));
         MockMultipartFile second = new MockMultipartFile("files", "second.txt", "text/plain", "2번".getBytes(StandardCharsets.UTF_8));
 
-        MvcResult result = mockMvc.perform(multipart("/workflow")
+        MvcResult result = mockMvc.perform(multipart("/" + APPLICATION_ID + "/workflow")
                         .file(first)
                         .file(second)
                         .param("message", "{\"header\":{\"workflowCode\":\"" + WORKFLOW_CODE + "\"},\"body\":{\"uploadParam\":[{\"boardId\":\"9\"}]}}"))
@@ -143,7 +156,7 @@ class WorkflowMultipartUploadTest {
 
     @Test
     void 파일수와_요청메시지_행수가_맞지않으면_실패로_응답한다() throws Exception {
-        MvcResult result = mockMvc.perform(multipart("/workflow")
+        MvcResult result = mockMvc.perform(multipart("/" + APPLICATION_ID + "/workflow")
                         .file(new MockMultipartFile("files", "a.txt", "text/plain", "a".getBytes(StandardCharsets.UTF_8)))
                         .param("message", "{\"header\":{\"workflowCode\":\"" + WORKFLOW_CODE + "\"},\"body\":{\"uploadParam\":[{\"boardId\":\"1\"},{\"boardId\":\"2\"}]}}"))
                 .andExpect(status().is5xxServerError())
@@ -156,7 +169,7 @@ class WorkflowMultipartUploadTest {
 
     @Test
     void 파일없이_호출하면_업로드_실패로_응답한다() throws Exception {
-        MvcResult result = mockMvc.perform(multipart("/workflow")
+        MvcResult result = mockMvc.perform(multipart("/" + APPLICATION_ID + "/workflow")
                         .param("message", "{\"header\":{\"workflowCode\":\"" + WORKFLOW_CODE + "\"},\"body\":{\"uploadParam\":[{\"boardId\":\"7\"}]}}"))
                 .andExpect(status().is5xxServerError())
                 .andReturn();
@@ -168,7 +181,7 @@ class WorkflowMultipartUploadTest {
 
     @Test
     void 요청메시지_파트가_없으면_400() throws Exception {
-        mockMvc.perform(multipart("/workflow")
+        mockMvc.perform(multipart("/" + APPLICATION_ID + "/workflow")
                         .file(new MockMultipartFile("files", "a.txt", "text/plain", "aaa".getBytes(StandardCharsets.UTF_8))))
                 .andExpect(status().isBadRequest());
     }

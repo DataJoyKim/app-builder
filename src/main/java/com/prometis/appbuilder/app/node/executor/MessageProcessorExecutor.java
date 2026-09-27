@@ -9,7 +9,7 @@ import com.prometis.appbuilder.app.node.NodeConfig;
 import com.prometis.appbuilder.app.node.NodeExecutor;
 import com.prometis.appbuilder.app.node.NodeResult;
 import com.prometis.appbuilder.app.node.code.ResultType;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +30,7 @@ public class MessageProcessorExecutor implements NodeExecutor {
                 .contents(params)
                 .build();
 
-        MessageProcessorResult result = messageProcessorService.execute(functionName, request);
+        MessageProcessorResult result = messageProcessorService.execute(header.getApplicationId(), functionName, request);
 
         List<Map<String,Object>> results = new ArrayList<>();
         Object resultObj = result.getContent();

@@ -38,7 +38,7 @@ class FileExecutorTest {
         fileService = mock(FileService.class);
         fileExecutor = new FileExecutor(fileService, new NodeConfig());
 
-        when(fileService.execute(eq(HANDLER), any())).thenReturn(FileResult.success("업로드 성공하였습니다.", Map.of("filePath", "board/1/a.txt")));
+        when(fileService.execute(any(), eq(HANDLER), any())).thenReturn(FileResult.success("업로드 성공하였습니다.", Map.of("filePath", "board/1/a.txt")));
     }
 
     private static RequestMessage.Header header(MultipartFile... files) {
@@ -55,7 +55,7 @@ class FileExecutorTest {
 
     private List<FileRequest> capturedRequests() {
         ArgumentCaptor<FileRequest> captor = ArgumentCaptor.forClass(FileRequest.class);
-        verify(fileService, atLeastOnce()).execute(eq(HANDLER), captor.capture());
+        verify(fileService, atLeastOnce()).execute(any(), eq(HANDLER), captor.capture());
 
         return captor.getAllValues();
     }
@@ -117,7 +117,7 @@ class FileExecutorTest {
 
         assertEquals(ResultType.FAILURE, result.getResultType());
         assertTrue(String.valueOf(result.getResults().get(0).get("message")).contains("파일 수"));
-        verify(fileService, never()).execute(any(), any());
+        verify(fileService, never()).execute(any(), any(), any());
     }
 
     @Test
@@ -140,7 +140,7 @@ class FileExecutorTest {
 
     @Test
     void 한건이라도_실패하면_노드_결과가_실패다() {
-        when(fileService.execute(eq(HANDLER), any()))
+        when(fileService.execute(any(), eq(HANDLER), any()))
                 .thenReturn(FileResult.success("업로드 성공하였습니다.", Map.of("filePath", "board/1/a.txt")))
                 .thenReturn(FileResult.failure("이미 파일이 존재합니다."));
 

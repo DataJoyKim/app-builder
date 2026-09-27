@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IpGroupRepository extends JpaRepository<IpGroup, Long> {
-    Optional<IpGroup> findByGroupCode(String groupCode);
+    Optional<IpGroup> findByApplicationIdAndGroupCode(String applicationId, String groupCode);
 
-    List<IpGroup> findByGroupCodeIn(List<String> groupCodes);
+    List<IpGroup> findByApplicationIdAndGroupCodeIn(String applicationId, List<String> groupCodes);
 
-    List<IpGroup> findAllByOrderByGroupCodeAsc();
+    List<IpGroup> findByApplicationIdOrderByGroupCodeAsc(String applicationId);
 }

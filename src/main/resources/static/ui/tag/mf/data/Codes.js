@@ -19,7 +19,7 @@ export class Codes extends AbstractData {
         }
 
         if(codes.length > 0) {
-            App.httpClient.post(`/code`,{},codes,
+            App.httpClient.post(`/${APPLICATION_ID}/code`,{},codes,
                 function(response){
                     if(response) {
                         let codeVariable = self.getCodeVariable();

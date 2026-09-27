@@ -16,7 +16,7 @@ public class DataSourceDatabaseValidator {
         Connection conn = null;
         Statement stmt = null;
 
-        LookupKey lookupKey = LookupKey.generateKey(metadata.getDataSourceName());
+        LookupKey lookupKey = LookupKey.generateKey(metadata.getApplicationId(), metadata.getDataSourceName());
 
         DataSource dataSource = dataSourceMap.get(lookupKey);
 

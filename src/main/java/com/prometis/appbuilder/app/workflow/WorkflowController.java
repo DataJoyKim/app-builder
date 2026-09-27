@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @RestController
+@RequestMapping("/{applicationId}")
 public class WorkflowController {
     @Autowired
     WorkflowService workflowService;
@@ -23,9 +24,10 @@ public class WorkflowController {
     public ResponseEntity<?> workflow(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse,
+            @PathVariable(name = "applicationId") String applicationId,
             @RequestBody RequestMessage requestMessage
     ) {
-        ResponseMessage responseMessage = workflowService.execute(httpRequest, httpResponse, requestMessage);
+        ResponseMessage responseMessage = workflowService.execute(httpRequest, httpResponse, applicationId, requestMessage);
 
         return new ResponseEntity<>(responseMessage, HttpStatus.valueOf(responseMessage.getStatus()));
     }
@@ -38,6 +40,7 @@ public class WorkflowController {
     public ResponseEntity<?> workflowMultipart(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse,
+            @PathVariable(name = "applicationId") String applicationId,
             MultipartHttpServletRequest multipartRequest
     ) {
         RequestMessage requestMessage;
@@ -51,7 +54,7 @@ public class WorkflowController {
             return new ResponseEntity<>(errorMessage, HttpStatus.valueOf(errorMessage.getStatus()));
         }
 
-        ResponseMessage responseMessage = workflowService.execute(httpRequest, httpResponse, requestMessage);
+        ResponseMessage responseMessage = workflowService.execute(httpRequest, httpResponse, applicationId, requestMessage);
 
         return new ResponseEntity<>(responseMessage, HttpStatus.valueOf(responseMessage.getStatus()));
     }

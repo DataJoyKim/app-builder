@@ -5,6 +5,7 @@ import com.prometis.appbuilder.app.entity.code.ColumnType;
 import com.prometis.appbuilder.app.entity.code.NullResolveType;
 import com.prometis.appbuilder.app.entity.code.SelectWhereType;
 import com.prometis.appbuilder.app.entity.code.SortOrder;
+import com.prometis.appbuilder.app.entity.query.EntityParamNullException;
 import com.prometis.appbuilder.app.entity.query.EntityQueryGenerator;
 import com.prometis.appbuilder.app.entity.query.InsertQuery;
 import com.prometis.appbuilder.app.entity.query.SelectQuery;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 class EntityQueryGeneratorTest {
 
     @Test
@@ -21,12 +24,38 @@ class EntityQueryGeneratorTest {
         // Given
         String tableName = "goal";
 
+        // goalId 는 자동증가 키라 값이 없으면 insert 문에서 뺀다.
+        List<EntityColumn> entityColumns = goalColumns(NullResolveType.EXCLUDE_QUERY);
+
+        // When
+        EntityQueryGenerator generator = new InsertQuery();
+
+        String query = generator.generate(tableName, entityColumns);
+
+        // Then
+        System.out.println(query);
+        assertTrue(query.startsWith("insert goal ("), query);
+        assertFalse(query.contains("goalId"), query);
+        assertTrue(query.contains("goalName"), query);
+        assertTrue(query.contains("#{goalName}"), query);
+        assertTrue(query.contains("#{goalKind}"), query);
+    }
+
+    @Test
+    void generateInsertQuery_null값을_허용하지않는_컬럼이_비어있으면_예외() {
+        EntityQueryGenerator generator = new InsertQuery();
+
+        assertThrows(EntityParamNullException.class,
+                () -> generator.generate("goal", goalColumns(NullResolveType.EXCEPTION)));
+    }
+
+    private List<EntityColumn> goalColumns(NullResolveType goalIdNullResolveType) {
         List<EntityColumn> entityColumns = new ArrayList<>();
         entityColumns.add(EntityColumn.builder()
                 .columnName("goalId")
                 .value(null)
                 .columnType(ColumnType.NUMBER)
-                .insertNullResolveType(NullResolveType.EXCEPTION)
+                .insertNullResolveType(goalIdNullResolveType)
                 .build());
 
         entityColumns.add(EntityColumn.builder()
@@ -43,13 +72,7 @@ class EntityQueryGeneratorTest {
                 .insertNullResolveType(NullResolveType.SET_NULL)
                 .build());
 
-        // When
-        EntityQueryGenerator generator = new InsertQuery();
-
-        String query = generator.generate(tableName, entityColumns);
-
-        // Then
-        System.out.println(query);
+        return entityColumns;
     }
 
     @Test

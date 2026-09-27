@@ -13,7 +13,7 @@ public class DataSourceRestServerValidator {
     public ConnectValidation validateConnect(DataSourceRestServer metadata, Map<LookupKey, RestClient> dataSourceMap) {
         ConnectValidation validate = new ConnectValidation();
 
-        LookupKey lookupKey = LookupKey.generateKey(metadata.getDataSourceName());
+        LookupKey lookupKey = LookupKey.generateKey(metadata.getApplicationId(), metadata.getDataSourceName());
 
         RestClient restClient = dataSourceMap.get(lookupKey);
 

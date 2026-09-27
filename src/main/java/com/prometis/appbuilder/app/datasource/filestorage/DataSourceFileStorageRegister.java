@@ -17,7 +17,7 @@ public class DataSourceFileStorageRegister {
 
         for(DataSourceFileStorage meta : metadataList) {
             try {
-                dataSourceMap.put(LookupKey.generateKey(meta.getDataSourceName()), meta.createDataSource());
+                dataSourceMap.put(LookupKey.generateKey(meta.getApplicationId(), meta.getDataSourceName()), meta.createDataSource());
                 log.info("BusinessDataSource - initialized businessDataSource : [{}]", meta.getDataSourceName());
             }
             catch (Exception e) {
@@ -38,7 +38,7 @@ public class DataSourceFileStorageRegister {
     public static void registry(DataSourceFileStorage meta) throws FileStorageCreationException {
         FileStorage dataSource = meta.createDataSource();
 
-        LookupKey lookupKey = LookupKey.generateKey(meta.getDataSourceName());
+        LookupKey lookupKey = LookupKey.generateKey(meta.getApplicationId(), meta.getDataSourceName());
 
         dataSourceMap.put(lookupKey, dataSource);
     }

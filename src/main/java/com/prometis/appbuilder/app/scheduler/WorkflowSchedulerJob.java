@@ -68,7 +68,7 @@ public class WorkflowSchedulerJob implements Job {
             try {
                 RequestMessage requestMessage = buildRequestMessage(workflowCode, jobWorkflow.getRequestMessageJson());
 
-                ResponseMessage responseMessage = workflowService.execute(request, response, requestMessage);
+                ResponseMessage responseMessage = workflowService.execute(request, response, schedulerJob.getApplicationId(), requestMessage);
 
                 if(ResultType.SUCCESS.equals(responseMessage.getResultType())) {
                     successCount++;

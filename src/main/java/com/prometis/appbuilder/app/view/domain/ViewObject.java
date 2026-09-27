@@ -8,12 +8,15 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="VIEW_OBJECT_UQ",columnNames={"objectCode"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="VIEW_OBJECT_UQ",columnNames={"applicationId","objectCode"})})
 @Entity
 public class ViewObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
     @Column(nullable = false, length = 100)
     private String objectCode;
     @Column(nullable = false, length = 200)
@@ -25,8 +28,9 @@ public class ViewObject {
     private String path;
     @Column
     private Boolean useAuthValidation;
-    @Column
-    private Boolean useAuthorityValidation;
+    // 기존 데이터 보존을 위해 DB 컬럼명은 그대로 둔다
+    @Column(name = "USE_AUTHORITY_VALIDATION")
+    private Boolean usePermissionValidation;
     @Column
     private Boolean useToolbar;
 
@@ -36,7 +40,7 @@ public class ViewObject {
             ObjectType type,
             String path,
             Boolean useAuthValidation,
-            Boolean useAuthorityValidation,
+            Boolean usePermissionValidation,
             Boolean useToolbar
     ) {
         this.objectCode = objectCode;
@@ -44,7 +48,7 @@ public class ViewObject {
         this.type = type;
         this.path = path;
         this.useAuthValidation = useAuthValidation;
-        this.useAuthorityValidation = useAuthorityValidation;
+        this.usePermissionValidation = usePermissionValidation;
         this.useToolbar = useToolbar;
     }
 }

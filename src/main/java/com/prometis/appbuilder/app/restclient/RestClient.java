@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="REST_CLIENT_UQ",columnNames={"clientName"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="REST_CLIENT_UQ",columnNames={"applicationId","clientName"})})
 @Entity
 public class RestClient {
     private final String PARENT_ROOT_NAME = "ROOT";
@@ -27,6 +27,9 @@ public class RestClient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String clientName;

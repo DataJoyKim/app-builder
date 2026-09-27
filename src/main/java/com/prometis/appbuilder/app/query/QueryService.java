@@ -17,8 +17,8 @@ import java.util.*;
 public class QueryService {
     private final QueryRepository queryRepository;
 
-    public QueryResult execute(String queryName, QueryRequest params) {
-        Optional<Query> opQuery = queryRepository.findByQueryName(queryName);
+    public QueryResult execute(String applicationId, String queryName, QueryRequest params) {
+        Optional<Query> opQuery = queryRepository.findByApplicationIdAndQueryName(applicationId, queryName);
         if(opQuery.isEmpty()) {
             throw new RuntimeException("요청한 리소스가 존재하지않습니다. [code:"+queryName+"]");
         }
@@ -27,7 +27,7 @@ public class QueryService {
 
         SqlQuery sqlQuery = query.generateQuery(params);
 
-        SqlExecutor sqlExecutor = SqlExecutor.createSqlExecutor(query.getDataSourceName());
+        SqlExecutor sqlExecutor = SqlExecutor.createSqlExecutor(query.getApplicationId(), query.getDataSourceName());
 
         List<Map<String, Object>> resultData = new ArrayList<>();
 

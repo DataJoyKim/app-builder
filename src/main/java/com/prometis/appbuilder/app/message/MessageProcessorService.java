@@ -15,9 +15,9 @@ public class MessageProcessorService {
     private final MessageProcessorRepository messageProcessorRepository;
     private final ScriptEngine scriptEngine;
 
-    public MessageProcessorResult execute(String processorName, MessageProcessorRequest params) {
+    public MessageProcessorResult execute(String applicationId, String processorName, MessageProcessorRequest params) {
         try {
-            Optional<MessageProcessor> processorOptional = messageProcessorRepository.findByProcessorName(processorName);
+            Optional<MessageProcessor> processorOptional = messageProcessorRepository.findByApplicationIdAndProcessorName(applicationId, processorName);
 
             if (processorOptional.isEmpty()) {
                 throw new RuntimeException("요청한 리소스가 존재하지않습니다. [code:" + processorName + "]");

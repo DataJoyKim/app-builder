@@ -1,0 +1,34 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- Brand Logo -->
+<div th:fragment="sidebar-logo">
+    <a href="/console" class="brand-link">
+        <img src="dist/img/mono-flow-logo.png" alt="App Builder Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light">Platform Console</span>
+    </a>
+</div>
+
+<!-- Sidebar -->
+<div th:fragment="sidebar-menu">
+    <div class="sidebar">
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+                <li class="nav-item">
+                    <a href="/console/application" class="nav-link">
+                        <i class="fas fa-cubes nav-icon"></i><p>Application</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/console/user" class="nav-link">
+                        <i class="fas fa-user nav-icon"></i><p>User</p>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+    </div>
+</div>
+<!-- /.sidebar -->

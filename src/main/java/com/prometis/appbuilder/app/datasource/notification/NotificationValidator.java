@@ -14,7 +14,7 @@ public class NotificationValidator {
     public ConnectValidation validateConnect(NotificationProvider metadata, Map<LookupKey, NotificationSender> dataSourceMap) {
         ConnectValidation validate = new ConnectValidation();
 
-        LookupKey lookupKey = LookupKey.generateKey(metadata.getDataSourceName());
+        LookupKey lookupKey = LookupKey.generateKey(metadata.getApplicationId(), metadata.getDataSourceName());
 
         NotificationSender notification = dataSourceMap.get(lookupKey);
 

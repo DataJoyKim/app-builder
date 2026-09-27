@@ -1,7 +1,6 @@
 package com.prometis.appbuilder.app.workflow;
 
-import com.prometis.appbuilder.app.workflow.*;
-import com.prometis.appbuilder.console.rest.WorkflowRestController;
+import com.prometis.appbuilder.console.app.rest.WorkflowRestController;
 import com.prometis.appbuilder.app.node.WorkflowNode;
 import com.prometis.appbuilder.app.node.WorkflowNodeRepository;
 import com.prometis.appbuilder.app.workflow.code.BranchType;
@@ -99,11 +98,11 @@ class WorkflowSaveIntegrationTest {
                 condition("node-2", "c1", "params[0].eval_way_cd === 'QUANT_EVAL'", 0),
                 condition("node-2", "c2", "params[0].eval_way_cd === 'QUAL_EVAL'", 1)
         ));
-        params.put("workflowAuthority", new ArrayList<Map<String,Object>>());
+        params.put("workflowPermission", new ArrayList<Map<String,Object>>());
 
-        workflowRestController.save(params);
+        workflowRestController.save("ehr", params);
 
-        Workflow saved = workflowRepository.findByWorkflowCode("TEST1000_R01").orElseThrow();
+        Workflow saved = workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "TEST1000_R01").orElseThrow();
 
         List<WorkflowNode> functions = workflowNodeRepository.findByWorkflowId(saved.getId());
         List<WorkflowEdge> edges = workflowEdgeRepository.findByWorkflowIdOrderByOrderNum(saved.getId());
@@ -165,11 +164,11 @@ class WorkflowSaveIntegrationTest {
                 edge("node-3", "node-4", "DEFAULT", null, 3)
         ));
         params.put("workflowConditions", List.of(condition("node-1", "c1", "params[0].grade === 'A'", 0)));
-        params.put("workflowAuthority", new ArrayList<Map<String,Object>>());
+        params.put("workflowPermission", new ArrayList<Map<String,Object>>());
 
-        workflowRestController.save(params);
+        workflowRestController.save("ehr", params);
 
-        Workflow saved = workflowRepository.findByWorkflowCode("TEST1000_R03").orElseThrow();
+        Workflow saved = workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "TEST1000_R03").orElseThrow();
 
         List<WorkflowNode> functions = workflowNodeRepository.findByWorkflowId(saved.getId());
         List<WorkflowEdge> edges = workflowEdgeRepository.findByWorkflowIdOrderByOrderNum(saved.getId());
@@ -230,11 +229,11 @@ class WorkflowSaveIntegrationTest {
         ));
         params.put("workflowConditions", List.of(condition("node-1", "c1", "params[0].grade === 'F'", 0)));
         params.put("workflowErrorResponses", List.of(errorResponse));
-        params.put("workflowAuthority", new ArrayList<Map<String,Object>>());
+        params.put("workflowPermission", new ArrayList<Map<String,Object>>());
 
-        workflowRestController.save(params);
+        workflowRestController.save("ehr", params);
 
-        Workflow saved = workflowRepository.findByWorkflowCode("TEST1000_R04").orElseThrow();
+        Workflow saved = workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "TEST1000_R04").orElseThrow();
 
         List<WorkflowNode> functions = workflowNodeRepository.findByWorkflowId(saved.getId());
         List<WorkflowErrorResponse> errorResponses = workflowErrorResponseRepository.findByWorkflowId(saved.getId());
@@ -268,7 +267,7 @@ class WorkflowSaveIntegrationTest {
         params.put("workflowConditions", new ArrayList<Map<String,Object>>());
         params.put("workflowErrorResponses", new ArrayList<Map<String,Object>>());
 
-        workflowRestController.save(params);
+        workflowRestController.save("ehr", params);
 
         assertTrue(workflowErrorResponseRepository.findByWorkflowId(saved.getId()).isEmpty(), "에러응답");
     }
@@ -287,11 +286,11 @@ class WorkflowSaveIntegrationTest {
         params.put("workflowNodes", List.of(node("node-1", "CONDITION", "", 1), node("node-2", "SQL", "A", 2)));
         params.put("workflowEdges", List.of(edge("node-1", "node-2", "CASE", "c1", 0)));
         params.put("workflowConditions", List.of(condition("node-1", "c1", "1 === 1", 0)));
-        params.put("workflowAuthority", new ArrayList<Map<String,Object>>());
+        params.put("workflowPermission", new ArrayList<Map<String,Object>>());
 
-        workflowRestController.save(params);
+        workflowRestController.save("ehr", params);
 
-        Workflow saved = workflowRepository.findByWorkflowCode("TEST1000_R02").orElseThrow();
+        Workflow saved = workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "TEST1000_R02").orElseThrow();
 
         // 같은 워크플로우를 조건 없는 노드 하나로 다시 저장한다.
         workflow.put("id", String.valueOf(saved.getId()));
@@ -299,7 +298,7 @@ class WorkflowSaveIntegrationTest {
         params.put("workflowEdges", new ArrayList<Map<String,Object>>());
         params.put("workflowConditions", new ArrayList<Map<String,Object>>());
 
-        workflowRestController.save(params);
+        workflowRestController.save("ehr", params);
 
         assertEquals(1, workflowNodeRepository.findByWorkflowId(saved.getId()).size(), "노드");
         assertTrue(workflowEdgeRepository.findByWorkflowId(saved.getId()).isEmpty(), "연결선");

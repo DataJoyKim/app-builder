@@ -12,14 +12,14 @@ import org.springframework.web.client.HttpClientErrorException;
 public class RestClientService {
     private final RestClientRepository restClientRepository;
 
-    public RestClientResult execute(String clientName, RestClientRequest params) {
-        RestClient clientMeta = restClientRepository.findByClientName(clientName)
+    public RestClientResult execute(String applicationId, String clientName, RestClientRequest params) {
+        RestClient clientMeta = restClientRepository.findByApplicationIdAndClientName(applicationId, clientName)
                             .orElseThrow();
 
         RestExecutorRequest request = clientMeta.createRequest(params);
 
         try {
-            RestExecutor restExecutor = RestExecutor.createRestClientExecutor(clientMeta.getDataSourceName());
+            RestExecutor restExecutor = RestExecutor.createRestClientExecutor(clientMeta.getApplicationId(), clientMeta.getDataSourceName());
 
             RestExecutorResponse response = restExecutor.execute(request);
 

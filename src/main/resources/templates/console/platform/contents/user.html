@@ -1,0 +1,578 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<style th:fragment="style">
+    #user-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #user-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #user-app .ds-list-panel,
+    #user-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #user-app .ds-list-panel {
+        flex: 0 0 380px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #user-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #user-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #user-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #user-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #user-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #user-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #user-app .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #user-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #user-app .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #user-app .ds-btn-danger {
+        color: #dc2626;
+    }
+
+    #user-app .ds-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    /* ---- 목록: ag-Grid 대신 검색+카드형 리스트로 직접 렌더링 ---- */
+    #user-app .ds-list-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #user-app .ds-list-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #user-app .ds-list-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #user-app .ds-list-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #user-app .ds-list-body {
+        max-height: 560px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #user-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #user-app .ds-list-item:hover {
+        background: #fafbfc;
+    }
+
+    #user-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #user-app .ds-list-item-avatar {
+        flex: 0 0 auto;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #eef5ff;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    #user-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #user-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #user-app .ds-list-item.selected .ds-list-item-name {
+        color: #1d4ed8;
+    }
+
+    #user-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #user-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #user-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    /* ---- 상세 설정 ---- */
+    #user-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    #user-app .ds-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    #user-app .ds-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    #user-app .ds-section-header i {
+        color: #4A90E2;
+    }
+
+    #user-app .ds-section-grid {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 14px 8px 0;
+    }
+
+    #user-app .ds-section-grid .form-group {
+        padding: 0 6px;
+        margin-bottom: 14px;
+    }
+
+    #user-app .ds-section-grid label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #user-app .ds-section-grid .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #user-app .ds-section-grid .form-control:disabled {
+        background: #f8f9fa;
+        color: #6b7280;
+    }
+
+    #user-app .ds-section-grid .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+</style>
+<script th:fragment="script">
+        let USER_LIST = [];
+        let SELECTED_USER_ID = null;
+
+        $( document ).ready(function() {
+            console.log('version.0.0.1');
+            init();
+        });
+
+        function init() {
+            getList();
+        }
+
+        function getList() {
+            httpClient.get(`/console/api/user`, {},
+                function(response){
+                    USER_LIST = response || [];
+                    renderUserList($("#userSearch").val());
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function renderUserList(keyword) {
+            const kw = (keyword || '').trim().toLowerCase();
+            const filtered = USER_LIST.filter(function(item) {
+                if(!kw) return true;
+                return (item.loginId || '').toLowerCase().includes(kw)
+                    || (item.userName || '').toLowerCase().includes(kw);
+            });
+
+            const $body = $("#userListBody");
+            $body.empty();
+
+            if(filtered.length === 0) {
+                const $empty = $(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-user-slash"></i>
+                        <span></span>
+                    </div>
+                `);
+                $empty.find('span').text(USER_LIST.length === 0 ? '등록된 사용자가 없습니다.' : '검색 결과가 없습니다.');
+                $body.append($empty);
+                return;
+            }
+
+            for(const item of filtered) {
+                const initial = (item.userName || item.loginId || '?').trim().charAt(0).toUpperCase();
+                const $item = $(`
+                    <div class="ds-list-item" data-id="${item.id}">
+                        <span class="ds-list-item-avatar"></span>
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                    </div>
+                `);
+
+                $item.find('.ds-list-item-avatar').text(initial);
+                $item.find('.ds-list-item-name').text(item.userName || item.loginId);
+                $item.find('.ds-list-item-code').text(item.authority ? `${item.loginId} · ${item.authority}` : item.loginId);
+
+                if(String(item.id) === String(SELECTED_USER_ID)) {
+                    $item.addClass('selected');
+                }
+
+                $item.on('click', function() {
+                    selectUser(item.id);
+                });
+
+                $body.append($item);
+            }
+        }
+
+        function selectUser(id) {
+            const item = USER_LIST.find(a => String(a.id) === String(id));
+            if(!item) return;
+
+            SELECTED_USER_ID = id;
+            $("#userListBody .ds-list-item").removeClass('selected');
+            $(`#userListBody .ds-list-item[data-id="${id}"]`).addClass('selected');
+
+            selectedContent(item);
+        }
+
+        function selectedContent(item) {
+            httpClient.get(`/console/api/user/${item.id}`, {},
+                function(response){
+                    setContentData(response);
+                },
+                function(error){
+                    alert('error');
+                }
+            );
+        }
+
+        function isEmpty(v) {
+            return (v == undefined || v == null || v == '');
+        }
+
+        function save() {
+            let id = $("#id").val();
+
+            if(isEmpty(id))
+                insertContent();
+            else
+                updateContent(id);
+        }
+
+        function insertContent() {
+            const params = getContent();
+            params.password = $("#password").val();
+            params.checkPassword = $("#checkPassword").val();
+
+            httpClient.post(`/console/api/user`,{},params,
+                function(response){
+                    alert("저장완료되었습니다.");
+                    // 등록된 사용자를 선택 상태로 전환해 이후 저장은 수정으로 처리
+                    SELECTED_USER_ID = response.id;
+                    $("#id").val(response.id);
+                    togglePasswordSection();
+                    getList();
+                },
+                function(error){
+                    const message = error && error.responseJSON && error.responseJSON.message;
+                    alert(message || 'error');
+                }
+            );
+        }
+
+        // 비밀번호는 신규 등록 때만 입력받는다 (수정 API는 비밀번호를 바꾸지 않음)
+        function togglePasswordSection() {
+            const isNew = isEmpty($("#id").val());
+            $("#passwordSection").toggle(isNew);
+            if(!isNew) {
+                $("#password").val('');
+                $("#checkPassword").val('');
+            }
+        }
+
+        function updateContent(id) {
+          httpClient.put(`/console/api/user/${id}`, {}, getContent(),
+              function(response){
+                  alert("저장완료되었습니다.");
+                  getList();
+              },
+              function(error){
+                  const message = error && error.responseJSON && error.responseJSON.message;
+                  alert(message || 'error');
+              }
+          );
+        }
+
+        function deleteContent() {
+          let id = $("#id").val();
+
+          httpClient.delete(`/console/api/user/${id}`, {},
+              function(response){
+                  alert("삭제 처리 완료되었습니다.");
+                  SELECTED_USER_ID = null;
+                  getList();
+              },
+              function(error){
+                  alert('error');
+              }
+          );
+        }
+
+        function setContentData(response) {
+            setContent({
+                id:response.id,
+                loginId:response.loginId,
+                userName:response.userName,
+                email:response.email,
+                authority:response.authority
+              });
+        }
+
+        function getContent() {
+            return {
+                id: $("#id").val(),
+                loginId: $("#loginId").val(),
+                userName: $("#userName").val(),
+                email: $("#email").val(),
+                authority: $("#authority").val()
+            }
+        }
+
+        function setContent(params) {
+            $("#id").val(params.id);
+            $("#loginId").val(params.loginId);
+            $("#userName").val(params.userName);
+            $("#email").val(params.email);
+            // 권한이 아직 없는 사용자(회원가입 직후 등)는 '선택하세요'로 보인다
+            $("#authority").val(params.authority || '');
+            $("#password").val('');
+            $("#checkPassword").val('');
+            togglePasswordSection();
+          }
+
+          function newContent(){
+            SELECTED_USER_ID = null;
+            $("#userListBody .ds-list-item").removeClass('selected');
+
+            setContent({
+                id:'',
+                loginId:'',
+                userName:'',
+                email:'',
+                authority:''
+              });
+          }
+    </script>
+<div id="user-app" th:fragment="view">
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-users"></i> 사용자 목록</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="getList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                </div>
+            </div>
+            <div class="ds-list-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="userSearch" placeholder="로그인ID, 성명으로 검색" oninput="renderUserList(this.value)">
+            </div>
+            <div class="ds-list-body" id="userListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-id-card"></i> 상세 내용</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="newContent()"><i class="fas fa-plus"></i>신규</button>
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="save()"><i class="fas fa-save"></i>저장</button>
+                    <button type="button" class="ds-btn ds-btn-danger" onclick="deleteContent()"><i class="fas fa-trash"></i>삭제</button>
+                </div>
+            </div>
+
+            <div class="ds-detail-body">
+                <input type="hidden" id="id">
+
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                    <div class="ds-section-grid">
+                        <div class="form-group col-4">
+                            <label for="loginId">로그인ID</label>
+                            <input type="text" class="form-control" id="loginId" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="userName">성명</label>
+                            <input type="text" class="form-control" id="userName" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="email">email</label>
+                            <input type="text" class="form-control" id="email" autocomplete="off">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="authority">권한</label>
+                            <!-- 값은 UserAuthority enum과 맞춘다 -->
+                            <select class="form-control" id="authority">
+                                <option value="">선택하세요</option>
+                                <option value="PLATFORM_ADMIN">PLATFORM_ADMIN</option>
+                                <option value="USER">USER</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ds-section" id="passwordSection" style="margin-top: 14px;">
+                    <div class="ds-section-header"><i class="fas fa-key"></i><span>비밀번호 (신규 등록)</span></div>
+                    <div class="ds-section-grid">
+                        <div class="form-group col-4">
+                            <label for="password">비밀번호</label>
+                            <input type="password" class="form-control" id="password" autocomplete="new-password">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="checkPassword">비밀번호 확인</label>
+                            <input type="password" class="form-control" id="checkPassword" autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</html>

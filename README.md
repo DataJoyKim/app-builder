@@ -11,4 +11,4 @@ Spring Boot, AdminLTE
 
 ## License
 
-MIT License
+Apache License 2.0 — 자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.

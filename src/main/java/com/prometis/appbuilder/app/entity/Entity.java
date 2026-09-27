@@ -16,12 +16,15 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="ENTITY_UQ",columnNames={"entityName"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="ENTITY_UQ",columnNames={"applicationId","entityName"})})
 @jakarta.persistence.Entity
 public class Entity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String entityName;

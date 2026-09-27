@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>console</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+        <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+        <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+        <link rel="stylesheet" href="/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+        <style>
+            .nav-treeview {
+                margin-left:20px;
+            }
+        </style>
+    </head>
+    <body class="hold-transition sidebar-mini layout-fixed" data-panel-auto-height-mode="height">
+
+        <div class="wrapper">
+            <div th:replace="~{/console/app/layout/layout::layout}"></div>
+        </div>
+
+        <script src="/core/Application.js"></script>
+
+        <script src="/plugins/jquery/jquery.min.js"></script>
+        <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+        <script>
+          $.widget.bridge('uibutton', $.ui.button)
+        </script>
+        <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+        <script src="/dist/js/adminlte.js?v=1"></script>
+    </body>
+</html>

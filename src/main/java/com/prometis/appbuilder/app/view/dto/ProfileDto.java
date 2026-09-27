@@ -1,6 +1,6 @@
 package com.prometis.appbuilder.app.view.dto;
 
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

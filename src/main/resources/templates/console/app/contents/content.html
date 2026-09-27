@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>title</title>
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="/plugins/jsgrid/jsgrid.min.css">
+    <link rel="stylesheet" href="/plugins/jsgrid/jsgrid-theme.min.css">
+    <link rel="stylesheet" href="/plugins/jquery-flowchart/jquery.flowchart.css">
+    <link rel="stylesheet" href="/plugins/aggrid/ag-grid.css">
+    <link rel="stylesheet" href="/plugins/aggrid/ag-theme-quartz.css">
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="/plugins/codemirror/codemirror.css">
+    <link rel="stylesheet" href="/plugins/codemirror/theme/darcula.css">
+    <link rel="stylesheet" href="/plugins/jstree/themes/default/style.min.css" />
+    <link rel="stylesheet" href="/plugins/summernote/summernote-bs4.min.css">
+    <link rel="stylesheet" href="/plugins/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="/ui/view-builder/css/vb-theme.css" />
+    <link rel="stylesheet" href="/core/css/layout-theme.css" />
+    <link rel="stylesheet" href="/core/css/sheet-theme.css" />
+
+    <style th:replace="~{${contentPath}::style}"></style>
+    <style>
+        mf-action {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div th:replace="~{${contentPath}::view}"></div>
+</div>
+<script src="/plugins/jquery/jquery.min.js"></script>
+<script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+<script src="/plugins/sortablejs/Sortable.min.js"></script>
+<script src="/plugins/jquery-flowchart/jquery.flowchart.js"></script>
+<script src="/plugins/jquery-moment/moment.min.js"></script>
+<script src="/plugins/daterangepicker/daterangepicker.js"></script>
+<script>$.widget.bridge('uibutton', $.ui.button)</script>
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<script src="/plugins/jsgrid/jsgrid.min.js"></script>
+<script src="/plugins/codemirror/codemirror.js"></script>
+<script src="/plugins/codemirror/mode/sql/sql.js"></script>
+<script src="/plugins/codemirror/mode/javascript/javascript.js"></script>
+<script src="/plugins/jstree/jstree.min.js"></script>
+<script src="/plugins/echart/echarts.min.js"></script>
+<script src="/plugins/aggrid/ag-grid-community.min.js"></script>
+<script src="/plugins/summernote/summernote-bs4.min.js"></script>
+
+<script src="/dist/js/adminlte.js?v=1"></script>
+<script src="/core/Application.js"></script>
+<script src="/core/Util.js"></script>
+<script src="/core/LoadingBar.js"></script>
+<script src="/core/HttpClient.js"></script>
+<script src="/core/Sheet.js"></script>
+<script src="/core/Grid.js"></script>
+<script src="/core/GridLegacy.js"></script>
+<script src="/core/WorkflowClient.js"></script>
+<script src="/core/Popup.js"></script>
+<script src="/core/ModalPopup.js"></script>
+<script src="/core/Chart.js"></script>
+<script src="/core/TextEditor.js"></script>
+<script type="module" src="/ui/tag/mf/module.js"></script>
+<script>
+    const grid = new GridLegacy(App.grid);
+    const httpClient = new HttpClient();
+    App.loadingBar.render();
+</script>
+<script th:replace="~{${contentPath}::script}"></script>
+</body>
+</html>

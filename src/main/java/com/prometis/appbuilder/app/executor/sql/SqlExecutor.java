@@ -81,8 +81,8 @@ public class SqlExecutor {
         return resultList;
     }
 
-    public static SqlExecutor createSqlExecutor(String dataSourceName) {
-        LookupKey lookupKey = LookupKey.generateKey(dataSourceName);
+    public static SqlExecutor createSqlExecutor(String applicationId, String dataSourceName) {
+        LookupKey lookupKey = LookupKey.generateKey(applicationId, dataSourceName);
 
         DataSource dataSource = DataSourceDatabaseRegister.getDataSource(lookupKey);
 

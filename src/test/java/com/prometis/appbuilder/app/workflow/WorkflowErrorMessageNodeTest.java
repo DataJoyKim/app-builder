@@ -1,15 +1,13 @@
 package com.prometis.appbuilder.app.workflow;
 
+
 import com.prometis.appbuilder.app.node.*;
 import com.prometis.appbuilder.app.node.code.ResultType;
 import com.prometis.appbuilder.app.dto.RequestMessage;
 import com.prometis.appbuilder.app.dto.ResponseMessage;
 import com.prometis.appbuilder.app.executor.script.ScriptEngine;
-import com.prometis.appbuilder.app.workflow.*;
 import com.prometis.appbuilder.app.node.code.FunctionType;
-import com.prometis.appbuilder.app.security.domainaccess.DomainAccessValidator;
-import com.prometis.appbuilder.app.security.ip.IpAccessValidator;
-import com.prometis.appbuilder.app.security.service.AuthService;
+import com.prometis.appbuilder.platform.application.ApplicationGuard;
 import com.prometis.appbuilder.app.workflow.code.BranchType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +23,7 @@ import static org.mockito.Mockito.*;
  */
 class WorkflowErrorMessageNodeTest {
     private static final long WORKFLOW_ID = 1L;
+    private static final String APPLICATION_ID = "ehr";
     private static final String WORKFLOW_CODE = "TEST_ERROR_NODE";
 
     private WorkflowNodeRepository workflowNodeRepository;
@@ -45,13 +44,14 @@ class WorkflowErrorMessageNodeTest {
         sqlExecutor = mock(NodeExecutor.class);
 
         Workflow workflow = Workflow.builder()
+                .applicationId(APPLICATION_ID)
                 .id(WORKFLOW_ID)
                 .workflowCode(WORKFLOW_CODE)
                 .displayName("에러메시지 노드")
                 .useAuthValidation(false)
                 .build();
 
-        when(workflowRepository.findByWorkflowCode(WORKFLOW_CODE)).thenReturn(Optional.of(workflow));
+        when(workflowRepository.findByApplicationIdAndWorkflowCode(APPLICATION_ID, WORKFLOW_CODE)).thenReturn(Optional.of(workflow));
         when(nodeExecutorFactory.instance(FunctionType.SQL)).thenReturn(sqlExecutor);
         when(sqlExecutor.execute(any(), anyString(), any(), anyList())).thenAnswer(invocation -> NodeResult.builder()
                 .resultType(ResultType.SUCCESS)
@@ -64,12 +64,10 @@ class WorkflowErrorMessageNodeTest {
                 workflowEdgeRepository,
                 workflowConditionRepository,
                 workflowErrorResponseRepository,
-                mock(WorkflowAuthorityRepository.class),
                 nodeExecutorFactory,
                 new ConditionEvaluator(new ScriptEngine()),
-                mock(AuthService.class),
-                mock(IpAccessValidator.class),
-                mock(DomainAccessValidator.class)
+                mock(WorkflowGuard.class),
+                mock(ApplicationGuard.class)
         );
 
         // n1(조건분기) -- if grade === 'F' --> n2(에러메시지) --> n4(SQL, 에러 뒤에 이어져 있어도 실행되면 안 된다)
@@ -142,7 +140,7 @@ class WorkflowErrorMessageNodeTest {
         requestMessage.setHeader(header);
         requestMessage.setBody(body);
 
-        return workflowService.execute(null, null, requestMessage);
+        return workflowService.execute(null, null, APPLICATION_ID, requestMessage);
     }
 
     @Test

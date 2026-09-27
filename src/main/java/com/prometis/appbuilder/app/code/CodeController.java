@@ -9,15 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/code")
+@RequestMapping("/{applicationId}/code")
 public class CodeController {
     @Autowired
     CodeService codeService;
 
 
     @PostMapping("")
-    public ResponseEntity<?> getCommonCode(@RequestBody List<CodeRequest> params) {
-        Map<String, List<CodeResponse>> response = codeService.getCode(params);
+    public ResponseEntity<?> getCommonCode(
+            @PathVariable("applicationId") String applicationId,
+            @RequestBody List<CodeRequest> params
+    ) {
+        Map<String, List<CodeResponse>> response = codeService.getCode(applicationId, params);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

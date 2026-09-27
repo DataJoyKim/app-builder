@@ -10,4 +10,6 @@ public interface SchedulerJobRepository extends JpaRepository<SchedulerJob, Long
     Optional<SchedulerJob> findByJobCode(String jobCode);
 
     List<SchedulerJob> findByEnabledTrue();
+
+    List<SchedulerJob> findByApplicationId(String applicationId);
 }

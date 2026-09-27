@@ -5,14 +5,10 @@ import com.prometis.appbuilder.app.dto.ResponseMessage;
 import com.prometis.appbuilder.app.executor.script.ScriptEngineExecuteException;
 import com.prometis.appbuilder.app.node.*;
 import com.prometis.appbuilder.app.node.code.ResultType;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
-import com.prometis.appbuilder.app.security.domain.GrantedAuthority;
-import com.prometis.appbuilder.app.security.domainaccess.DomainAccessValidator;
-import com.prometis.appbuilder.app.security.exception.SecurityBusinessException;
-import com.prometis.appbuilder.app.security.ip.IpAccessValidator;
-import com.prometis.appbuilder.app.security.service.AuthService;
-import com.prometis.appbuilder.app.security.token.TokenCookie;
 import com.prometis.appbuilder.app.workflow.code.BranchType;
+import com.prometis.appbuilder.platform.application.ApplicationGuard;
+import com.prometis.appbuilder.platform.application.ApplicationNotFoundException;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import com.prometis.core.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,82 +25,38 @@ public class WorkflowService {
     private final WorkflowEdgeRepository workflowEdgeRepository;
     private final WorkflowConditionRepository workflowConditionRepository;
     private final WorkflowErrorResponseRepository workflowErrorResponseRepository;
-    private final WorkflowAuthorityRepository workflowAuthorityRepository;
     private final NodeExecutorFactory nodeExecutorFactory;
     private final ConditionEvaluator conditionEvaluator;
-    private final AuthService authService;
-    private final IpAccessValidator ipAccessValidator;
-    private final DomainAccessValidator domainAccessValidator;
+    private final WorkflowGuard workflowGuard;
+    private final ApplicationGuard applicationGuard;
 
     public ResponseMessage execute(
             HttpServletRequest request,
             HttpServletResponse response,
+            String applicationId,
             RequestMessage requestMessage
     ) {
         try {
-            Workflow workflow = findWorkflow(requestMessage);
+            applicationGuard.check(applicationId);
 
-            AuthenticatedUser user = null;
+            Workflow workflow = findWorkflow(applicationId, requestMessage);
+            requestMessage.getHeader().setApplicationId(applicationId);
 
-            if(workflow.getUseAuthValidation()) {
-                user = authService.authentication(TokenCookie.resolveAccessToken(request));
-            }
-
-            if(user != null) {
-                validateAuthorization(user, workflow);
-            }
-
-            // IP 접근제어.
-            ipAccessValidator.validate(request, workflow);
-
-            // 도메인 접근제어. 워크플로우에 매핑된 도메인이 없으면 제한하지않는다.
-            domainAccessValidator.validate(request, workflow);
+            AuthenticatedUser user = workflowGuard.check(request, applicationId, workflow);
 
             return executeFunction(requestMessage, user, createGraph(workflow));
-        }
-        catch (SecurityBusinessException e) {
-            return ResponseMessage.createErrorMessage(e.getStatus(), e.getErrorCode(), e.getErrorMsg());
         }
         catch (BusinessException e) {
             return ResponseMessage.createErrorMessage(e.getStatus(), e.getCode(), e.getMsg());
         }
-    }
-
-    public void validateAuthorization(AuthenticatedUser user, Workflow workflow) throws BusinessException {
-        List<WorkflowAuthority> workflowAuthorities = workflowAuthorityRepository.findByWorkflow(workflow);
-        if(workflowAuthorities.isEmpty()) {
-            throw new BusinessException(WorkflowErrorMessage.NOT_SETTING_AUTHORITY);
-        }
-
-        Map<String, Workflow> authorityMap = new HashMap<>();
-        for(WorkflowAuthority workflowAuthority : workflowAuthorities) {
-            authorityMap.put(workflowAuthority.getAuthorityCode(), workflowAuthority.getWorkflow());
-        }
-
-        if(authorityMap.containsKey(WorkflowAuthority.VALID_PASS)) {
-            return;
-        }
-
-        List<GrantedAuthority> grantedAuthorities = user.getGrantedAuthorities();
-        if(grantedAuthorities.isEmpty()) {
-            throw new BusinessException(WorkflowErrorMessage.NOT_HAS_AUTHORITIES);
-        }
-
-        boolean hasAuthority = false;
-        for(GrantedAuthority authority : grantedAuthorities){
-            if(authorityMap.containsKey(authority.getRole())) {
-                hasAuthority = true;
-                break;
-            }
-        }
-
-        if(!hasAuthority) {
-            throw new BusinessException(WorkflowErrorMessage.PERMISSION_DENIED);
+        catch (ApplicationNotFoundException e) {
+            WorkflowErrorMessage errorCode = WorkflowErrorMessage.NOT_FOUND_APP;
+            return ResponseMessage.createErrorMessage(errorCode.getStatus(), errorCode.getCode(), errorCode.getMsg());
         }
     }
 
-    private Workflow findWorkflow(RequestMessage requestMessage) throws BusinessException {
-        Optional<Workflow> opWorkflow = workflowRepository.findByWorkflowCode(requestMessage.getHeader().getWorkflowCode());
+    private Workflow findWorkflow(String applicationId, RequestMessage requestMessage) throws BusinessException {
+        Optional<Workflow> opWorkflow = workflowRepository.findByApplicationIdAndWorkflowCode(applicationId, requestMessage.getHeader().getWorkflowCode());
         if(opWorkflow.isEmpty()) {
             throw new BusinessException(WorkflowErrorMessage.NOT_FOUND_WORKFLOW);
         }

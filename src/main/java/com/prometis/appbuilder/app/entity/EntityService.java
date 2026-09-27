@@ -20,13 +20,13 @@ public class EntityService {
     private final EntityRepository entityRepository;
     private final EntityConfig entityConfig;
 
-    public EntityResult execute(String entityName, EntityRequest params) {
-        Entity entity = entityRepository.findByEntityName(entityName)
+    public EntityResult execute(String applicationId, String entityName, EntityRequest params) {
+        Entity entity = entityRepository.findByApplicationIdAndEntityName(applicationId, entityName)
                                         .orElseThrow();
 
         List<EntitySqlQuery> entitySqlQueryList = entity.generateQuery(entityConfig, params);
 
-        SqlExecutor sqlExecutor = SqlExecutor.createSqlExecutor(entity.getDataSourceName());
+        SqlExecutor sqlExecutor = SqlExecutor.createSqlExecutor(entity.getApplicationId(), entity.getDataSourceName());
 
         List<Map<String,Object>> results = new ArrayList<>();
 

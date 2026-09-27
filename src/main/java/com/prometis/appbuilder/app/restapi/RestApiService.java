@@ -30,7 +30,8 @@ public class RestApiService {
 
     @Transactional
     @SuppressWarnings("unchecked")
-    public RestApi save(Map<String, Object> params) throws RestApiValidationException {
+    // applicationId 는 요청 본문이 아니라 콘솔 URL(/{applicationId}/console/...)에서 받는다. 본문 값으로 다른 애플리케이션에 저장하지 못하게 하기 위함.
+    public RestApi save(String applicationId, Map<String, Object> params) throws RestApiValidationException {
         Map<String, Object> restApiParams = (Map<String, Object>) params.get("restApi");
         List<Map<String, Object>> parameterParams = (List<Map<String, Object>>) params.get("parameters");
 
@@ -39,6 +40,9 @@ public class RestApiService {
         }
 
         Long id = parseId(restApiParams.get("id"));
+        if(isBlank(applicationId)) {
+            throw RestApiValidationException.definition("애플리케이션ID 을(를) 입력해주세요.");
+        }
         String apiCode = requireText(restApiParams, "apiCode", "API 코드");
         String displayName = requireText(restApiParams, "displayName", "API 명칭");
         HttpMethodType httpMethod = parseEnum(HttpMethodType.class, text(restApiParams, "httpMethod"), "HTTP 메소드", true);
@@ -77,7 +81,7 @@ public class RestApiService {
 
         validatePath(path);
         validateBodyRoot(httpMethod, bodyDataType, bodyMessageId);
-        validateUniqueness(id, apiCode, httpMethod, path);
+        validateUniqueness(id, applicationId, apiCode, httpMethod, path);
 
         if(isFile) {
             if(fileMessageId == null) {
@@ -95,6 +99,7 @@ public class RestApiService {
         RestApi restApi;
         if(id == null) {
             restApi = RestApi.builder()
+                    .applicationId(applicationId)
                     .apiCode(apiCode)
                     .displayName(displayName)
                     .httpMethod(httpMethod)
@@ -108,9 +113,11 @@ public class RestApiService {
         }
         else {
             restApi = restApiRepository.findById(id)
+                    .filter(owned -> applicationId.equals(owned.getApplicationId()))
                     .orElseThrow(() -> RestApiValidationException.definition("저장할 API 를 찾을 수 없습니다."));
 
             restApi.update(
+                    applicationId,
                     apiCode,
                     displayName,
                     httpMethod,
@@ -161,7 +168,12 @@ public class RestApiService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(String applicationId, Long id) {
+        // 다른 애플리케이션의 API 는 없는 것으로 본다.
+        if(restApiRepository.findById(id).filter(owned -> applicationId.equals(owned.getApplicationId())).isEmpty()) {
+            return;
+        }
+
         restApiParameterRepository.deleteByRestApiId(id);
         restApiRepository.deleteById(id);
     }
@@ -233,14 +245,15 @@ public class RestApiService {
     }
 
     // 경로변수 이름만 다른 두 경로(/goals/{id}, /goals/{goalId})는 같은 요청을 받으므로 같은 경로로 본다.
-    private void validateUniqueness(Long id, String apiCode, HttpMethodType httpMethod, String path) throws RestApiValidationException {
-        Optional<RestApi> sameCode = restApiRepository.findByApiCode(apiCode);
+    // 요청 URL 이 /{applicationId}/rest/... 라 애플리케이션이 다르면 같은 메소드/경로여도 부딪히지 않는다. API 코드도 애플리케이션 안에서만 유일하다.
+    private void validateUniqueness(Long id, String applicationId, String apiCode, HttpMethodType httpMethod, String path) throws RestApiValidationException {
+        Optional<RestApi> sameCode = restApiRepository.findByApplicationIdAndApiCode(applicationId, apiCode);
         if(sameCode.isPresent() && !sameCode.get().getId().equals(id)) {
             throw RestApiValidationException.definition("이미 사용중인 API 코드입니다. (" + apiCode + ")");
         }
 
         String shape = pathShape(path);
-        for(RestApi other : restApiRepository.findByHttpMethod(httpMethod)) {
+        for(RestApi other : restApiRepository.findByApplicationIdAndHttpMethod(applicationId, httpMethod)) {
             if(other.getId().equals(id)) {
                 continue;
             }

@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RestApiRepository extends JpaRepository<RestApi, Long> {
-    Optional<RestApi> findByApiCode(String apiCode);
+    Optional<RestApi> findByApplicationIdAndApiCode(String applicationId, String apiCode);
 
-    List<RestApi> findByHttpMethod(HttpMethodType httpMethod);
+    List<RestApi> findByApplicationId(String applicationId);
+
+    List<RestApi> findByApplicationIdAndHttpMethod(String applicationId, HttpMethodType httpMethod);
 }

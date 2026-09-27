@@ -8,7 +8,7 @@ import com.prometis.appbuilder.app.node.code.ResultType;
 import com.prometis.appbuilder.app.restclient.RestClientRequest;
 import com.prometis.appbuilder.app.restclient.RestClientResult;
 import com.prometis.appbuilder.app.restclient.RestClientService;
-import com.prometis.appbuilder.app.security.domain.AuthenticatedUser;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +36,7 @@ public class RestClientExecutor implements NodeExecutor {
                     .requestBody(param.get(config.getRequestMessageRestClientRequestBodyKey()))
                     .build();
 
-            RestClientResult restClientResult = restClientService.execute(functionName, restClientParams);
+            RestClientResult restClientResult = restClientService.execute(header.getApplicationId(), functionName, restClientParams);
 
             if(restClientResult.getStatusCode().isError()) {
                 resultType = ResultType.FAILURE;

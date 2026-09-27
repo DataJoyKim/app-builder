@@ -1,0 +1,4066 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    /* ============ Full-height page shell ============ */
+    /* adminlte.js의 fixLayoutHeight()가 로드 시 html/body에 인라인 height:auto를
+       강제로 지정해버려서 일반 규칙으로는 무시된다. !important로 덮어써야 한다. */
+    html, body {
+        height: 100% !important;
+        margin: 0;
+    }
+
+    .wrapper {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .wrapper > div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    /* ============ App shell ============ */
+    .wf-app {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    /* ============ Sidebar (workflow list) ============ */
+    .wf-sidebar {
+        width: 280px;
+        flex: 0 0 280px;
+        border-right: 1px solid #eef0f2;
+        display: flex;
+        flex-direction: column;
+        background: #fbfbfc;
+        margin-left: 0;
+        transition: margin-left .18s ease;
+        overflow: hidden;
+    }
+
+    .wf-sidebar.collapsed {
+        margin-left: -280px;
+    }
+
+    .wf-sidebar-header {
+        padding: 14px;
+        border-bottom: 1px solid #eef0f2;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-new-workflow {
+        width: 100%;
+        border: none;
+        border-radius: 8px;
+        background: #4A90E2;
+        color: #fff;
+        padding: 9px 12px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .btn-new-workflow:hover {
+        background: #3d7fce;
+    }
+
+    .wf-search {
+        position: relative;
+    }
+
+    .wf-search input {
+        width: 100%;
+        padding: 6px 30px 6px 10px;
+        border: 1px solid #d7dbe0;
+        border-radius: 6px;
+        font-size: 12.5px;
+    }
+
+    .wf-search i {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .wf-search i:hover {
+        color: #4A90E2;
+    }
+
+    .wf-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+    }
+
+    .wf-list-empty {
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+        padding: 24px 0;
+    }
+
+    .wf-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-bottom: 4px;
+    }
+
+    .wf-list-item:hover {
+        background: #f1f3f5;
+    }
+
+    .wf-list-item.active {
+        background: #eef5ff;
+    }
+
+    .wf-list-item-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #eef1f4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        flex: 0 0 30px;
+        font-size: 12px;
+    }
+
+    .wf-list-item.active .wf-list-item-icon {
+        background: #4A90E2;
+        color: #fff;
+    }
+
+    .wf-list-item-info {
+        min-width: 0;
+    }
+
+    .wf-list-item-name {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-list-item-code {
+        font-size: 11.5px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ============ Main area ============ */
+    .wf-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .wf-topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    .wf-sidebar-toggle {
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 4px 6px;
+    }
+
+    .wf-title-group {
+        display: flex;
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .wf-code-input, .wf-name-input {
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: 6px;
+        padding: 4px 8px;
+    }
+
+    .wf-code-input:hover, .wf-name-input:hover {
+        border-color: #e5e7eb;
+    }
+
+    .wf-code-input:focus, .wf-name-input:focus {
+        background: #f1f3f5;
+        outline: none;
+        border-color: #e5e7eb;
+    }
+
+    .wf-code-input {
+        font-size: 12px;
+        color: #9199a3;
+        width: 160px;
+    }
+
+    .wf-name-input {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .wf-topbar-actions {
+        display: flex;
+        gap: 6px;
+        flex: 0 0 auto;
+    }
+
+    .wf-topbar-actions button {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 7px;
+        padding: 6px 12px;
+        cursor: pointer;
+        color: #374151;
+        white-space: nowrap;
+    }
+
+    .wf-topbar-actions button:hover {
+        background: #f1f3f5;
+    }
+
+    .wf-topbar-actions button.btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    .wf-topbar-actions button.btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    .wf-topbar-actions button.btn-danger {
+        color: #dc2626;
+        border-color: #f3c9c9;
+    }
+
+    .wf-topbar-actions button.btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    /* ============ Canvas ============ */
+    /* 캔버스는 노드를 자유롭게 놓는 평면이다. 화면 이동/확대는 스크롤이 아니라
+       #workflowContent 의 transform 으로 처리한다(연결선 좌표 계산이 단순해진다). */
+    .wf-canvas-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .wf-canvas {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        overflow: hidden;
+        background-color: #fafbfc;
+        background-image: radial-gradient(circle, #d7dce3 1.2px, transparent 1.2px);
+        background-size: 20px 20px;
+        cursor: grab;
+        /* 캔버스 전체를 한 층으로 올려둔다. 노드와 연결선의 앞뒤는 캔버스 안에서만 따지면 된다. */
+        z-index: 1;
+    }
+
+    .wf-canvas.is-panning {
+        cursor: grabbing;
+    }
+
+    /* 연결선을 끄는 중에는 이미 그려진 연결선이 마우스를 가로채면 안 된다(놓을 자리를 못 찾는다). */
+    .wf-canvas.is-connecting {
+        cursor: crosshair;
+    }
+
+    .wf-canvas.is-connecting .wf-edge {
+        pointer-events: none;
+    }
+
+    #workflowContent {
+        position: absolute;
+        top: 0; left: 0;
+        transform-origin: 0 0;
+    }
+
+    #connectorLayer {
+        position: absolute;
+        top: 0; left: 0;
+        overflow: visible;
+        pointer-events: none;
+    }
+
+    /* ============ Connectors ============ */
+    .wf-edge-line {
+        fill: none;
+        stroke: #c7cbd1;
+        stroke-width: 2;
+    }
+
+    /* 선 자체는 얇아서 누르기 어렵다. 같은 경로를 투명하게 굵게 한 겹 깔아 클릭 영역으로 쓴다. */
+    .wf-edge-hit {
+        fill: none;
+        stroke: transparent;
+        stroke-width: 18;
+        pointer-events: stroke;
+        cursor: pointer;
+    }
+
+    .wf-edge:hover .wf-edge-line {
+        stroke: #4A90E2;
+    }
+
+    .wf-edge-arrow {
+        fill: #c7cbd1;
+        stroke: none;
+    }
+
+    .wf-edge:hover .wf-edge-arrow {
+        fill: #4A90E2;
+    }
+
+    .wf-edge-temp {
+        stroke: #4A90E2;
+        stroke-dasharray: 6 4;
+        pointer-events: none;
+    }
+
+    .wf-edge-remove {
+        opacity: 0;
+        pointer-events: none;
+        cursor: pointer;
+    }
+
+    .wf-edge:hover .wf-edge-remove {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .wf-edge-remove circle {
+        fill: #ffffff;
+        stroke: #d7dbe0;
+        stroke-width: 1;
+    }
+
+    .wf-edge-remove:hover circle {
+        stroke: #dc2626;
+    }
+
+    .wf-edge-remove path {
+        stroke: #9199a3;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+    }
+
+    .wf-edge-remove:hover path {
+        stroke: #dc2626;
+    }
+
+    /* ============ Canvas tools ============ */
+    .wf-canvas-tools {
+        position: absolute;
+        left: 14px;
+        bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 4px;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, .08);
+        z-index: 2;
+    }
+
+    .wf-canvas-tools button {
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .wf-canvas-tools button:hover {
+        background: #f1f3f5;
+        color: #4A90E2;
+    }
+
+    .wf-canvas-tools-sep {
+        width: 1px;
+        height: 18px;
+        background: #eef0f2;
+        margin: 0 4px;
+    }
+
+    .wf-canvas-zoom {
+        font-size: 11.5px;
+        color: #9199a3;
+        width: 42px;
+        text-align: center;
+    }
+
+    .wf-canvas-hint {
+        position: absolute;
+        right: 14px;
+        bottom: 16px;
+        font-size: 11.5px;
+        color: #9199a3;
+        background: rgba(255, 255, 255, .86);
+        border-radius: 8px;
+        padding: 5px 10px;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    .wf-canvas-empty {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #9199a3;
+        font-size: 13px;
+        z-index: 2;
+    }
+
+    .wf-canvas-empty button {
+        margin-top: 10px;
+    }
+
+    /* ============ Node ============ */
+    /* 노드는 캔버스 좌표(x, y)에 그대로 놓인다. 흐름은 연결선이 정하므로 배치는 보기 좋으라고 있는 값이다. */
+    .wf-node {
+        position: absolute;
+        width: 300px;
+    }
+
+    .wf-node.is-dragging {
+        z-index: 3;
+    }
+
+    .wf-node.is-drop-target > .step-item {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .18);
+    }
+
+    .wf-node-badge {
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        z-index: 1;
+    }
+
+    .wf-node-badge.is-start {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .wf-node-badge.is-orphan {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    /* ============ Ports ============ */
+    /* 입력포트는 카드 위쪽 한 개. 들어오는 연결선은 몇 개든 여기로 모인다(분기 합류). */
+    .wf-port-in {
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 2px solid #c7cbd1;
+    }
+
+    .wf-node.is-drop-target .wf-port-in {
+        border-color: #4A90E2;
+        background: #eef5ff;
+    }
+
+    /* 출력포트는 카드 아래. 일반 노드는 한 개, 조건분기 노드는 조건 개수 + else 만큼 있다. */
+    .wf-ports {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 4px 10px;
+        padding-top: 2px;
+    }
+
+    .wf-port-out {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        cursor: crosshair;
+    }
+
+    .wf-port-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 2px solid #c7cbd1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c7cbd1;
+        font-size: 7px;
+    }
+
+    .wf-port-out:hover .wf-port-dot {
+        border-color: #4A90E2;
+        color: #4A90E2;
+        background: #eef5ff;
+    }
+
+    /* 아직 이어진 곳이 없는 포트만 + 로 보여준다(눌러서 다음 노드를 바로 만들 수 있다). */
+    .wf-port-dot i {
+        display: none;
+    }
+
+    .wf-port-out.is-empty .wf-port-dot i {
+        display: block;
+    }
+
+    .wf-port-label {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: #e0e7ff;
+        color: #4338ca;
+        max-width: 130px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-port-out.is-else .wf-port-label {
+        background: #f1f3f5;
+        color: #6b7280;
+    }
+
+    /* ============ Branch label (drawer / condition card) ============ */
+    .wf-branch-label {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .wf-branch-label.is-case {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .wf-branch-label.is-else {
+        background: #f1f3f5;
+        color: #6b7280;
+    }
+
+    /* 조건분기 카드는 어떤 조건이 어떤 포트로 나가는지 카드 안에서 바로 읽혀야 한다. */
+    .wf-condition-lines {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px 12px 12px 12px;
+        border-top: 1px solid #eef0f2;
+    }
+
+    .wf-condition-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .wf-condition-line .wf-branch-label {
+        flex: 0 0 auto;
+        padding: 1px 9px;
+        font-size: 10px;
+    }
+
+    .wf-condition-line-expr {
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 11.5px;
+        color: #4f46e5;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-condition-line-expr.is-empty {
+        color: #c0c4cc;
+        font-family: inherit;
+    }
+
+    .step-item {
+        position: relative;
+        background-color: #ffffff;
+        width: 100%;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        font-size: 14px;
+        border: 1px solid #e2e5ea;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, .07);
+        margin: 0;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        cursor: pointer;
+        transition: box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .step-item:hover {
+        box-shadow: 0 6px 16px rgba(16, 24, 40, .12);
+    }
+
+    .step-item.selected {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .18);
+    }
+
+    .step-item.step-item-condition {
+        border-color: #c7ccfa;
+    }
+
+    .step-item.step-item-condition.selected {
+        border-color: #6366F1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, .18);
+    }
+
+    .step-item.step-item-error {
+        border-color: #f5c2c2;
+    }
+
+    .step-item.step-item-error.selected {
+        border-color: #DC2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, .16);
+    }
+
+    /* 에러메시지 카드는 흐름의 끝이라 나가는 포트가 없다. 대신 돌려줄 응답을 카드 안에서 바로 읽을 수 있게 한다. */
+    .wf-error-lines {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px 12px 12px 12px;
+        border-top: 1px solid #eef0f2;
+        min-width: 0;
+    }
+
+    .wf-error-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .wf-error-status {
+        flex: 0 0 auto;
+        padding: 1px 9px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 700;
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .wf-error-code {
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 11.5px;
+        color: #b91c1c;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-error-message {
+        font-size: 12px;
+        color: #374151;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-error-contents {
+        font-size: 11px;
+        color: #6b7280;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-error-lines .is-empty {
+        color: #c0c4cc;
+        font-family: inherit;
+    }
+
+    /* ============ Drag handle (node move) ============ */
+    .step-drag-handle {
+        flex: 0 0 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafbfc;
+        border-right: 1px solid #eef0f2;
+        border-top-left-radius: 11px;
+        border-bottom-left-radius: 11px;
+        color: #c7cbd1;
+        cursor: grab;
+    }
+
+    .step-drag-handle:hover {
+        background: #eef5ff;
+        color: #4A90E2;
+    }
+
+    .step-drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .wf-node.is-dragging .step-drag-handle {
+        background: #eef5ff;
+        color: #4A90E2;
+        cursor: grabbing;
+    }
+
+    .step-body {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .step-message {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 6px 16px;
+    }
+
+    .step-message-type {
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    .message-in {
+        background-color: #bae6ff;
+        color: #0369a1;
+    }
+
+    .message-out {
+        background-color: #a8f0a0;
+        color: #047857;
+    }
+
+    .step-message-id {
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .step-function {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 14px 16px;
+        gap: 12px;
+        border-top: 1px solid #eef0f2;
+        border-bottom: 1px solid #eef0f2;
+        cursor: pointer;
+    }
+
+    /* 조건분기 카드는 OUT 줄이 없어 아래쪽 구분선이 카드 테두리와 겹쳐 보인다. */
+    .step-item-condition .step-function,
+    .step-item-error .step-function {
+        border-bottom: none;
+    }
+
+    .step-function-img {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .step-function-img img {
+        border-radius: 8px;
+    }
+
+    .step-function-name {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .function-display-name {
+        color: #1f2937;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .function-name {
+        color: #8a94a6;
+        font-weight: 400;
+        font-size: 12px;
+    }
+
+    .function-name.condition-expression {
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 11.5px;
+        color: #4f46e5;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .function-name.condition-expression.is-empty {
+        color: #c0c4cc;
+        font-family: inherit;
+    }
+
+    .step-tools {
+        position: absolute;
+        top: -34px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 5px 9px;
+        box-shadow: 0 2px 6px rgba(16, 24, 40, .12);
+        opacity: 0;
+        /* pointer-events는 항상 auto로 둬야 한다. 이 버튼은 카드 바깥(top:-34px)에
+           떠 있어서 카드 박스와 버튼 박스 사이에 빈 틈이 있는데, hover일 때만
+           auto로 바꾸면 마우스가 카드를 벗어나 버튼 쪽으로 이동하는 순간
+           :hover가 풀리면서 pointer-events가 다시 none이 되어 버튼이 클릭은커녕
+           자기 자신에 대한 hover조차 받을 수 없는(hit-test에서 제외되는) 상태에
+           빠져 버려 클릭이 전혀 먹히지 않았다.
+        */
+        pointer-events: auto;
+        transition: opacity .12s ease;
+        /* 카드(.step-item, z-index:4) 안쪽 기준으로만 쌓인다. 카드가 이미 상세창 딤
+           위에 있으므로 딤에 가려 클릭이 씹히지 않고, 상세창 패널(z-index:5)보다는
+           카드 자체가 아래라 패널 내용을 덮지도 않는다. 여기 z-index는 같은 카드
+           안의 형제(드래그 핸들/본문) 위로 올리는 용도다. */
+        z-index: 1;
+    }
+
+    .step-item:hover .step-tools,
+    .step-item.selected .step-tools,
+    .step-tools:hover {
+        opacity: 1;
+    }
+
+    .step-tool {
+        cursor: pointer;
+        color: #9199a3;
+        font-size: 11px;
+        padding: 2px 3px;
+    }
+
+    /* 상세설정과 삭제는 성격이 다른 동작이라 구분선으로 나눠 오클릭을 줄인다. */
+    .step-tool-delete {
+        border-left: 1px solid #e5e7eb;
+        padding-left: 10px;
+        margin-left: 2px;
+    }
+
+    /* 조건분기 노드에는 상세설정 버튼이 없어 삭제 버튼만 남으므로 구분선도 필요없다. */
+    .step-item-condition .step-tool-delete,
+    .step-item-error .step-tool-delete {
+        border-left: none;
+        padding-left: 3px;
+        margin-left: 0;
+    }
+
+    .step-tool-detail:hover {
+        color: #4A90E2;
+    }
+
+    .step-tool-delete:hover {
+        color: #dc2626;
+    }
+
+    /* ============ Function type chip ============ */
+    .function-type-chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        border: 1px solid #d7dbe0;
+        border-radius: 8px;
+        background: #fff;
+        padding: 7px 10px;
+        font-size: 13px;
+        color: #1f2937;
+        cursor: pointer;
+    }
+
+    .function-type-chip:hover {
+        border-color: #4A90E2;
+    }
+
+    .function-type-chip img {
+        border-radius: 4px;
+    }
+
+    .function-type-chip span[name="chip-name"] {
+        flex: 1;
+        text-align: left;
+    }
+
+    .function-type-chip i {
+        font-size: 10px;
+        color: #9199a3;
+    }
+
+    /* ============ Function type picker modal ============ */
+    .function-type-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .function-type-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all .12s ease;
+    }
+
+    .function-type-item:hover {
+        border-color: #4A90E2;
+        background-color: #f5f9ff;
+    }
+
+    .function-type-item.current {
+        border-color: #4A90E2;
+        background-color: #eef5ff;
+    }
+
+    .function-type-icon {
+        flex: 0 0 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .function-type-icon img {
+        border-radius: 6px;
+    }
+
+    .function-type-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .function-type-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .function-type-code {
+        font-size: 11px;
+        font-weight: 400;
+        color: #9199a3;
+        margin-left: 6px;
+    }
+
+    .function-type-desc {
+        font-size: 12.5px;
+        color: #6b7280;
+    }
+
+    /* ============ Node detail drawer ============ */
+    .wf-node-drawer {
+        position: absolute;
+        top: 0; right: 0; bottom: 0;
+        width: 380px;
+        background: #fff;
+        border-left: 1px solid #e5e7eb;
+        box-shadow: -6px 0 18px rgba(16, 24, 40, .08);
+        transform: translateX(100%);
+        /* 닫힐 때는 밀려나간 뒤에 숨긴다. 닫힌 패널은 스크롤로 드러나거나 Tab 으로 focus 되면 안 된다. */
+        visibility: hidden;
+        transition: transform .18s ease, visibility 0s linear .18s;
+        display: flex;
+        flex-direction: column;
+        z-index: 5;
+    }
+
+    .wf-node-drawer.open {
+        transform: translateX(0);
+        visibility: visible;
+        transition: transform .18s ease, visibility 0s;
+    }
+
+    .wf-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    .wf-drawer-close {
+        border: none;
+        background: transparent;
+        font-size: 20px;
+        color: #9199a3;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .wf-drawer-body {
+        padding: 16px;
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .wf-drawer-footer {
+        padding: 14px 16px;
+        border-top: 1px solid #eef0f2;
+    }
+
+    .wf-field label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .wf-field-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .wf-field-row .wf-field {
+        flex: 1;
+    }
+
+    .wf-field-help {
+        font-size: 11.5px;
+        color: #9199a3;
+        margin-top: 6px;
+        line-height: 1.5;
+    }
+
+    /* ============ Condition editor (drawer) ============ */
+    .wf-condition-row {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px 10px 10px 10px;
+        margin-bottom: 8px;
+    }
+
+    .wf-condition-row-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+
+    .wf-condition-remove {
+        cursor: pointer;
+        color: #9199a3;
+        font-size: 11px;
+        padding: 2px 4px;
+    }
+
+    .wf-condition-remove:hover {
+        color: #dc2626;
+    }
+
+    .wf-condition-else {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px dashed #e5e7eb;
+        border-radius: 8px;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+    }
+
+    .wf-condition-else-help {
+        font-size: 11.5px;
+        color: #9199a3;
+    }
+
+    .wf-condition-textarea {
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+
+    /* 실행 패널은 요청 행과 로그를 나란히 보려면 노드 설정보다 넓어야 한다. */
+    .wf-node-drawer.wf-drawer-wide {
+        width: 520px;
+        max-width: 100%;
+    }
+
+    .wf-drawer-title {
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .wf-drawer-title i {
+        color: #9199a3;
+        font-size: 13px;
+    }
+
+    .wf-topbar-actions button.is-active {
+        background: #eef5ff;
+        border-color: #9cc3f0;
+        color: #1d4ed8;
+    }
+
+    .wf-section-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .wf-section-label .btn {
+        font-size: 11.5px;
+        padding: 2px 8px;
+    }
+
+    .wf-switch-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+
+    .wf-switch-row-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .wf-switch-row-desc {
+        font-size: 11.5px;
+        color: #9199a3;
+        margin-top: 2px;
+    }
+
+    /* ============ Settings drawer ============ */
+    .wf-permission-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+        min-height: 26px;
+    }
+
+    .wf-permission-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eef5ff;
+        color: #1d4ed8;
+        border-radius: 14px;
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+
+    .wf-permission-chip i {
+        cursor: pointer;
+        font-size: 10px;
+    }
+
+    .wf-chip-empty {
+        color: #9199a3;
+        font-size: 12px;
+    }
+
+    /* IP 그룹 / 도메인 칩은 권한 칩과 구분되게 색을 달리한다. */
+    .wf-ip-chip {
+        background: #eefaf3;
+        color: #0f766e;
+    }
+
+    .wf-domain-chip {
+        background: #fdf4e7;
+        color: #b45309;
+    }
+
+    .wf-permission-add input {
+        flex: 1;
+    }
+
+    .wf-permission-add {
+        display: flex;
+        gap: 8px;
+    }
+
+    .wf-permission-add select {
+        flex: 1;
+    }
+
+    /* ============ Execute drawer ============ */
+    /* 실행 패널은 위쪽 요청 편집, 아래쪽 로그 콘솔로 나눈다. 로그가 남은 높이를 모두 쓴다. */
+    .wf-execute-body {
+        padding: 0;
+        gap: 0;
+        overflow: hidden;
+    }
+
+    .wf-execute-request {
+        padding: 14px 16px;
+        border-bottom: 1px solid #eef0f2;
+        max-height: 40%;
+        overflow-y: auto;
+        flex: 0 0 auto;
+    }
+
+    .wf-execute-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 20px;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .wf-execute-row-remove {
+        cursor: pointer;
+        color: #9199a3;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .wf-execute-row-remove:hover {
+        color: #dc2626;
+    }
+
+    .wf-execute-empty {
+        font-size: 12px;
+        color: #9199a3;
+        border: 1px dashed #e5e7eb;
+        border-radius: 8px;
+        padding: 10px 12px;
+        text-align: center;
+    }
+
+    .wf-execute-run {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .wf-execute-target {
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 11.5px;
+        color: #6b7280;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-log {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: #111418;
+    }
+
+    .wf-log-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 7px 10px 7px 14px;
+        background: #181c21;
+        border-bottom: 1px solid #262b31;
+        color: #8b949e;
+        font-size: 11.5px;
+    }
+
+    .wf-log-toolbar-title {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 600;
+        letter-spacing: .02em;
+    }
+
+    .wf-log-toolbar-actions {
+        display: flex;
+        gap: 2px;
+    }
+
+    .wf-log-toolbar-actions button {
+        border: none;
+        background: transparent;
+        color: #8b949e;
+        font-size: 11.5px;
+        padding: 3px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .wf-log-toolbar-actions button:hover {
+        background: #262b31;
+        color: #e6edf3;
+    }
+
+    .wf-log-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 6px 0 10px 0;
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        color: #c9d1d9;
+    }
+
+    .wf-log-empty {
+        color: #6e7681;
+        padding: 10px 14px;
+    }
+
+    /* 실행결과 요약줄. 성공/실패, status, code, message 를 한 줄에 보여주고 길면 줄바꿈한다. */
+    .wf-result-summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #262b31;
+        background: #14181d;
+        font-family: "Consolas", "Menlo", "Monaco", monospace;
+        font-size: 12px;
+        color: #c9d1d9;
+    }
+
+    .wf-result-status {
+        font-weight: 700;
+        color: #e6edf3;
+    }
+
+    .wf-result-message {
+        color: #c9d1d9;
+        word-break: break-all;
+    }
+
+    .wf-result-meta {
+        margin-left: auto;
+        color: #6e7681;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .wf-log-level {
+        flex: 0 0 auto;
+        font-weight: 700;
+        font-size: 10.5px;
+        padding: 0 6px;
+        border-radius: 4px;
+    }
+
+    .wf-log-level.is-success { color: #3fb950; background: rgba(46, 160, 67, .15); }
+    .wf-log-level.is-error { color: #f85149; background: rgba(248, 81, 73, .15); }
+    .wf-log-level.is-pending { color: #d29922; background: rgba(210, 153, 34, .15); }
+
+    .wf-log-muted {
+        color: #8b949e;
+    }
+
+    .wf-log-code {
+        color: #d2a8ff;
+    }
+
+    .wf-log-json {
+        margin: 4px 0 0 12px;
+        padding: 8px 10px;
+        background: #0b0d10;
+        border: 1px solid #1f242a;
+        border-radius: 6px;
+        white-space: pre;
+        overflow-x: auto;
+        max-height: 360px;
+        overflow-y: auto;
+        color: #c9d1d9;
+        font-size: 11.5px;
+    }
+
+    /* 실행결과 JSON 은 남은 영역을 통째로 쓴다. 스크롤은 바깥 .wf-log-body 가 맡는다. */
+    .wf-log-json.wf-result-json {
+        margin: 0;
+        padding: 12px 14px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        max-height: none;
+        overflow: visible;
+        font-size: 12px;
+    }
+
+    .wf-log-json .json-key { color: #79c0ff; }
+    .wf-log-json .json-string { color: #a5d6ff; }
+    .wf-log-json .json-number { color: #ffa657; }
+    .wf-log-json .json-boolean { color: #ff7b72; }
+    .wf-log-json .json-null { color: #8b949e; }
+</style>
+<script th:fragment="script">
+    App.codes = {
+        "FUNCTION_TYPE": [
+            {code: "SQL", name: "SQL", icon: "/dist/img/func-sql.png", description: "직접 작성한 SQL 쿼리를 실행합니다."},
+            {code: "ENTITY", name: "Entity", icon: "/dist/img/func-entity.png", description: "등록된 엔티티 정의를 기준으로 데이터를 조회·등록·수정·삭제합니다."},
+            {code: "REST_CLIENT", name: "Rest Client", icon: "/dist/img/func-restclient.png", description: "등록된 외부 REST 서버를 호출하여 연동합니다."},
+            {code: "MESSAGE_PROCESSOR", name: "메시지처리", icon: "/dist/img/func-message.png", description: "스크립트로 요청/응답 메시지를 가공하고 변환합니다."},
+            {code: "NOTIFICATION", name: "알림", icon: "/dist/img/func-notification.png", description: "이메일 등 채널로 알림을 발송합니다."},
+            {code: "FILE", name: "파일", icon: "/dist/img/func-file.svg", description: "등록된 파일저장소에서 파일을 조회·업로드·삭제합니다."},
+            {code: "CONDITION", name: "조건분기 (IF)", icon: "/dist/img/func-condition.svg", description: "if / else if / else 로 흐름을 여러 갈래로 나눕니다."},
+            {code: "ERROR_MESSAGE", name: "에러메시지", icon: "/dist/img/func-error.svg", description: "흐름을 멈추고 지정한 status, code, message, contents 로 에러응답을 돌려줍니다."}
+        ]
+    };
+
+    const STEP_ITEM_ID_PREFIX = 'step-item-';
+    const CONDITION_TYPE = 'CONDITION';
+    const ERROR_MESSAGE_TYPE = 'ERROR_MESSAGE';
+    const DEFAULT_ERROR_STATUS = 400;
+    const BRANCH_ELSE = 'ELSE';               // else 가지를 가리키는 branchId 자리값
+    const EDGE_DEFAULT = 'DEFAULT';
+    const EDGE_CASE = 'CASE';
+    const EDGE_ELSE = 'ELSE';
+    const NODE_WIDTH = 300;        // .wf-node 폭
+    const NODE_HEIGHT = 150;       // 자동정렬/화면맞춤에서 쓰는 카드 높이 어림값
+    const LAYOUT_GAP_X = 60;       // 자동정렬 시 좌우 간격
+    const LAYOUT_GAP_Y = 230;      // 자동정렬 시 위아래 간격
+    const CANVAS_PADDING = 60;
+    const MIN_SCALE = 0.3;
+    const MAX_SCALE = 2;
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+
+    let workflowListData = [];
+    let selectedWorkflowId = null;
+    let activeNodeId = null;
+    let permissionCodesMaster = [];
+    let currentPermissionList = [];
+    let ipGroupsMaster = [];
+    let currentIpGroupList = [];
+    let currentDomainList = [];
+    let executeRows = [];
+    let executeRowSeq = 0;
+    let executeResult = null;      // 가장 최근 실행 한 건. {pending, elapsed, finishedAt, httpStatus, response}
+
+    /* ================= Workflow graph model =================
+       노드는 nodeId 로 식별하고, 흐름은 연결선 목록으로만 들고 있다.
+       - nodeMap  : nodeId -> 노드 데이터(캔버스 좌표 x, y 포함)
+       - edgeList : {sourceNodeId, targetNodeId, branchType, branchId}
+       트리가 아니라 그래프라서 갈라진 흐름이 같은 노드로 다시 합쳐질 수 있다
+       (if -> A -> C, else -> B -> C 처럼 C 를 하나만 두고 양쪽에서 쓴다).
+       저장할 때는 노드 + 조건 + 연결정보를 그대로 펼쳐서 보낸다. */
+    let nodeMap = new Map();
+    let edgeList = [];
+    let nodeIdSeq = 0;
+
+    // 노드를 끌고 난 직후에는 클릭 이벤트가 한 번 더 오는데, 그걸로 상세창이 열리면 안 된다.
+    let suppressNodeClick = false;
+
+    // 캔버스 화면 이동/확대 상태. 스크롤 대신 #workflowContent 의 transform 으로 처리한다.
+    let viewScale = 1;
+    let viewX = 0;
+    let viewY = 0;
+
+    $( document ).ready(function() {
+        init();
+
+        bindCanvasInteraction();
+
+        let connectorResizeTimer = null;
+        $(window).on('resize', function() {
+            clearTimeout(connectorResizeTimer);
+            connectorResizeTimer = setTimeout(refreshCanvas, 100);
+        });
+
+        $(document).on("click", "#drawerTypeChip", function() {
+            changeActiveNodeFunctionType();
+        });
+    });
+
+    function init() {
+        getWorkflowList();
+        setPermissionCodesMaster();
+        setIpGroupsMaster();
+        newContent();
+    }
+
+    /* ================= Workflow list (left sidebar) ================= */
+
+    function getWorkflowList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/workflow`, {},
+            function(response){
+                workflowListData = response;
+                renderWorkflowList();
+            },
+            function(error){
+                alert('조회하는데 실패하였습니다.');
+            }
+        );
+    }
+
+    function renderWorkflowList() {
+        const keyword = ($("#workflowSearch").val() || '').toLowerCase();
+        const $list = $("#workflowList");
+        $list.empty();
+
+        const filtered = workflowListData.filter(w =>
+            !keyword ||
+            (w.workflowCode || '').toLowerCase().includes(keyword) ||
+            (w.displayName || '').toLowerCase().includes(keyword)
+        );
+
+        if (filtered.length === 0) {
+            $list.append(`<div class="wf-list-empty">워크플로우가 없습니다.</div>`);
+            return;
+        }
+
+        for (const w of filtered) {
+            const $item = $(`
+                <div class="wf-list-item ${w.id === selectedWorkflowId ? 'active' : ''}">
+                    <span class="wf-list-item-icon"><i class="fas fa-project-diagram"></i></span>
+                    <span class="wf-list-item-info">
+                        <div class="wf-list-item-name">${w.displayName || '(이름없음)'}</div>
+                        <div class="wf-list-item-code">${w.workflowCode || ''}</div>
+                    </span>
+                </div>
+            `);
+
+            $item.on('click', function() {
+                selectedContent(w.id);
+            });
+
+            $list.append($item);
+        }
+    }
+
+    function toggleSidebar() {
+        $("#wfSidebar").toggleClass('collapsed');
+        setTimeout(refreshCanvas, 200); // 사이드바 접기/펼치기 트랜지션(.18s) 종료 후 캔버스 재계산
+    }
+
+    /* ================= Workflow CRUD ================= */
+
+    function save() {
+        const graph = collectWorkflowGraph();
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/workflow/save`,{},
+            {
+                workflow:getContent(),
+                workflowNodes:graph.functions,
+                workflowEdges:graph.edges,
+                workflowConditions:graph.conditions,
+                workflowErrorResponses:graph.errorResponses,
+                workflowPermission:currentPermissionList,
+                workflowIpGroup:currentIpGroupList,
+                workflowDomain:currentDomainList
+            },
+            function(response){
+                alert("저장 완료되었습니다.");
+                getWorkflowList();
+                selectedContent(response.id);
+            },
+            function(error){
+                const body = error && error.responseJSON;
+                alert((body && body.message) ? body.message : "에러 발생하였습니다.");
+            }
+        );
+    }
+
+    // 화면의 그래프를 그대로 노드 + 조건 + 에러응답 + 연결정보로 펼친다.
+    // 노드 순서(orderNum)는 시작 노드부터 연결을 따라간 순서라, 서버도 같은 노드를 시작 노드로 잡는다.
+    function collectWorkflowGraph() {
+        const functions = [];
+        const conditions = [];
+        const errorResponses = [];
+        const edges = [];
+
+        orderedNodeIds().forEach(function(nodeId, index) {
+            const node = getNode(nodeId);
+            if (!node) return;
+
+            functions.push({
+                nodeId: node.nodeId,
+                functionName: node.functionName || '',
+                functionType: node.functionType,
+                orderNum: index + 1,
+                isLogging: node.isLogging === true,
+                requestMessageId: node.requestMessageId || '',
+                responseMessageId: node.responseMessageId || '',
+                positionX: Math.round(node.x),
+                positionY: Math.round(node.y)
+            });
+
+            if (isConditionNode(node)) {
+                node.conditions.forEach(function(condition, conditionIndex) {
+                    conditions.push({
+                        nodeId: node.nodeId,
+                        branchId: condition.branchId,
+                        conditionExpression: condition.conditionExpression || '',
+                        orderNum: conditionIndex
+                    });
+                });
+            }
+
+            if (isErrorMessageNode(node)) {
+                errorResponses.push({
+                    nodeId: node.nodeId,
+                    status: node.errorResponse.status,
+                    code: node.errorResponse.code || '',
+                    message: node.errorResponse.message || '',
+                    contents: node.errorResponse.contents || ''
+                });
+            }
+        });
+
+        validEdges().forEach(function(edge, index) {
+            edges.push({
+                sourceNodeId: edge.sourceNodeId,
+                targetNodeId: edge.targetNodeId,
+                branchType: edge.branchType,
+                branchId: edge.branchId || null,
+                orderNum: index
+            });
+        });
+
+        return {functions:functions, edges:edges, conditions:conditions, errorResponses:errorResponses};
+    }
+
+    function deleteWorkflow() {
+        if(!confirm("삭제하시겠습니까?")) {
+            return;
+        }
+
+        let id = $("#workflowId").val();
+
+        httpClient.delete(`/${APPLICATION_ID}/console/api/workflow/${id}`, {},
+          function(response){
+              alert("삭제 처리 완료되었습니다.");
+              getWorkflowList();
+              newContent();
+          },
+          function(error){
+              alert('error');
+          }
+        );
+    }
+
+    function selectedContent(workflowId) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/workflow/${workflowId}`, {},
+            function(response){
+                selectedWorkflowId = response.id;
+                setContentData(response);
+                loadWorkflowGraph(workflowId);
+                getWorkflowPermission(workflowId);
+                getWorkflowIpGroup(workflowId);
+                getWorkflowDomain(workflowId);
+                initExecuteGrid();
+                renderWorkflowList();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function setContentData(response) {
+        setContent({
+            id:response.id,
+            workflowCode:response.workflowCode,
+            displayName:response.displayName,
+            useAuthValidation:response.useAuthValidation
+          });
+    }
+
+    function getContent() {
+        return {
+            id: $("#workflowId").val(),
+            workflowCode: $("#workflowCode").val(),
+            displayName: $("#displayName").val(),
+            note: '',
+            useAuthValidation:App.util.isCheck('useAuthValidation')
+        }
+    }
+
+    function setContent(params) {
+        $("#workflowId").val(params.id);
+        $("#workflowCode").val(params.workflowCode);
+        $("#displayName").val(params.displayName);
+        App.util.check('useAuthValidation', params.useAuthValidation);
+    }
+
+    function newContent(){
+        selectedWorkflowId = null;
+
+        setContent({
+            id:'',
+            workflowCode:'',
+            displayName:'',
+            useAuthValidation:true
+            });
+
+        buildModel([], [], []);
+        renderWorkflow();
+        fitView();
+
+        currentPermissionList = [];
+        renderPermissionChips();
+        currentIpGroupList = [];
+        renderIpGroupChips();
+        currentDomainList = [];
+        renderDomainChips();
+        initExecuteGrid();
+        renderWorkflowList();
+    }
+
+    function restore() {
+        const workflowId = $("#workflowId").val();
+        if(workflowId) {
+            selectedContent(workflowId);
+        }
+        else {
+            newContent();
+        }
+    }
+
+    /* ================= Settings (auth / permission) ================= */
+
+    function setPermissionCodesMaster() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/permission`, {},
+            function(response){
+                permissionCodesMaster = response;
+                renderPermissionChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function getWorkflowPermission(workflowId) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/workflow-permission`, {workflowId:workflowId},
+            function(response){
+                currentPermissionList = response.map(r => ({permissionCode:r.permissionCode}));
+                renderPermissionChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderPermissionChips() {
+        const $chips = $("#permissionChips");
+        $chips.empty();
+
+        if (currentPermissionList.length === 0) {
+            $chips.append(`<span class="wf-chip-empty">등록된 권한이 없습니다.</span>`);
+        }
+
+        for (const item of currentPermissionList) {
+            const master = permissionCodesMaster.find(a => a.code === item.permissionCode);
+            const label = master ? master.name : item.permissionCode;
+
+            const $chip = $(`
+                <span class="wf-permission-chip">${label} <i class="fas fa-times"></i></span>
+            `);
+
+            $chip.find('i').on('click', function() {
+                removePermissionChip(item.permissionCode);
+            });
+
+            $chips.append($chip);
+        }
+
+        const $select = $("#permissionSelect");
+        $select.empty().append(`<option value="">권한 추가...</option>`);
+        for (const a of permissionCodesMaster) {
+            if (!currentPermissionList.some(item => item.permissionCode === a.code)) {
+                $select.append(`<option value="${a.code}">${a.name}</option>`);
+            }
+        }
+    }
+
+    function addPermissionChip() {
+        const code = $("#permissionSelect").val();
+        if (!code) return;
+
+        currentPermissionList.push({permissionCode:code});
+        renderPermissionChips();
+    }
+
+    function removePermissionChip(code) {
+        currentPermissionList = currentPermissionList.filter(item => item.permissionCode !== code);
+        renderPermissionChips();
+    }
+
+    /* ================= Settings (IP 접근제어) =================
+       IP 그룹을 하나도 매핑하지 않으면 IP 제한 없이 실행된다. */
+
+    function setIpGroupsMaster() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/ip-group`, {},
+            function(response){
+                ipGroupsMaster = response || [];
+                renderIpGroupChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function getWorkflowIpGroup(workflowId) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/workflow-ip-group`, {workflowId:workflowId},
+            function(response){
+                currentIpGroupList = response.map(r => ({ipGroupCode:r.ipGroupCode}));
+                renderIpGroupChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderIpGroupChips() {
+        const $chips = $("#ipGroupChips");
+        $chips.empty();
+
+        if (currentIpGroupList.length === 0) {
+            $chips.append(`<span class="wf-chip-empty">매핑된 IP그룹이 없습니다. (IP 제한 없음)</span>`);
+        }
+
+        for (const item of currentIpGroupList) {
+            const master = ipGroupsMaster.find(g => g.groupCode === item.ipGroupCode);
+            const label = master ? `${master.displayName} (IP ${master.ipCount || 0})` : item.ipGroupCode;
+
+            const $chip = $(`
+                <span class="wf-permission-chip wf-ip-chip"><i class="fas fa-network-wired"></i> <span class="wf-ip-chip-label"></span> <i class="fas fa-times"></i></span>
+            `);
+
+            $chip.find('.wf-ip-chip-label').text(label);
+
+            $chip.find('i.fa-times').on('click', function() {
+                removeIpGroupChip(item.ipGroupCode);
+            });
+
+            $chips.append($chip);
+        }
+
+        const $select = $("#ipGroupSelect");
+        $select.empty().append(`<option value="">IP그룹 추가...</option>`);
+        for (const g of ipGroupsMaster) {
+            if (!currentIpGroupList.some(item => item.ipGroupCode === g.groupCode)) {
+                $select.append($('<option></option>').attr('value', g.groupCode).text(`${g.displayName} (${g.groupCode})`));
+            }
+        }
+    }
+
+    function addIpGroupChip() {
+        const code = $("#ipGroupSelect").val();
+        if (!code) return;
+
+        currentIpGroupList.push({ipGroupCode:code});
+        renderIpGroupChips();
+    }
+
+    function removeIpGroupChip(code) {
+        currentIpGroupList = currentIpGroupList.filter(item => item.ipGroupCode !== code);
+        renderIpGroupChips();
+    }
+
+    /* ================= Settings (도메인 접근제어) =================
+       도메인을 하나도 등록하지 않으면 도메인 제한 없이 실행된다. */
+
+    function getWorkflowDomain(workflowId) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/workflow-domain`, {workflowId:workflowId},
+            function(response){
+                currentDomainList = response.map(r => ({domain:r.domain}));
+                renderDomainChips();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function renderDomainChips() {
+        const $chips = $("#domainChips");
+        $chips.empty();
+
+        if (currentDomainList.length === 0) {
+            $chips.append(`<span class="wf-chip-empty">등록된 도메인이 없습니다. (도메인 제한 없음)</span>`);
+        }
+
+        for (const item of currentDomainList) {
+            const $chip = $(`
+                <span class="wf-permission-chip wf-domain-chip"><i class="fas fa-globe"></i> <span class="wf-domain-chip-label"></span> <i class="fas fa-times"></i></span>
+            `);
+
+            $chip.find('.wf-domain-chip-label').text(item.domain);
+
+            $chip.find('i.fa-times').on('click', function() {
+                removeDomainChip(item.domain);
+            });
+
+            $chips.append($chip);
+        }
+    }
+
+    // 도메인 표기 검사. 전체(*) 이거나 도메인 글자(영문/숫자/./-/*)로만 이루어져야 한다.
+    function isValidDomain(domain) {
+        if (domain === '*') return true;
+        if (!/^[A-Za-z0-9*._-]+$/.test(domain)) return false;
+
+        return domain.split('.').every(label => label.length > 0);
+    }
+
+    function addDomainChip() {
+        const domain = ($("#domainInput").val() || '').trim().toLowerCase();
+        if (!domain) return;
+
+        if (!isValidDomain(domain)) {
+            alert("도메인 형식이 올바르지않습니다.\n예) portal.example.com, *.example.com, *");
+            return;
+        }
+
+        if (currentDomainList.some(item => item.domain === domain)) {
+            $("#domainInput").val('');
+            return;
+        }
+
+        currentDomainList.push({domain:domain});
+        $("#domainInput").val('');
+        renderDomainChips();
+    }
+
+    function removeDomainChip(domain) {
+        currentDomainList = currentDomainList.filter(item => item.domain !== domain);
+        renderDomainChips();
+    }
+
+    // IP 관리 화면을 팝업으로 띄운다. 닫으면 그룹 목록을 다시 읽어 선택 목록에 바로 반영한다.
+    function openIpManagement() {
+        App.modalPopup.open(`/${APPLICATION_ID}/console/ip-management`, {title:'IP 관리', size:'modal-fullscreen-md', height:'92vh', messageId:'IP_GROUP_REQUEST'});
+
+        $('#popup').one('hidden.bs.modal', function() {
+            setIpGroupsMaster();
+        });
+    }
+
+    /* ================= Side panels (node / settings / execute) =================
+       우측 슬라이드 패널은 같은 자리를 나눠 쓰므로 한 번에 하나만 열린다. */
+
+    function openSidePanel(panelId) {
+        // 노드 상세창이 열려있으면 선택 상태까지 같이 풀어준다.
+        if (panelId !== 'nodeDrawer') {
+            activeNodeId = null;
+            $(".step-item").removeClass("selected");
+        }
+
+        $(".wf-node-drawer").not(`#${panelId}`).removeClass("open");
+        $(`#${panelId}`).addClass("open");
+
+        $("#settingsPanelButton").toggleClass('is-active', panelId === 'settingsDrawer');
+        $("#executePanelButton").toggleClass('is-active', panelId === 'executeDrawer');
+    }
+
+    function closeSidePanels() {
+        activeNodeId = null;
+        $(".step-item").removeClass("selected");
+        $(".wf-node-drawer").removeClass("open");
+        $("#settingsPanelButton, #executePanelButton").removeClass('is-active');
+    }
+
+    function isSidePanelOpen(panelId) {
+        return $(`#${panelId}`).hasClass("open");
+    }
+
+    function toggleSettingsPanel() {
+        if (isSidePanelOpen('settingsDrawer')) {
+            closeSidePanels();
+            return;
+        }
+
+        renderPermissionChips();
+        openSidePanel('settingsDrawer');
+    }
+
+    /* ================= Execute ================= */
+
+    // 다른 워크플로우를 열면 요청 행과 실행결과를 비운다. 앞 워크플로우의 결과가 남아 보이면 안 된다.
+    function initExecuteGrid() {
+        executeRows = [];
+        executeRowSeq = 0;
+        executeResult = null;
+        renderExecuteRows();
+        renderExecuteResult();
+    }
+
+    function renderExecuteRows() {
+        const $rows = $("#executeRows");
+        $rows.empty();
+
+        if (executeRows.length === 0) {
+            $rows.append(`<div class="wf-execute-empty">요청 메시지가 없습니다. 행 추가로 메시지ID / 컬럼 / 값을 입력하세요.</div>`);
+        }
+
+        for (const row of executeRows) {
+            const $row = $(`
+                <div class="wf-execute-row">
+                    <input type="text" class="form-control form-control-sm" placeholder="메시지ID">
+                    <input type="text" class="form-control form-control-sm" placeholder="컬럼">
+                    <input type="text" class="form-control form-control-sm" placeholder="값">
+                    <i class="fas fa-times wf-execute-row-remove"></i>
+                </div>
+            `);
+
+            const $inputs = $row.find('input');
+            $inputs.eq(0).val(row.messageId).on('input', function(){ row.messageId = this.value; });
+            $inputs.eq(1).val(row.key).on('input', function(){ row.key = this.value; });
+            $inputs.eq(2).val(row.value).on('input', function(){ row.value = this.value; });
+
+            $row.find('.wf-execute-row-remove').on('click', function() {
+                executeRows = executeRows.filter(r => r.seq !== row.seq);
+                renderExecuteRows();
+            });
+
+            $rows.append($row);
+        }
+    }
+
+    function addExecuteRow() {
+        executeRows.push({seq:++executeRowSeq, messageId:'', key:'', value:''});
+        renderExecuteRows();
+    }
+
+    function execute() {
+        const body = executeRows.reduce((result, item) => {
+            if (!item.messageId) return result;
+
+            if (!result[item.messageId]) {
+                result[item.messageId] = [];
+            }
+            result[item.messageId].push({messageId:item.messageId, key:item.key, value:item.value});
+            return result;
+        }, {});
+
+        const workflowCode = $("#workflowCode").val();
+        if (!workflowCode) {
+            alert("워크플로우 코드를 입력해주세요.");
+            return;
+        }
+
+        const header = {workflowCode : workflowCode};
+        const startedTime = performance.now();
+
+        // 실행결과는 누적하지 않는다. 실행할 때마다 직전 결과를 이번 결과로 갈아끼운다.
+        const result = {pending: true};
+        executeResult = result;
+
+        renderExecuteResult();
+        $("#executeButton").prop('disabled', true);
+
+        const finish = function(httpStatus, response) {
+            result.pending = false;
+            result.elapsed = Math.round(performance.now() - startedTime);
+            result.finishedAt = new Date();
+            result.httpStatus = httpStatus;
+            result.response = response;
+
+            $("#executeButton").prop('disabled', false);
+            renderExecuteResult();
+        };
+
+        httpClient.post(`/${APPLICATION_ID}/workflow`,{},{body:body,header:header},
+            function(response){
+                finish(200, response);
+            },
+            function(error){
+                // 서버에 닿지도 못한 경우(status 0)는 응답 본문이 없다.
+                finish(error.status, error.responseJSON || {message: error.statusText || '요청에 실패하였습니다.'});
+            }
+        );
+    }
+
+    function toggleExecutePanel() {
+        if (isSidePanelOpen('executeDrawer')) {
+            closeSidePanels();
+            return;
+        }
+
+        renderExecuteResult();
+        openSidePanel('executeDrawer');
+    }
+
+    // 가장 최근 실행 한 건의 결과만 보여준다. 위쪽 요약줄(성공여부/status/code/message/소요시간) + 아래 응답 JSON.
+    function renderExecuteResult() {
+        const workflowCode = $("#workflowCode").val();
+        $("#executeTarget").text(workflowCode ? `POST /workflow · ${workflowCode}` : '워크플로우 코드가 없습니다');
+
+        const $summary = $("#executeResultSummary");
+        const $json = $("#executeResultJson");
+
+        if (!executeResult) {
+            $summary.html(`<span class="wf-log-muted">아직 실행하지 않았습니다.</span>`);
+            $json.html(`<div class="wf-log-empty">실행 버튼을 누르면 실행결과가 여기에 표시됩니다.</div>`);
+            return;
+        }
+
+        if (executeResult.pending) {
+            $summary.html(`
+                <span class="wf-log-level is-pending">실행중</span>
+                <span class="wf-log-muted">응답을 기다리는 중입니다...</span>
+            `);
+            $json.html('');
+            return;
+        }
+
+        const response = executeResult.response || {};
+        const isSuccess = response.resultType === 'SUCCESS';
+        const status = response.status != null ? response.status : executeResult.httpStatus;
+
+        $summary.html(`
+            <span class="wf-log-level ${isSuccess ? 'is-success' : 'is-error'}">${isSuccess ? '성공' : '실패'}</span>
+            <span class="wf-result-status">${escapeHtml(status == null ? '-' : status)}</span>
+            <span class="wf-log-code">${escapeHtml(response.code || '')}</span>
+            <span class="wf-result-message">${escapeHtml(response.message || '')}</span>
+            <span class="wf-result-meta">${executeResult.elapsed}ms · ${formatResultTime(executeResult.finishedAt)}</span>
+        `);
+
+        $json.html(`<pre class="wf-log-json wf-result-json">${highlightJson(JSON.stringify(response, null, 2))}</pre>`);
+        $json.scrollTop(0);
+    }
+
+    function formatResultTime(date) {
+        const pad = (value, size) => String(value).padStart(size, '0');
+
+        return `${pad(date.getHours(), 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}`;
+    }
+
+    // 키/문자열/숫자/불리언/null 에 색을 입힌다.
+    // 토큰을 먼저 나누고 조각마다 이스케이프한다. 통째로 이스케이프한 뒤 찾으면 값 안의 따옴표/꺾쇠가 토큰을 깨뜨린다.
+    function highlightJson(json) {
+        const text = json == null ? '' : String(json);
+        const tokenPattern = /("(?:\\.|[^"\\])*")(\s*:)?|\b(?:true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g;
+
+        let html = '';
+        let lastIndex = 0;
+        let matched;
+
+        while ((matched = tokenPattern.exec(text)) !== null) {
+            html += escapeHtml(text.slice(lastIndex, matched.index));
+
+            const token = matched[0];
+            let className = 'json-number';
+
+            if (matched[1]) {
+                className = matched[2] ? 'json-key' : 'json-string';
+                html += `<span class="${className}">${escapeHtml(matched[1])}</span>${matched[2] || ''}`;
+            }
+            else {
+                if (token === 'true' || token === 'false') className = 'json-boolean';
+                else if (token === 'null') className = 'json-null';
+
+                html += `<span class="${className}">${escapeHtml(token)}</span>`;
+            }
+
+            lastIndex = tokenPattern.lastIndex;
+        }
+
+        return html + escapeHtml(text.slice(lastIndex));
+    }
+
+    function copyExecuteResult() {
+        if (!executeResult || executeResult.pending) return;
+
+        const text = JSON.stringify(executeResult.response, null, 2);
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text);
+            return;
+        }
+
+        const $textarea = $('<textarea style="position:fixed;left:-9999px;"></textarea>').val(text).appendTo('body');
+        $textarea.trigger('select');
+        document.execCommand('copy');
+        $textarea.remove();
+    }
+
+    /* ================= Graph model ================= */
+
+    function getNode(nodeId) {
+        return nodeMap.get(nodeId);
+    }
+
+    function isConditionNode(node) {
+        return !!node && node.functionType === CONDITION_TYPE;
+    }
+
+    function isErrorMessageNode(node) {
+        return !!node && node.functionType === ERROR_MESSAGE_TYPE;
+    }
+
+    function createNodeId() {
+        return 'node-' + (++nodeIdSeq);
+    }
+
+    // 노드에서 나가는 포트. 일반 노드는 하나(DEFAULT), 조건분기 노드는 조건 개수(CASE) + else(ELSE).
+    // 에러메시지 노드는 흐름을 끝내는 노드라 나가는 포트가 없다.
+    function outPorts(node) {
+        if (isErrorMessageNode(node)) {
+            return [];
+        }
+
+        if (!isConditionNode(node)) {
+            return [{branchType:EDGE_DEFAULT, branchId:null, label:'다음'}];
+        }
+
+        const ports = node.conditions.map(function(condition, index) {
+            return {
+                branchType: EDGE_CASE,
+                branchId: condition.branchId,
+                label: branchLabel(condition.branchId, index),
+                expression: condition.conditionExpression
+            };
+        });
+
+        ports.push({branchType:EDGE_ELSE, branchId:null, label:'else'});
+
+        return ports;
+    }
+
+    function portKey(nodeId, branchType, branchId) {
+        return nodeId + '|' + branchType + '|' + (branchId || '');
+    }
+
+    function edgeKeyOf(edge) {
+        return portKey(edge.sourceNodeId, edge.branchType, edge.branchId);
+    }
+
+    function findEdgeByPort(nodeId, port) {
+        const key = portKey(nodeId, port.branchType, port.branchId);
+
+        return edgeList.find(edge => edgeKeyOf(edge) === key) || null;
+    }
+
+    function incomingEdges(nodeId) {
+        return edgeList.filter(edge => edge.targetNodeId === nodeId);
+    }
+
+    function outgoingEdges(nodeId) {
+        return edgeList.filter(edge => edge.sourceNodeId === nodeId);
+    }
+
+    // 한 포트에서 나가는 길은 하나뿐이라, 이미 이어둔 곳이 있으면 갈아끼운다.
+    function connectNodes(sourceNodeId, port, targetNodeId) {
+        const key = portKey(sourceNodeId, port.branchType, port.branchId);
+
+        edgeList = edgeList.filter(edge => edgeKeyOf(edge) !== key);
+        edgeList.push({
+            sourceNodeId: sourceNodeId,
+            targetNodeId: targetNodeId,
+            branchType: port.branchType,
+            branchId: port.branchId || null
+        });
+    }
+
+    function disconnectEdge(edge) {
+        edgeList = edgeList.filter(item => item !== edge);
+    }
+
+    // 끊어진 연결(지워진 노드, 없어진 조건 가지)은 흐름에서도 저장에서도 뺀다.
+    function validEdges() {
+        return edgeList.filter(function(edge) {
+            const source = getNode(edge.sourceNodeId);
+            if (!source || !nodeMap.has(edge.targetNodeId)) return false;
+
+            return outPorts(source).some(port =>
+                port.branchType === edge.branchType && (port.branchId || null) === (edge.branchId || null));
+        });
+    }
+
+    // 시작 노드부터 연결을 따라간 순서. 저장할 때 orderNum 이 되는 값이다.
+    function orderedNodeIds() {
+        const all = Array.from(nodeMap.keys());
+        const visited = new Set();
+        const order = [];
+        const queue = all.filter(nodeId => incomingEdges(nodeId).length === 0);
+
+        while (queue.length > 0) {
+            const nodeId = queue.shift();
+            if (visited.has(nodeId)) continue;
+
+            visited.add(nodeId);
+            order.push(nodeId);
+
+            for (const edge of outgoingEdges(nodeId)) {
+                if (!visited.has(edge.targetNodeId)) {
+                    queue.push(edge.targetNodeId);
+                }
+            }
+        }
+
+        // 순환 안에만 있거나 어디에도 이어지지 않은 노드가 조용히 사라지지 않도록 뒤에 붙인다.
+        for (const nodeId of all) {
+            if (!visited.has(nodeId)) {
+                order.push(nodeId);
+            }
+        }
+
+        return order;
+    }
+
+    // 서버는 들어오는 연결이 없으면서 orderNum 이 가장 앞인 노드부터 실행한다. 화면도 같은 규칙으로 시작 노드를 고른다.
+    function startNodeId() {
+        const order = orderedNodeIds();
+
+        return order.find(nodeId => incomingEdges(nodeId).length === 0) || order[0] || null;
+    }
+
+    // 시작 노드는 초록 배지, 어디에도 이어지지 않아 실행되지 않는 노드는 주황 배지로 알려준다.
+    function nodeRole(nodeId) {
+        if (incomingEdges(nodeId).length > 0) return '';
+
+        return nodeId === startNodeId() ? 'start' : 'orphan';
+    }
+
+    function branchLabel(branchId, index) {
+        if (branchId === BRANCH_ELSE) return 'else';
+        return index === 0 ? 'if' : 'else if';
+    }
+
+    // branchId 는 한 노드 안에서만 유일하면 된다. 조건을 지웠다 다시 추가해도 겹치지 않게 최대값 다음을 쓴다.
+    function createBranchId(node) {
+        let max = 0;
+
+        for (const condition of node.conditions) {
+            const matched = /^c(\d+)$/.exec(condition.branchId);
+            if (matched) {
+                max = Math.max(max, Number(matched[1]));
+            }
+        }
+
+        return 'c' + (max + 1);
+    }
+
+    function createNode(nodeId, functionType) {
+        const node = {
+            nodeId: nodeId,
+            functionType: functionType,
+            functionName: '',
+            displayName: defaultDisplayName(functionType),
+            isLogging: false,
+            requestMessageId: '',
+            responseMessageId: '',
+            conditions: [],
+            errorResponse: null,
+            x: CANVAS_PADDING,
+            y: CANVAS_PADDING
+        };
+
+        if (functionType === CONDITION_TYPE) {
+            resetConditions(node);
+        }
+
+        if (functionType === ERROR_MESSAGE_TYPE) {
+            resetErrorResponse(node);
+        }
+
+        return node;
+    }
+
+    function defaultDisplayName(functionType) {
+        if (functionType === CONDITION_TYPE) return '조건분기';
+        if (functionType === ERROR_MESSAGE_TYPE) return '에러메시지';
+        return '(기능생성필요)';
+    }
+
+    function resetErrorResponse(node) {
+        node.errorResponse = {status:DEFAULT_ERROR_STATUS, code:'', message:'', contents:''};
+    }
+
+    // 조건분기로 만들 때는 조건 하나(if)로 시작한다. else 가지는 항상 있다.
+    function resetConditions(node) {
+        node.conditions = [{branchId:'c1', conditionExpression:''}];
+    }
+
+    function loadWorkflowGraph(workflowId) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/workflow-node`, {workflowId:workflowId},
+            function(functions){
+                httpClient.get(`/${APPLICATION_ID}/console/api/workflow-edge`, {workflowId:workflowId},
+                    function(edges){
+                        httpClient.get(`/${APPLICATION_ID}/console/api/workflow-condition`, {workflowId:workflowId},
+                            function(conditions){
+                                httpClient.get(`/${APPLICATION_ID}/console/api/workflow-error-response`, {workflowId:workflowId},
+                                    function(errorResponses){
+                                        buildModel(functions, edges, conditions, errorResponses);
+                                        renderWorkflow();
+                                        fitView();
+                                    },
+                                    function(error){
+                                        alert('error');
+                                    }
+                                );
+                            },
+                            function(error){
+                                alert('error');
+                            }
+                        );
+                    },
+                    function(error){
+                        alert('error');
+                    }
+                );
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    // 서버에서 받은 노드 + 조건 + 에러응답 + 연결정보를 화면 모델로 되돌린다.
+    function buildModel(functions, edges, conditions, errorResponses) {
+        nodeMap = new Map();
+        edgeList = [];
+        nodeIdSeq = 0;
+        closeNodeDrawer();
+
+        const ordered = (functions || []).slice().sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0));
+        const orderedNodeIdList = [];
+        let hasMissingPosition = false;
+
+        for (const f of ordered) {
+            const nodeId = f.nodeId || createNodeId();
+
+            const node = createNode(nodeId, f.functionType);
+            node.functionName = f.functionName || '';
+            node.displayName = f.displayName || '';
+            node.isLogging = f.isLogging === true;
+            node.requestMessageId = f.requestMessageId || '';
+            node.responseMessageId = f.responseMessageId || '';
+            node.conditions = [];
+
+            // 캔버스가 없던 시절에 저장된 노드는 좌표가 없다. 그런 워크플로우는 자동정렬로 배치를 잡아준다.
+            if (f.positionX == null || f.positionY == null) {
+                hasMissingPosition = true;
+            }
+            else {
+                node.x = Math.max(0, f.positionX);
+                node.y = Math.max(0, f.positionY);
+            }
+
+            nodeMap.set(nodeId, node);
+            orderedNodeIdList.push(nodeId);
+
+            const matched = /^node-(\d+)$/.exec(nodeId);
+            if (matched) {
+                nodeIdSeq = Math.max(nodeIdSeq, Number(matched[1]));
+            }
+        }
+
+        const orderedConditions = (conditions || []).slice().sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0));
+
+        for (const c of orderedConditions) {
+            const node = getNode(c.nodeId);
+            if (!node) continue;
+
+            node.conditions.push({branchId:c.branchId, conditionExpression:c.conditionExpression || ''});
+        }
+
+        // 조건분기 노드는 조건이 최소 한 개는 있어야 가지를 그릴 수 있다.
+        for (const node of nodeMap.values()) {
+            if (isConditionNode(node) && node.conditions.length === 0) {
+                resetConditions(node);
+            }
+        }
+
+        for (const r of (errorResponses || [])) {
+            const node = getNode(r.nodeId);
+            if (!isErrorMessageNode(node)) continue;
+
+            node.errorResponse = {
+                status: r.status == null ? DEFAULT_ERROR_STATUS : r.status,
+                code: r.code || '',
+                message: r.message || '',
+                contents: r.contents || ''
+            };
+        }
+
+        for (const e of (edges || [])) {
+            if (!nodeMap.has(e.sourceNodeId) || !nodeMap.has(e.targetNodeId)) continue;
+
+            edgeList.push({
+                sourceNodeId: e.sourceNodeId,
+                targetNodeId: e.targetNodeId,
+                branchType: e.branchType || EDGE_DEFAULT,
+                branchId: e.branchId || null
+            });
+        }
+
+        // 연결정보가 생기기 전에 저장된 워크플로우는 orderNum 직선 흐름으로 읽어 연결선을 만들어준다.
+        if (edgeList.length === 0 && orderedNodeIdList.length > 1) {
+            for (let i = 0; i < orderedNodeIdList.length - 1; i++) {
+                const source = getNode(orderedNodeIdList[i]);
+                if (isConditionNode(source) || isErrorMessageNode(source)) continue;
+
+                edgeList.push({
+                    sourceNodeId: orderedNodeIdList[i],
+                    targetNodeId: orderedNodeIdList[i + 1],
+                    branchType: EDGE_DEFAULT,
+                    branchId: null
+                });
+            }
+        }
+
+        if (hasMissingPosition) {
+            layoutNodes();
+        }
+    }
+
+    // 연결을 따라 층을 매겨 위에서 아래로 늘어놓는다. 같은 층은 좌우로 나눠 놓는다.
+    function layoutNodes() {
+        const order = orderedNodeIds();
+        const layer = new Map();
+
+        for (const nodeId of order) {
+            layer.set(nodeId, 0);
+        }
+
+        // 층은 "들어오는 연결 중 가장 깊은 곳 + 1". 순환이 있어도 노드 수만큼만 돌고 멈춘다.
+        for (let pass = 0; pass < order.length; pass++) {
+            let changed = false;
+
+            for (const edge of validEdges()) {
+                const next = layer.get(edge.sourceNodeId) + 1;
+
+                if (next < order.length && next > layer.get(edge.targetNodeId)) {
+                    layer.set(edge.targetNodeId, next);
+                    changed = true;
+                }
+            }
+
+            if (!changed) break;
+        }
+
+        const rows = new Map();
+        for (const nodeId of order) {
+            const index = layer.get(nodeId);
+            if (!rows.has(index)) rows.set(index, []);
+            rows.get(index).push(nodeId);
+        }
+
+        let widest = 1;
+        for (const row of rows.values()) {
+            widest = Math.max(widest, row.length);
+        }
+
+        const totalWidth = widest * NODE_WIDTH + (widest - 1) * LAYOUT_GAP_X;
+
+        for (const [index, row] of rows) {
+            const rowWidth = row.length * NODE_WIDTH + (row.length - 1) * LAYOUT_GAP_X;
+            let x = CANVAS_PADDING + (totalWidth - rowWidth) / 2;
+
+            for (const nodeId of row) {
+                const node = getNode(nodeId);
+                node.x = Math.round(x);
+                node.y = CANVAS_PADDING + index * LAYOUT_GAP_Y;
+                x += NODE_WIDTH + LAYOUT_GAP_X;
+            }
+        }
+    }
+
+    function autoLayout() {
+        layoutNodes();
+        renderWorkflow();
+        fitView();
+    }
+
+    /* ================= Canvas view (pan / zoom) ================= */
+
+    // 캔버스 크기가 바뀌면 덮는 영역과 연결선을 다시 계산한다.
+    function refreshCanvas() {
+        updateCanvasSize();
+        applyViewTransform();
+        drawConnectors();
+    }
+
+    function applyViewTransform() {
+        $("#workflowContent").css('transform', `translate(${viewX}px, ${viewY}px) scale(${viewScale})`);
+        $("#zoomLabel").text(Math.round(viewScale * 100) + '%');
+
+        // 배경 격자도 같이 움직여야 캔버스가 실제로 끌려오는 것처럼 보인다.
+        const gridSize = 20 * viewScale;
+        $("#workflowCanvas").css({
+            'background-size': gridSize + 'px ' + gridSize + 'px',
+            'background-position': viewX + 'px ' + viewY + 'px'
+        });
+    }
+
+    // 연결선 svg 는 노드가 놓인 영역 전체를 덮어야 한다(덮지 못한 부분의 선은 잘려 보인다).
+    function updateCanvasSize() {
+        const $canvas = $("#workflowCanvas");
+
+        let width = ($canvas.width() || 900) / viewScale;
+        let height = ($canvas.height() || 600) / viewScale;
+
+        for (const node of nodeMap.values()) {
+            width = Math.max(width, node.x + NODE_WIDTH + CANVAS_PADDING);
+            height = Math.max(height, node.y + nodeHeight(node.nodeId) + CANVAS_PADDING);
+        }
+
+        $("#workflowContent").css({width:width + 'px', height:height + 'px'});
+
+        const svg = document.getElementById('connectorLayer');
+        if (svg) {
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+        }
+    }
+
+    function nodeHeight(nodeId) {
+        const el = document.querySelector(`.wf-node[data-node-id="${nodeId}"]`);
+
+        return el ? el.offsetHeight : NODE_HEIGHT;
+    }
+
+    function zoomAt(factor, clientX, clientY) {
+        const rect = document.getElementById('workflowCanvas').getBoundingClientRect();
+        const nextScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, viewScale * factor));
+
+        // 확대해도 마우스가 가리키던 지점은 제자리에 있어야 한다.
+        const anchorX = (clientX - rect.left - viewX) / viewScale;
+        const anchorY = (clientY - rect.top - viewY) / viewScale;
+
+        viewX = clientX - rect.left - anchorX * nextScale;
+        viewY = clientY - rect.top - anchorY * nextScale;
+        viewScale = nextScale;
+
+        updateCanvasSize();
+        applyViewTransform();
+    }
+
+    function zoomBy(factor) {
+        const rect = document.getElementById('workflowCanvas').getBoundingClientRect();
+
+        zoomAt(factor, rect.left + rect.width / 2, rect.top + rect.height / 2);
+    }
+
+    // 모든 노드가 한 화면에 들어오도록 배율과 위치를 맞춘다.
+    function fitView() {
+        if (nodeMap.size === 0) {
+            viewScale = 1;
+            viewX = 0;
+            viewY = 0;
+            updateCanvasSize();
+            applyViewTransform();
+            return;
+        }
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        for (const node of nodeMap.values()) {
+            minX = Math.min(minX, node.x);
+            minY = Math.min(minY, node.y);
+            maxX = Math.max(maxX, node.x + NODE_WIDTH);
+            maxY = Math.max(maxY, node.y + nodeHeight(node.nodeId));
+        }
+
+        const $canvas = $("#workflowCanvas");
+        const viewWidth = Math.max(200, ($canvas.width() || 900) - CANVAS_PADDING * 2);
+        const viewHeight = Math.max(200, ($canvas.height() || 600) - CANVAS_PADDING * 2);
+
+        viewScale = Math.min(1, Math.min(viewWidth / (maxX - minX), viewHeight / (maxY - minY)));
+        viewScale = Math.max(MIN_SCALE, viewScale);
+
+        viewX = CANVAS_PADDING + (viewWidth - (maxX - minX) * viewScale) / 2 - minX * viewScale;
+        viewY = CANVAS_PADDING + (viewHeight - (maxY - minY) * viewScale) / 2 - minY * viewScale;
+
+        updateCanvasSize();
+        applyViewTransform();
+    }
+
+    // 화면 좌표 -> 캔버스 좌표.
+    function toContentPoint(clientX, clientY) {
+        const rect = document.getElementById('workflowCanvas').getBoundingClientRect();
+
+        return {
+            x: (clientX - rect.left - viewX) / viewScale,
+            y: (clientY - rect.top - viewY) / viewScale
+        };
+    }
+
+    function bindCanvasInteraction() {
+        const $canvas = $("#workflowCanvas");
+
+        $canvas.on('mousedown', function(e) {
+            // 노드나 연결선을 누른 게 아니면 캔버스를 끄는 것으로 본다.
+            if ($(e.target).closest('.wf-node, .wf-edge').length > 0) return;
+
+            startPan(e);
+        });
+
+        $canvas.on('wheel', function(e) {
+            const event = e.originalEvent;
+            event.preventDefault();
+
+            if (event.ctrlKey || event.metaKey) {
+                zoomAt(event.deltaY < 0 ? 1.1 : 1 / 1.1, event.clientX, event.clientY);
+            }
+            else {
+                viewX -= event.deltaX;
+                viewY -= event.deltaY;
+                applyViewTransform();
+            }
+        });
+    }
+
+    function startPan(event) {
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const originX = viewX;
+        const originY = viewY;
+        let moved = false;
+
+        $("#workflowCanvas").addClass('is-panning');
+
+        $(document).on('mousemove.wfpan', function(e) {
+            if (!moved && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 3) return;
+
+            moved = true;
+            viewX = originX + (e.clientX - startX);
+            viewY = originY + (e.clientY - startY);
+            applyViewTransform();
+        });
+
+        $(document).on('mouseup.wfpan', function() {
+            $(document).off('mousemove.wfpan mouseup.wfpan');
+            $("#workflowCanvas").removeClass('is-panning');
+
+            // 빈 곳을 그냥 클릭하면 우측 패널을 닫는다.
+            if (!moved) {
+                closeSidePanels();
+            }
+        });
+    }
+
+    /* ================= Canvas rendering ================= */
+
+    function renderWorkflow() {
+        const $content = $("#workflowContent");
+
+        $content.empty();
+
+        // 연결선 svg 를 노드보다 먼저 넣어야(DOM 순서상 아래) 노드가 선 위에 그려진다.
+        $content.append(renderConnectLine());
+
+        for (const node of nodeMap.values()) {
+            $content.append(renderNode(node));
+        }
+
+        $("#workflowEmpty").toggle(nodeMap.size === 0);
+
+        updateCanvasSize();
+        applyViewTransform();
+        drawConnectors();
+
+        if (activeNodeId) {
+            $(`#${STEP_ITEM_ID_PREFIX}${activeNodeId}`).addClass('selected');
+        }
+    }
+
+    function renderNode(node) {
+        const $node = $(`<div class="wf-node"></div>`)
+            .attr('data-node-id', node.nodeId)
+            .css({left:node.x + 'px', top:node.y + 'px'});
+
+        $node.append(renderStepItem(node.nodeId, node));
+        $node.append(renderOutPorts(node));
+
+        return $node;
+    }
+
+    function renderOutPorts(node) {
+        const $ports = $(`<div class="wf-ports"></div>`);
+
+        for (const port of outPorts(node)) {
+            const connected = !!findEdgeByPort(node.nodeId, port);
+
+            const $port = $(`<span class="wf-port-out"></span>`)
+                .attr('data-node-id', node.nodeId)
+                .attr('data-port-key', portKey(node.nodeId, port.branchType, port.branchId))
+                .toggleClass('is-empty', !connected)
+                .toggleClass('is-else', port.branchType === EDGE_ELSE)
+                .attr('title', connected
+                    ? '끌어서 연결을 다른 노드로 옮깁니다'
+                    : '끌어서 노드에 연결하거나, 눌러서 다음 노드를 만듭니다');
+
+            if (isConditionNode(node)) {
+                $port.append(`<span class="wf-port-label">${escapeHtml(port.label)}</span>`);
+            }
+
+            $port.append(`<span class="wf-port-dot"><i class="fas fa-plus"></i></span>`);
+
+            bindPortInteraction($port, node, port);
+
+            $ports.append($port);
+        }
+
+        return $ports;
+    }
+
+    // 연결선과 끝의 화살표는 drawConnectors 가 이 svg 안에 그린다.
+    function renderConnectLine() {
+        return $(`<svg id="connectorLayer" width="100%" height="100%"></svg>`);
+    }
+
+    function renderStepItem(nodeId, node) {
+        let stepItemEl;
+        if (isConditionNode(node)) {
+            stepItemEl = renderConditionStepItem(nodeId, node);
+        }
+        else if (isErrorMessageNode(node)) {
+            stepItemEl = renderErrorMessageStepItem(nodeId, node);
+        }
+        else {
+            stepItemEl = renderFunctionStepItem(nodeId, node);
+        }
+
+        stepItemEl.find('.step-tool-detail').on('click', function(e) {
+            e.stopPropagation();
+
+            const d = getNode(nodeId);
+            if (d) openPopupFunctionSetting(d.functionType, d.functionName);
+        });
+
+        stepItemEl.find('.step-tool-delete').on('click', function(e) {
+            e.stopPropagation();
+            deleteNode(nodeId);
+        });
+
+        // 노드 이동은 왼쪽 손잡이로만 한다. 카드 본문은 눌러도 움직이지 않고 상세창만 열린다.
+        stepItemEl.find('.step-drag-handle').on('mousedown', function(e) {
+            if (e.button !== 0) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            startNodeDrag(node, e);
+        });
+
+        stepItemEl.on('click', function(e) {
+            if ($(e.target).closest('.step-tool').length > 0) return;
+
+            if (suppressNodeClick) {
+                suppressNodeClick = false;
+                return;
+            }
+
+            openNodeDrawer(nodeId);
+        });
+
+        return stepItemEl;
+    }
+
+    function renderNodeBadge(nodeId) {
+        const role = nodeRole(nodeId);
+
+        if (role === 'start') {
+            return `<span class="wf-node-badge is-start">시작</span>`;
+        }
+
+        if (role === 'orphan') {
+            return `<span class="wf-node-badge is-orphan">미연결</span>`;
+        }
+
+        return '';
+    }
+
+    function renderFunctionStepItem(nodeId, node) {
+        return $(`
+            <div class="step-item" id="${STEP_ITEM_ID_PREFIX}${nodeId}">
+                ${renderNodeBadge(nodeId)}
+                <span class="wf-port-in" data-node-id="${nodeId}"></span>
+                <div class="step-drag-handle" title="드래그하여 위치 이동"><i class="fas fa-grip-vertical"></i></div>
+                <div class="step-body">
+                    <div class="step-message">
+                        <span class="step-message-type message-in">IN</span>
+                        <span class="step-message-id" name="view-requestMessageId">${escapeHtml(node.requestMessageId)}</span>
+                    </div>
+                    <div class="step-function">
+                        <span class="step-function-img">
+                            <img name="view-functionType" src="${getFunctionIconPath(node.functionType)}" width="44" height="44" style="display:block;">
+                        </span>
+                        <span class="step-function-name">
+                            <font class="function-display-name" name="view-displayName">${escapeHtml(node.displayName)}</font>
+                            <font class="function-name" name="view-functionName">${escapeHtml(node.functionName)}</font>
+                        </span>
+                    </div>
+                    <div class="step-message">
+                        <span class="step-message-type message-out">OUT</span>
+                        <span class="step-message-id" name="view-responseMessageId">${escapeHtml(node.responseMessageId)}</span>
+                    </div>
+                </div>
+                <span class="step-tools">
+                    <i class="step-tool step-tool-detail fas fa-sliders-h" title="상세 설정"></i>
+                    <i class="step-tool step-tool-delete fas fa-trash" title="삭제"></i>
+                </span>
+            </div>
+        `);
+    }
+
+    // 조건분기 노드는 내보낼 메시지가 없어 OUT 줄이 없고, 따로 만들어둘 기능도 없어 상세설정 버튼도 없다.
+    // 대신 어떤 조건이 어떤 포트로 나가는지 카드 안에 그대로 보여준다.
+    function renderConditionStepItem(nodeId, node) {
+        return $(`
+            <div class="step-item step-item-condition" id="${STEP_ITEM_ID_PREFIX}${nodeId}">
+                ${renderNodeBadge(nodeId)}
+                <span class="wf-port-in" data-node-id="${nodeId}"></span>
+                <div class="step-drag-handle" title="드래그하여 위치 이동"><i class="fas fa-grip-vertical"></i></div>
+                <div class="step-body">
+                    <div class="step-message">
+                        <span class="step-message-type message-in">IN</span>
+                        <span class="step-message-id" name="view-requestMessageId">${escapeHtml(node.requestMessageId)}</span>
+                    </div>
+                    <div class="step-function">
+                        <span class="step-function-img">
+                            <img name="view-functionType" src="${getFunctionIconPath(node.functionType)}" width="30" height="30" style="display:block;">
+                        </span>
+                        <span class="step-function-name">
+                            <font class="function-display-name">조건분기</font>
+                        </span>
+                    </div>
+                    <div class="wf-condition-lines" name="view-conditionLines">${conditionLinesHtml(node)}</div>
+                </div>
+                <span class="step-tools">
+                    <i class="step-tool step-tool-delete fas fa-trash" title="삭제"></i>
+                </span>
+            </div>
+        `);
+    }
+
+    // 에러메시지 노드는 흐름의 끝이라 OUT 줄도, 따로 만들어둘 기능도 없다. 돌려줄 응답 내용을 카드에 그대로 보여준다.
+    function renderErrorMessageStepItem(nodeId, node) {
+        return $(`
+            <div class="step-item step-item-error" id="${STEP_ITEM_ID_PREFIX}${nodeId}">
+                ${renderNodeBadge(nodeId)}
+                <span class="wf-port-in" data-node-id="${nodeId}"></span>
+                <div class="step-drag-handle" title="드래그하여 위치 이동"><i class="fas fa-grip-vertical"></i></div>
+                <div class="step-body">
+                    <div class="step-function">
+                        <span class="step-function-img">
+                            <img name="view-functionType" src="${getFunctionIconPath(node.functionType)}" width="30" height="30" style="display:block;">
+                        </span>
+                        <span class="step-function-name">
+                            <font class="function-display-name">에러메시지</font>
+                        </span>
+                    </div>
+                    <div class="wf-error-lines" name="view-errorLines">${errorLinesHtml(node)}</div>
+                </div>
+                <span class="step-tools">
+                    <i class="step-tool step-tool-delete fas fa-trash" title="삭제"></i>
+                </span>
+            </div>
+        `);
+    }
+
+    function errorLinesHtml(node) {
+        const errorResponse = node.errorResponse || {};
+        const code = errorResponse.code || '';
+        const message = errorResponse.message || '';
+        const contents = errorResponse.contents || '';
+
+        return `
+            <div class="wf-error-line">
+                <span class="wf-error-status">${escapeHtml(errorResponse.status == null ? DEFAULT_ERROR_STATUS : errorResponse.status)}</span>
+                <span class="wf-error-code ${code ? '' : 'is-empty'}">${escapeHtml(code || '코드 없음')}</span>
+            </div>
+            <div class="wf-error-message ${message ? '' : 'is-empty'}">${escapeHtml(message || '메시지 없음')}</div>
+            <div class="wf-error-contents ${contents ? '' : 'is-empty'}">contents : ${escapeHtml(contents || '없음')}</div>
+        `;
+    }
+
+    function conditionLinesHtml(node) {
+        const lines = node.conditions.map(function(condition, index) {
+            const expression = condition.conditionExpression || '';
+
+            return `
+                <div class="wf-condition-line">
+                    <span class="wf-branch-label is-case">${branchLabel(condition.branchId, index)}</span>
+                    <span class="wf-condition-line-expr ${expression ? '' : 'is-empty'}">${escapeHtml(expression || '조건식 없음')}</span>
+                </div>
+            `;
+        });
+
+        lines.push(`
+            <div class="wf-condition-line">
+                <span class="wf-branch-label is-else">else</span>
+                <span class="wf-condition-line-expr is-empty">위 조건에 모두 걸리지 않을 때</span>
+            </div>
+        `);
+
+        return lines.join('');
+    }
+
+    function escapeHtml(text) {
+        return $('<div></div>').text(text == null ? '' : text).html();
+    }
+
+    // 상세창에서 값을 바꿀 때마다 전체를 다시 그리면 입력 포커스가 끊기므로 카드 표시만 갱신한다.
+    function updateStepItemView(nodeId) {
+        const node = getNode(nodeId);
+        if (!node) return;
+
+        const $item = $(`#${STEP_ITEM_ID_PREFIX}${nodeId}`);
+
+        $item.find(`[name="view-requestMessageId"]`).text(node.requestMessageId || '');
+        $item.find(`[name="view-responseMessageId"]`).text(node.responseMessageId || '');
+        $item.find(`[name="view-functionName"]`).text(node.functionName || '');
+        $item.find(`[name="view-displayName"]`).text(node.displayName || '');
+        $item.find(`[name="view-functionType"]`).attr('src', getFunctionIconPath(node.functionType));
+
+        if (isConditionNode(node)) {
+            $item.find(`[name="view-conditionLines"]`).html(conditionLinesHtml(node));
+
+            // 카드 높이가 바뀌면 포트 위치도 따라 움직인다.
+            drawConnectors();
+        }
+
+        if (isErrorMessageNode(node)) {
+            $item.find(`[name="view-errorLines"]`).html(errorLinesHtml(node));
+        }
+    }
+
+    function getFunctionTypeInfo(functionType) {
+        return App.codes['FUNCTION_TYPE'].find(item => item.code === functionType);
+    }
+
+    function getFunctionIconPath(functionType) {
+        const info = getFunctionTypeInfo(functionType);
+        return info ? info.icon : '';
+    }
+
+    /* ================= Node drag / connect ================= */
+
+    function startNodeDrag(node, event) {
+        const $el = $(`.wf-node[data-node-id="${node.nodeId}"]`);
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const originX = node.x;
+        const originY = node.y;
+        let moved = false;
+
+        $(document).on('mousemove.wfnode', function(e) {
+            if (!moved && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 3) return;
+
+            if (!moved) {
+                moved = true;
+                $el.addClass('is-dragging');
+            }
+
+            // 캔버스 좌표 0 은 화면 이동/화면맞춤으로 화면 한가운데에 와 있을 수도 있다.
+            // 여기서 0 으로 막으면 보이지 않는 선에 걸려 멈추므로 끄는 동안은 음수도 허용하고, 놓을 때 전체를 밀어 되돌린다.
+            node.x = Math.round(originX + (e.clientX - startX) / viewScale);
+            node.y = Math.round(originY + (e.clientY - startY) / viewScale);
+
+            $el.css({left:node.x + 'px', top:node.y + 'px'});
+            drawConnectors();
+        });
+
+        $(document).on('mouseup.wfnode', function() {
+            $(document).off('mousemove.wfnode mouseup.wfnode');
+            $el.removeClass('is-dragging');
+
+            if (!moved) return;
+
+            // 손을 뗀 자리에서 클릭이 한 번 더 오므로, 그 한 번만 무시한다.
+            suppressNodeClick = true;
+            setTimeout(function() { suppressNodeClick = false; }, 0);
+
+            normalizeNodePositions();
+            updateCanvasSize();
+            drawConnectors();
+        });
+    }
+
+    // 노드가 캔버스 좌표 0 보다 왼쪽/위로 나가 있으면 전체 노드를 오른쪽/아래로 밀어 좌표를 양수로 되돌린다.
+    // 같은 만큼 화면 위치를 반대로 옮기므로 사용자 눈에는 아무것도 움직이지 않는다.
+    // (#workflowContent 와 연결선 svg 가 좌표 0 에서 시작하고, 저장되는 위치도 양수로 유지하기 위함)
+    function normalizeNodePositions() {
+        let minX = Infinity;
+        let minY = Infinity;
+
+        for (const node of nodeMap.values()) {
+            minX = Math.min(minX, node.x);
+            minY = Math.min(minY, node.y);
+        }
+
+        const shiftX = minX < 0 ? CANVAS_PADDING - minX : 0;
+        const shiftY = minY < 0 ? CANVAS_PADDING - minY : 0;
+
+        if (shiftX === 0 && shiftY === 0) return;
+
+        for (const node of nodeMap.values()) {
+            node.x += shiftX;
+            node.y += shiftY;
+            $(`.wf-node[data-node-id="${node.nodeId}"]`).css({left:node.x + 'px', top:node.y + 'px'});
+        }
+
+        viewX -= shiftX * viewScale;
+        viewY -= shiftY * viewScale;
+        applyViewTransform();
+    }
+
+    function bindPortInteraction($port, node, port) {
+        $port.on('mousedown', function(e) {
+            if (e.button !== 0) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            startConnectDrag(node, port, e);
+        });
+    }
+
+    // 출력포트에서 끌어다 다른 노드에 놓으면 연결된다. 이미 이어진 포트를 다시 끌면 연결이 옮겨간다.
+    // 빈 곳에 놓거나 끌지 않고 그냥 누르면 그 자리에 새 노드를 만들어 이어준다.
+    function startConnectDrag(node, port, event) {
+        const svg = document.getElementById('connectorLayer');
+        const from = portPoint(node, portKey(node.nodeId, port.branchType, port.branchId));
+        const temp = createSvgPath('wf-edge-line wf-edge-temp', edgePath(from, from));
+
+        svg.appendChild(temp);
+        $("#workflowCanvas").addClass('is-connecting');
+
+        let moved = false;
+
+        $(document).on('mousemove.wfport', function(e) {
+            if (!moved && Math.abs(e.clientX - event.clientX) + Math.abs(e.clientY - event.clientY) < 3) return;
+
+            moved = true;
+            temp.setAttribute('d', edgePath(from, toContentPoint(e.clientX, e.clientY)));
+
+            const target = nodeElementAt(e.clientX, e.clientY);
+
+            $('.wf-node').removeClass('is-drop-target');
+            if (target && target.getAttribute('data-node-id') !== node.nodeId) {
+                $(target).addClass('is-drop-target');
+            }
+        });
+
+        $(document).on('mouseup.wfport', function(e) {
+            $(document).off('mousemove.wfport mouseup.wfport');
+            $('.wf-node').removeClass('is-drop-target');
+            $("#workflowCanvas").removeClass('is-connecting');
+            temp.remove();
+
+            if (!moved) {
+                if (!findEdgeByPort(node.nodeId, port)) {
+                    addNodeFromPort(node, port, null);
+                }
+                return;
+            }
+
+            const target = nodeElementAt(e.clientX, e.clientY);
+            const targetNodeId = target ? target.getAttribute('data-node-id') : null;
+
+            if (targetNodeId) {
+                if (targetNodeId === node.nodeId) return;
+
+                connectNodes(node.nodeId, port, targetNodeId);
+                renderWorkflow();
+                return;
+            }
+
+            if (isCanvasBackgroundAt(e.clientX, e.clientY)) {
+                addNodeFromPort(node, port, toContentPoint(e.clientX, e.clientY));
+            }
+        });
+    }
+
+    function nodeElementAt(clientX, clientY) {
+        const el = document.elementFromPoint(clientX, clientY);
+
+        return el ? el.closest('.wf-node') : null;
+    }
+
+    // 캔버스의 빈 바닥인지. 상세창이나 도구 위에서 손을 뗀 경우를 걸러낸다.
+    function isCanvasBackgroundAt(clientX, clientY) {
+        const el = document.elementFromPoint(clientX, clientY);
+        if (!el) return false;
+
+        return el.id === 'workflowCanvas' || !!el.closest('#workflowContent');
+    }
+
+    /* ================= Connectors ================= */
+
+    function drawConnectors() {
+        const svg = document.getElementById('connectorLayer');
+        if (!svg) return;
+
+        svg.innerHTML = '';
+
+        for (const edge of validEdges()) {
+            const source = getNode(edge.sourceNodeId);
+            const target = getNode(edge.targetNodeId);
+
+            const from = portPoint(source, edgeKeyOf(edge));
+            const to = inPortPoint(target);
+
+            svg.appendChild(createEdgeElement(edge, from, arrowTipPoint(target, to)));
+        }
+    }
+
+    // 화살표 크기와, 화살표 끝과 입력포트 원 사이의 여백.
+    const ARROW_LENGTH = 10;
+    const ARROW_HALF_WIDTH = 5;
+    const ARROW_GAP = 2;
+
+    // 노드 DOM 이 연결선 위에 그려지므로 원 중앙까지 그으면 화살표가 원에 가려진다.
+    // 원 위쪽 테두리에서 여백만큼 떨어진 곳을 화살표 끝으로 삼는다.
+    // 연결선은 항상 위에서 아래로 수직으로 들어오기 때문에(edgePath 의 끝 제어점이 바로 위) y 만 올리면 된다.
+    function arrowTipPoint(node, inPoint) {
+        const el = document.querySelector(`.wf-port-in[data-node-id="${node.nodeId}"]`);
+        const radius = el ? el.getBoundingClientRect().height / 2 / viewScale : 8;
+
+        return {x:inPoint.x, y:inPoint.y - radius - ARROW_GAP};
+    }
+
+    // 포트의 캔버스 좌표.
+    function portPoint(node, key) {
+        const el = document.querySelector(`.wf-port-out[data-port-key="${key}"] .wf-port-dot`);
+
+        return el ? anchorPoint(node, el) : {x:node.x + NODE_WIDTH / 2, y:node.y + NODE_HEIGHT};
+    }
+
+    function inPortPoint(node) {
+        const el = document.querySelector(`.wf-port-in[data-node-id="${node.nodeId}"]`);
+
+        return el ? anchorPoint(node, el) : {x:node.x + NODE_WIDTH / 2, y:node.y};
+    }
+
+    // 노드 안에서 포트가 실제로 그려진 자리의 한가운데.
+    // offsetLeft 로 재면 안 된다. 그 값은 배치 좌표라 입력포트에 걸린 translateX(-50%) 같은
+    // transform 이 반영되지 않아, 화살표 끝이 원 중앙에서 반지름만큼 오른쪽으로 밀렸다.
+    // 그려진 위치를 노드 기준으로 재고, 캔버스 확대비율만 되돌리면 테두리 두께까지 알아서 맞는다.
+    function anchorPoint(node, el) {
+        const nodeEl = document.querySelector(`.wf-node[data-node-id="${node.nodeId}"]`);
+        if (!nodeEl) {
+            return {x:node.x + NODE_WIDTH / 2, y:node.y};
+        }
+
+        const portRect = el.getBoundingClientRect();
+        const nodeRect = nodeEl.getBoundingClientRect();
+
+        return {
+            x: node.x + (portRect.left + portRect.width / 2 - nodeRect.left) / viewScale,
+            y: node.y + (portRect.top + portRect.height / 2 - nodeRect.top) / viewScale
+        };
+    }
+
+    function edgePath(from, to) {
+        const curve = Math.max(40, Math.abs(to.y - from.y) / 2);
+
+        return `M ${from.x} ${from.y} C ${from.x} ${from.y + curve}, ${to.x} ${to.y - curve}, ${to.x} ${to.y}`;
+    }
+
+    // 3차 베지에의 가운데 지점. 연결선 삭제 버튼을 여기에 놓는다.
+    function edgeMidPoint(from, to) {
+        const curve = Math.max(40, Math.abs(to.y - from.y) / 2);
+
+        return {
+            x: (from.x + 3 * from.x + 3 * to.x + to.x) / 8,
+            y: (from.y + 3 * (from.y + curve) + 3 * (to.y - curve) + to.y) / 8
+        };
+    }
+
+    function createSvgPath(className, d) {
+        const path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('class', className);
+        path.setAttribute('d', d);
+
+        return path;
+    }
+
+    // tip 은 화살표 끝. 선은 화살표 밑변까지만 긋는다(끝까지 그으면 선 두께가 뾰족한 끝 밖으로 삐져나온다).
+    // 밑변과 1px 겹치게 해서 선과 화살표 사이가 벌어져 보이지 않게 한다.
+    function createEdgeElement(edge, from, tip) {
+        const group = document.createElementNS(SVG_NS, 'g');
+        group.setAttribute('class', 'wf-edge');
+
+        const to = {x:tip.x, y:tip.y - ARROW_LENGTH + 1};
+        const d = edgePath(from, to);
+
+        group.appendChild(createSvgPath('wf-edge-hit', d));
+        group.appendChild(createSvgPath('wf-edge-line', d));
+        group.appendChild(createSvgPath('wf-edge-arrow',
+            `M ${tip.x} ${tip.y} L ${tip.x - ARROW_HALF_WIDTH} ${tip.y - ARROW_LENGTH} L ${tip.x + ARROW_HALF_WIDTH} ${tip.y - ARROW_LENGTH} Z`));
+        group.appendChild(createEdgeRemoveButton(edge, edgeMidPoint(from, to)));
+
+        return group;
+    }
+
+    function createEdgeRemoveButton(edge, point) {
+        const button = document.createElementNS(SVG_NS, 'g');
+        button.setAttribute('class', 'wf-edge-remove');
+        button.setAttribute('transform', `translate(${point.x}, ${point.y})`);
+
+        const circle = document.createElementNS(SVG_NS, 'circle');
+        circle.setAttribute('r', '9');
+
+        const cross = document.createElementNS(SVG_NS, 'path');
+        cross.setAttribute('d', 'M -3.5 -3.5 L 3.5 3.5 M 3.5 -3.5 L -3.5 3.5');
+        cross.setAttribute('fill', 'none');
+
+        button.appendChild(circle);
+        button.appendChild(cross);
+
+        button.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            disconnectEdge(edge);
+            renderWorkflow();
+        });
+
+        return button;
+    }
+
+    /* ================= Node add / delete ================= */
+
+    // 캔버스 한가운데에 아무 데도 이어지지 않은 노드를 하나 만든다.
+    function addFloatingNode() {
+        const rect = document.getElementById('workflowCanvas').getBoundingClientRect();
+        const center = toContentPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+        openFunctionTypeModal(null, function(selectedCode) {
+            createAndOpenNode(selectedCode, {
+                x: Math.round(center.x - NODE_WIDTH / 2),
+                y: Math.round(center.y - NODE_HEIGHT / 2)
+            }, null, null);
+        });
+    }
+
+    function addNodeFromPort(sourceNode, port, dropPoint) {
+        const position = dropPoint
+            ? {x:Math.round(dropPoint.x - NODE_WIDTH / 2), y:Math.round(dropPoint.y)}
+            : emptyPositionBelow(sourceNode);
+
+        openFunctionTypeModal(null, function(selectedCode) {
+            createAndOpenNode(selectedCode, position, sourceNode.nodeId, port);
+        });
+    }
+
+    function createAndOpenNode(functionType, position, sourceNodeId, port) {
+        const nodeId = createNodeId();
+        const node = createNode(nodeId, functionType);
+
+        node.x = position.x;
+        node.y = position.y;
+
+        nodeMap.set(nodeId, node);
+
+        // 화면을 옮겨둔 상태에서 만들면 좌표가 음수일 수 있다.
+        normalizeNodePositions();
+
+        if (sourceNodeId && port) {
+            connectNodes(sourceNodeId, port, nodeId);
+        }
+
+        renderWorkflow();
+        openNodeDrawer(nodeId);
+
+        if (functionType === CONDITION_TYPE) {
+            focusInDrawer($("#drawerConditionList textarea").first());
+        }
+        else if (functionType === ERROR_MESSAGE_TYPE) {
+            focusInDrawer($("#drawerErrorCode"));
+        }
+        else {
+            focusInDrawer($("#drawerFunctionName"));
+        }
+    }
+
+    // 상세창은 translateX 로 밀려 들어오는 중이라 focus 순간에는 아직 화면 밖에 있다.
+    // 그냥 focus 하면 브라우저가 overflow:hidden 인 .wf-app 을 옆으로 스크롤해서 입력칸을 보이게 하고,
+    // 그만큼 화면이 밀리면서 오른쪽 밖에 숨겨둔 실행 패널이 드러난다. 그래서 스크롤 없이 focus 한다.
+    function focusInDrawer($input) {
+        const input = $input.get(0);
+        if (input) {
+            input.focus({preventScroll: true});
+        }
+    }
+
+    // 바로 아래가 비어있으면 거기, 이미 노드가 있으면 옆으로 밀어서 자리를 잡는다.
+    function emptyPositionBelow(sourceNode) {
+        let x = sourceNode.x;
+        const y = sourceNode.y + LAYOUT_GAP_Y;
+
+        while (isOccupied(x, y)) {
+            x += NODE_WIDTH + LAYOUT_GAP_X;
+        }
+
+        return {x:x, y:y};
+    }
+
+    function isOccupied(x, y) {
+        for (const node of nodeMap.values()) {
+            if (Math.abs(node.x - x) < NODE_WIDTH && Math.abs(node.y - y) < NODE_HEIGHT) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function deleteNode(nodeId) {
+        const node = getNode(nodeId);
+        if (!node) return;
+
+        const outgoing = outgoingEdges(nodeId);
+        const incoming = incomingEdges(nodeId);
+
+        if (outgoing.length + incoming.length > 0 && !confirm("노드를 삭제하면 연결선도 함께 지워집니다. 삭제하시겠습니까?")) {
+            return;
+        }
+
+        // 중간 노드를 지우면 앞뒤가 끊긴다. 나가는 길이 하나뿐이면 앞 노드를 그 길로 이어붙여 흐름을 살린다.
+        const passThroughNodeId = outgoing.length === 1 ? outgoing[0].targetNodeId : null;
+
+        edgeList = edgeList.filter(edge => edge.sourceNodeId !== nodeId);
+
+        for (const edge of edgeList) {
+            if (edge.targetNodeId === nodeId && passThroughNodeId && passThroughNodeId !== edge.sourceNodeId) {
+                edge.targetNodeId = passThroughNodeId;
+            }
+        }
+
+        edgeList = edgeList.filter(edge => edge.targetNodeId !== nodeId);
+
+        nodeMap.delete(nodeId);
+
+        if (activeNodeId === nodeId) {
+            closeNodeDrawer();
+        }
+
+        renderWorkflow();
+    }
+
+    /* ================= Node detail drawer ================= */
+
+    function openNodeDrawer(nodeId) {
+        openSidePanel('nodeDrawer');
+
+        activeNodeId = nodeId;
+
+        $(".step-item").removeClass("selected");
+        $(`#${STEP_ITEM_ID_PREFIX}${nodeId}`).addClass("selected");
+
+        refreshDrawerFields(getNode(nodeId) || {});
+    }
+
+    // 노드 상세창만 닫는다. 설정/실행 패널이 열려있으면 그대로 둔다(워크플로우를 다시 불러올 때도 불린다).
+    function closeNodeDrawer() {
+        activeNodeId = null;
+        $(".step-item").removeClass("selected");
+        $("#nodeDrawer").removeClass("open");
+    }
+
+    function refreshDrawerFields(node) {
+        const info = getFunctionTypeInfo(node.functionType) || {};
+        const isCondition = node.functionType === CONDITION_TYPE;
+        const isErrorMessage = node.functionType === ERROR_MESSAGE_TYPE;
+
+        $("#drawerTitle").text(isCondition ? '조건분기 설정' : (isErrorMessage ? '에러메시지 설정' : '노드 설정'));
+        $("#drawerTypeChip img").attr('src', info.icon || '');
+        $("#drawerTypeChip span[name='chip-name']").text(info.name || '유형 선택');
+        $("#drawerFunctionName").val(node.functionName || '');
+        $("#drawerRequestMessageId").val(node.requestMessageId || '');
+        $("#drawerResponseMessageId").val(node.responseMessageId || '');
+
+        // 조건분기는 실행할 기능도, 내보낼 메시지도 없다.
+        // 에러메시지는 거기에 더해 읽을 요청메시지도 없다. 응답 내용은 contents 에 적은 메시지ID로 고른다.
+        $("#drawerFunctionNameField").toggle(!isCondition && !isErrorMessage);
+        $("#drawerMessageFields").toggle(!isErrorMessage);
+        $("#drawerResponseMessageField").toggle(!isCondition);
+        $("#drawerFunctionSettingButton").toggle(!isCondition && !isErrorMessage);
+        $("#drawerConditionField").toggle(isCondition);
+        $("#drawerErrorResponseField").toggle(isErrorMessage);
+
+        if (isCondition) {
+            renderDrawerConditions(node);
+        }
+
+        if (isErrorMessage) {
+            const errorResponse = node.errorResponse || {};
+
+            $("#drawerErrorStatus").val(errorResponse.status == null ? DEFAULT_ERROR_STATUS : errorResponse.status);
+            $("#drawerErrorCode").val(errorResponse.code || '');
+            $("#drawerErrorMessage").val(errorResponse.message || '');
+            $("#drawerErrorContents").val(errorResponse.contents || '');
+        }
+    }
+
+    function onDrawerErrorResponseChange(field, value) {
+        if (!activeNodeId) return;
+
+        const node = getNode(activeNodeId);
+        if (!isErrorMessageNode(node)) return;
+
+        if (!node.errorResponse) {
+            resetErrorResponse(node);
+        }
+
+        if (field === 'status') {
+            // 비워두면 저장 시 서버가 400 으로 채운다. 숫자가 아닌 값은 받지 않는다.
+            const status = parseInt(value, 10);
+            node.errorResponse.status = isNaN(status) ? null : status;
+        }
+        else {
+            node.errorResponse[field] = value;
+        }
+
+        updateStepItemView(node.nodeId);
+    }
+
+    function renderDrawerConditions(node) {
+        const $list = $("#drawerConditionList");
+        $list.empty();
+
+        node.conditions.forEach(function(condition, index) {
+            const $row = $(`
+                <div class="wf-condition-row">
+                    <div class="wf-condition-row-head">
+                        <span class="wf-branch-label is-case">${branchLabel(condition.branchId, index)}</span>
+                        <i class="fas fa-times wf-condition-remove" title="조건 삭제"></i>
+                    </div>
+                    <textarea class="form-control form-control-sm wf-condition-textarea" rows="2" placeholder="예) params[0].status === 'OK'"></textarea>
+                </div>
+            `);
+
+            $row.find('textarea')
+                .val(condition.conditionExpression || '')
+                .on('input', function() {
+                    condition.conditionExpression = this.value;
+                    updateStepItemView(node.nodeId);
+                });
+
+            $row.find('.wf-condition-remove').on('click', function() {
+                removeCondition(node.nodeId, condition.branchId);
+            });
+
+            $list.append($row);
+        });
+
+        $list.append(`
+            <div class="wf-condition-else">
+                <span class="wf-branch-label is-else">else</span>
+                <span class="wf-condition-else-help">위 조건에 모두 걸리지 않으면 else 가지로 흐릅니다.</span>
+            </div>
+        `);
+    }
+
+    function addCondition() {
+        if (!activeNodeId) return;
+
+        const node = getNode(activeNodeId);
+        if (!isConditionNode(node)) return;
+
+        node.conditions.push({branchId:createBranchId(node), conditionExpression:''});
+
+        const nodeId = node.nodeId;
+
+        renderWorkflow();
+        openNodeDrawer(nodeId);
+
+        focusInDrawer($("#drawerConditionList textarea").last());
+    }
+
+    function removeCondition(nodeId, branchId) {
+        const node = getNode(nodeId);
+        if (!node) return;
+
+        if (node.conditions.length <= 1) {
+            alert("조건은 최소 한 개가 있어야 합니다. 조건분기를 없애려면 노드를 삭제해주세요.");
+            return;
+        }
+
+        // 조건을 지우면 그 조건에 딸린 연결선도 갈 곳이 없어진다. 노드 자체는 그대로 둔다.
+        const port = {branchType:EDGE_CASE, branchId:branchId};
+        const edge = findEdgeByPort(nodeId, port);
+
+        if (edge && !confirm("이 조건에 이어둔 연결선도 함께 지워집니다. 삭제하시겠습니까?")) {
+            return;
+        }
+
+        if (edge) {
+            disconnectEdge(edge);
+        }
+
+        node.conditions = node.conditions.filter(condition => condition.branchId !== branchId);
+
+        renderWorkflow();
+        openNodeDrawer(nodeId);
+    }
+
+    function onDrawerFieldChange(field, value) {
+        if (!activeNodeId) return;
+
+        const node = getNode(activeNodeId);
+        if (!node) return;
+
+        node[field] = value;
+        updateStepItemView(activeNodeId);
+    }
+
+    function changeActiveNodeFunctionType() {
+        if (!activeNodeId) return;
+
+        const node = getNode(activeNodeId);
+        if (!node) return;
+
+        openFunctionTypeModal(node.functionType, function(selectedCode) {
+            if (selectedCode === node.functionType) return;
+
+            // 일반 노드, 조건분기, 에러메시지 노드는 나가는 포트 구성이 달라서 기존 연결을 그대로 둘 수 없다.
+            // 들어오는 연결은 입력포트 하나로 같으니 그대로 둔다.
+            if (outgoingEdges(node.nodeId).length > 0
+                && !confirm("기능 유형을 바꾸면 이 노드에서 나가는 연결선이 지워집니다. 바꾸시겠습니까?")) {
+                return;
+            }
+
+            edgeList = edgeList.filter(edge => edge.sourceNodeId !== node.nodeId);
+
+            const nodeId = node.nodeId;
+
+            const previousDefaultName = defaultDisplayName(node.functionType);
+
+            node.functionType = selectedCode;
+            node.conditions = [];
+            node.errorResponse = null;
+
+            if (selectedCode === CONDITION_TYPE) {
+                resetConditions(node);
+            }
+
+            if (selectedCode === ERROR_MESSAGE_TYPE) {
+                resetErrorResponse(node);
+            }
+
+            // 조건분기/에러메시지의 고정 이름은 유형이 바뀌면 의미가 없어진다. 기능에서 받아온 이름은 그대로 둔다.
+            if (selectedCode === CONDITION_TYPE || selectedCode === ERROR_MESSAGE_TYPE || node.displayName === previousDefaultName) {
+                node.displayName = defaultDisplayName(selectedCode);
+            }
+
+            renderWorkflow();
+            openNodeDrawer(nodeId);
+        });
+    }
+
+    function openDrawerFunctionSetting() {
+        if (!activeNodeId) return;
+
+        const node = getNode(activeNodeId);
+        openPopupFunctionSetting(node.functionType, node.functionName);
+    }
+
+    function deleteFunctionFromDrawer() {
+        if (!activeNodeId) return;
+        deleteNode(activeNodeId);
+    }
+
+    /* ================= Function type picker (layer popup) ================= */
+
+    function openFunctionTypeModal(currentCode, onSelect) {
+        const $list = $('#functionTypeList');
+        $list.empty();
+
+        for (const item of App.codes['FUNCTION_TYPE']) {
+            const $item = $(`
+                <div class="function-type-item ${item.code === currentCode ? 'current' : ''}">
+                    <span class="function-type-icon"><img src="${item.icon}" width="40" height="40"></span>
+                    <span class="function-type-info">
+                        <span class="function-type-name">${item.name}<span class="function-type-code">${item.code}</span></span>
+                        <span class="function-type-desc">${item.description}</span>
+                    </span>
+                </div>
+            `);
+
+            $item.on('click', function() {
+                $('#functionTypeModal').modal('hide');
+                onSelect(item.code);
+            });
+
+            $list.append($item);
+        }
+
+        $('#functionTypeModal').modal('show');
+    }
+
+    function openPopupFunctionSetting(type, functionName) {
+        if(!functionName) {
+            alert("기능코드를 입력해주세요.");
+            return;
+        }
+
+        if(type === 'SQL') {
+            App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-sql`,{title:'SQL 설정',size:"modal-fullscreen-md",height:"92vh",messageId:'FUNC_REQUEST'},{functionName:functionName});
+        }
+        else if(type === 'ENTITY') {
+            App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-entity`,{title:'Entity 설정',size:"modal-fullscreen-md",height:"92vh",messageId:'FUNC_REQUEST'},{functionName:functionName});
+        }
+        else if(type === 'REST_CLIENT') {
+            App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-restclient`,{title:'Rest Client 설정',size:"modal-fullscreen-md",height:"92vh",messageId:'FUNC_REQUEST'},{functionName:functionName});
+        }
+        else if(type === 'MESSAGE_PROCESSOR') {
+            App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-message`,{title:'메시지 처리 설정',size:"modal-fullscreen-md",height:"92vh",messageId:'FUNC_REQUEST'},{functionName:functionName});
+        }
+        else if(type === 'NOTIFICATION') {
+            App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-notification`,{title:'알림 설정',size:"modal-fullscreen-md",height:"92vh",messageId:'FUNC_REQUEST'},{functionName:functionName});
+        }
+        else if(type === 'FILE') {
+            App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-file`,{title:'파일 설정',size:"modal-fullscreen-md",height:"92vh",messageId:'FUNC_REQUEST'},{functionName:functionName});
+        }
+    }
+</script>
+<div th:fragment="view">
+    <div class="wf-app">
+        <aside class="wf-sidebar" id="wfSidebar">
+            <div class="wf-sidebar-header">
+                <button type="button" class="btn-new-workflow" onclick="newContent()">
+                    <i class="fas fa-plus"></i> New Workflow
+                </button>
+                <div class="wf-search">
+                    <input type="text" id="workflowSearch" placeholder="워크플로우 검색" autocomplete="off" oninput="renderWorkflowList()">
+                    <i class="fas fa-sync-alt" title="새로고침" onclick="getWorkflowList()"></i>
+                </div>
+            </div>
+            <div class="wf-list" id="workflowList"></div>
+        </aside>
+
+        <div class="wf-main">
+            <div class="wf-topbar">
+                <button type="button" class="wf-sidebar-toggle" onclick="toggleSidebar()" title="목록 접기/펼치기">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <input type="hidden" id="workflowId">
+                <div class="wf-title-group">
+                    <input type="text" id="workflowCode" class="wf-code-input" placeholder="workflow_code" autocomplete="off">
+                    <input type="text" id="displayName" class="wf-name-input" placeholder="워크플로우 이름을 입력하세요" autocomplete="off">
+                </div>
+                <div class="wf-topbar-actions">
+                    <button type="button" id="settingsPanelButton" onclick="toggleSettingsPanel()"><i class="fas fa-cog"></i> 설정</button>
+                    <button type="button" id="executePanelButton" onclick="toggleExecutePanel()"><i class="fas fa-play"></i> 실행</button>
+                    <button type="button" onclick="restore()"><i class="fas fa-undo"></i> 복원</button>
+                    <button type="button" class="btn-primary" onclick="save()"><i class="fas fa-save"></i> 저장</button>
+                    <button type="button" class="btn-danger" onclick="deleteWorkflow()"><i class="fas fa-trash"></i> 삭제</button>
+                </div>
+            </div>
+
+            <div class="wf-canvas-wrap">
+                <div class="wf-canvas" id="workflowCanvas">
+                    <div id="workflowContent"></div>
+                </div>
+
+                <div class="wf-canvas-empty" id="workflowEmpty" style="display:none;">
+                    노드가 없습니다.
+                    <div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addFloatingNode()">
+                            <i class="fas fa-plus"></i> 첫 노드 추가
+                        </button>
+                    </div>
+                </div>
+
+                <div class="wf-canvas-tools">
+                    <button type="button" onclick="addFloatingNode()" title="노드 추가"><i class="fas fa-plus"></i></button>
+                    <button type="button" onclick="autoLayout()" title="자동정렬"><i class="fas fa-project-diagram"></i></button>
+                    <span class="wf-canvas-tools-sep"></span>
+                    <button type="button" onclick="zoomBy(1/1.2)" title="축소"><i class="fas fa-search-minus"></i></button>
+                    <span class="wf-canvas-zoom" id="zoomLabel">100%</span>
+                    <button type="button" onclick="zoomBy(1.2)" title="확대"><i class="fas fa-search-plus"></i></button>
+                    <button type="button" onclick="fitView()" title="화면맞춤"><i class="fas fa-expand"></i></button>
+                </div>
+
+                <div class="wf-canvas-hint">
+                    포트를 끌어 다른 노드에 놓으면 연결됩니다. 여러 갈래를 같은 노드로 모을 수 있습니다.
+                </div>
+
+                <aside class="wf-node-drawer" id="nodeDrawer">
+                    <div class="wf-drawer-header">
+                        <span id="drawerTitle" style="font-weight:600;font-size:14px;">노드 설정</span>
+                        <button type="button" class="wf-drawer-close" onclick="closeNodeDrawer()">&times;</button>
+                    </div>
+                    <div class="wf-drawer-body">
+                        <div class="wf-field">
+                            <label>기능 유형</label>
+                            <button type="button" class="function-type-chip" id="drawerTypeChip">
+                                <img name="chip-icon" src="" width="18" height="18">
+                                <span name="chip-name">유형 선택</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="wf-field" id="drawerFunctionNameField">
+                            <label>기능코드</label>
+                            <input type="text" id="drawerFunctionName" class="form-control form-control-sm" placeholder="기능코드 입력" autocomplete="off" oninput="onDrawerFieldChange('functionName', this.value)">
+                        </div>
+                        <div class="wf-field-row" id="drawerMessageFields">
+                            <div class="wf-field">
+                                <label>요청메시지ID (IN)</label>
+                                <input type="text" id="drawerRequestMessageId" class="form-control form-control-sm" placeholder="요청메시지ID" autocomplete="off" oninput="onDrawerFieldChange('requestMessageId', this.value)">
+                            </div>
+                            <div class="wf-field" id="drawerResponseMessageField">
+                                <label>응답메시지ID (OUT)</label>
+                                <input type="text" id="drawerResponseMessageId" class="form-control form-control-sm" placeholder="응답메시지ID" autocomplete="off" oninput="onDrawerFieldChange('responseMessageId', this.value)">
+                            </div>
+                        </div>
+                        <div class="wf-field" id="drawerConditionField" style="display:none;">
+                            <label>조건</label>
+                            <div id="drawerConditionList"></div>
+                            <button type="button" class="btn btn-default btn-block btn-sm" onclick="addCondition()">
+                                <i class="fas fa-plus"></i> else if 추가
+                            </button>
+                            <div class="wf-field-help">
+                                위에서부터 차례로 판정해서 처음 참이 된 조건의 가지로 흐릅니다.
+                                params 는 요청메시지ID(IN) 슬롯의 배열입니다.
+                            </div>
+                        </div>
+                        <div id="drawerErrorResponseField" style="display:none;">
+                            <div class="wf-field-row">
+                                <div class="wf-field" style="flex:0 0 90px;">
+                                    <label>status</label>
+                                    <input type="number" id="drawerErrorStatus" class="form-control form-control-sm" min="400" max="599" placeholder="400" autocomplete="off" oninput="onDrawerErrorResponseChange('status', this.value)">
+                                </div>
+                                <div class="wf-field">
+                                    <label>code</label>
+                                    <input type="text" id="drawerErrorCode" class="form-control form-control-sm" placeholder="예) E-EVAL-001" autocomplete="off" oninput="onDrawerErrorResponseChange('code', this.value)">
+                                </div>
+                            </div>
+                            <div class="wf-field">
+                                <label>message</label>
+                                <textarea id="drawerErrorMessage" class="form-control form-control-sm" rows="3" placeholder="사용자에게 보여줄 에러메시지" oninput="onDrawerErrorResponseChange('message', this.value)"></textarea>
+                            </div>
+                            <div class="wf-field">
+                                <label>contents</label>
+                                <input type="text" id="drawerErrorContents" class="form-control form-control-sm" placeholder="예) ME_EVAL0001_01, ME_EVAL0001_02" autocomplete="off" oninput="onDrawerErrorResponseChange('contents', this.value)">
+                                <div class="wf-field-help">
+                                    응답에 함께 담아 보낼 메시지ID 입니다. 여러 개는 쉼표로 구분합니다.
+                                    앞 노드들이 채워둔 메시지가 그대로 담깁니다.
+                                </div>
+                            </div>
+                            <div class="wf-field-help">
+                                흐름이 이 노드에 닿으면 이후 노드는 실행하지 않고 위 내용으로 에러응답을 돌려줍니다.
+                                status 는 HTTP 상태코드(400~599)로도 쓰이며, 범위를 벗어나면 400 으로 보냅니다.
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-block btn-sm" id="drawerFunctionSettingButton" onclick="openDrawerFunctionSetting()">
+                            <i class="fas fa-sliders-h"></i> 상세 설정 열기
+                        </button>
+                    </div>
+                    <div class="wf-drawer-footer">
+                        <button type="button" class="btn btn-outline-danger btn-block btn-sm" onclick="deleteFunctionFromDrawer()">
+                            <i class="fas fa-trash"></i> 노드 삭제
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Workflow settings (auth / permission) -->
+                <aside class="wf-node-drawer" id="settingsDrawer">
+                    <div class="wf-drawer-header">
+                        <span class="wf-drawer-title"><i class="fas fa-cog"></i> 워크플로우 설정</span>
+                        <button type="button" class="wf-drawer-close" onclick="closeSidePanels()">&times;</button>
+                    </div>
+                    <div class="wf-drawer-body">
+                        <div class="wf-field">
+                            <div class="wf-switch-row">
+                                <div>
+                                    <div class="wf-switch-row-title">인증 사용</div>
+                                    <div class="wf-switch-row-desc">로그인한 사용자만 이 워크플로우를 실행할 수 있습니다.</div>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="useAuthValidation">
+                                    <label for="useAuthValidation" class="custom-control-label" style="cursor:pointer;"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wf-field">
+                            <label>권한</label>
+                            <div id="permissionChips" class="wf-permission-chips"></div>
+                            <div class="wf-permission-add">
+                                <select id="permissionSelect" class="form-control form-control-sm"></select>
+                                <button type="button" class="btn btn-default btn-sm" onclick="addPermissionChip()">추가</button>
+                            </div>
+                            <div class="wf-field-help">
+                                인증 사용 시, 여기 등록한 권한 중 하나를 가진 사용자만 실행할 수 있습니다.
+                                변경한 설정은 상단 저장 버튼을 눌러야 반영됩니다.
+                            </div>
+                        </div>
+                        <div class="wf-field">
+                            <label>IP 접근제어</label>
+                            <div id="ipGroupChips" class="wf-permission-chips"></div>
+                            <div class="wf-permission-add">
+                                <select id="ipGroupSelect" class="form-control form-control-sm"></select>
+                                <button type="button" class="btn btn-default btn-sm" onclick="addIpGroupChip()">추가</button>
+                                <button type="button" class="btn btn-default btn-sm" onclick="openIpManagement()" title="IP그룹/허용 IP 관리">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                            <div class="wf-field-help">
+                                여기 등록한 IP그룹의 허용 IP에서만 실행할 수 있습니다. 하나도 등록하지 않으면 IP 제한 없이 실행됩니다.
+                                IP그룹과 허용 IP는 톱니바퀴 버튼(또는 Security &gt; IP 관리)에서 등록합니다.
+                            </div>
+                        </div>
+                        <div class="wf-field">
+                            <label>도메인 접근제어</label>
+                            <div id="domainChips" class="wf-permission-chips"></div>
+                            <div class="wf-permission-add">
+                                <input type="text" id="domainInput" class="form-control form-control-sm"
+                                       placeholder="portal.example.com 또는 *.example.com" autocomplete="off"
+                                       onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addDomainChip(); }">
+                                <button type="button" class="btn btn-default btn-sm" onclick="addDomainChip()">추가</button>
+                            </div>
+                            <div class="wf-field-help">
+                                요청의 Referer(없으면 Origin) 도메인이 여기 등록한 도메인일 때만 실행할 수 있습니다.
+                                하나도 등록하지 않으면 도메인 제한 없이 실행됩니다.<br>
+                                와일드카드: <code>*.example.com</code>(하위 도메인 전체, example.com 자신은 제외),
+                                <code>dev-*.example.com</code>, <code>*</code>(전체). 포트는 비교하지 않습니다.
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Execute -->
+                <aside class="wf-node-drawer wf-drawer-wide" id="executeDrawer">
+                    <div class="wf-drawer-header">
+                        <span class="wf-drawer-title"><i class="fas fa-play"></i> 워크플로우 실행</span>
+                        <button type="button" class="wf-drawer-close" onclick="closeSidePanels()">&times;</button>
+                    </div>
+                    <div class="wf-drawer-body wf-execute-body">
+                        <div class="wf-execute-request">
+                            <div class="wf-section-label">
+                                요청 메시지
+                                <button type="button" class="btn btn-default btn-sm" onclick="addExecuteRow()">
+                                    <i class="fas fa-plus"></i> 행 추가
+                                </button>
+                            </div>
+                            <div id="executeRows"></div>
+                            <div class="wf-execute-run">
+                                <span class="wf-execute-target" id="executeTarget"></span>
+                                <button type="button" class="btn btn-success btn-sm" id="executeButton" onclick="execute()">
+                                    <i class="fas fa-play"></i> 실행
+                                </button>
+                            </div>
+                        </div>
+                        <div class="wf-log">
+                            <div class="wf-log-toolbar">
+                                <span class="wf-log-toolbar-title"><i class="fas fa-terminal"></i> 실행 결과</span>
+                                <span class="wf-log-toolbar-actions">
+                                    <button type="button" onclick="copyExecuteResult()" title="응답 JSON 복사"><i class="fas fa-copy"></i> 복사</button>
+                                </span>
+                            </div>
+                            <div class="wf-result-summary" id="executeResultSummary"></div>
+                            <div class="wf-log-body" id="executeResultJson"></div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <!-- Function type picker (layer popup) -->
+    <div class="modal fade" id="functionTypeModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">기능 유형 선택</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="functionTypeList" class="function-type-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</html>

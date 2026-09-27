@@ -19,8 +19,9 @@ import org.springframework.web.util.pattern.PathPattern;
 import java.util.*;
 
 /**
- * URL_PREFIX/** 로 들어온 요청을 정의된 API 에 맞춰 워크플로우로 실행한다.
- * 1. 경로와 메소드로 API 를 찾는다. 경로는 맞는데 메소드가 다르면 405, 경로가 맞는 API 가 없으면 404.
+ * /{applicationId}URL_PREFIX/** 로 들어온 요청을 정의된 API 에 맞춰 워크플로우로 실행한다.
+ * 0. URL 경로에서 applicationId 와 API 경로를 나눈다. 워크플로우는 이 applicationId 의 것으로 실행된다.
+ * 1. 그 애플리케이션의 API 중에서 경로와 메소드로 API 를 찾는다. 경로는 맞는데 메소드가 다르면 405, 경로가 맞는 API 가 없으면 404.
  * 2. 파라미터 스키마대로 검증해서 요청메시지를 만든다. 스키마에 어긋나면 400.
  * 3. 워크플로우를 실행한다. 인증/권한은 워크플로우 설정을 따른다.
  * 4. 성공하면 응답 설정대로 돌려준다. JSON 은 응답메시지 선택/응답스키마를 적용하고, FILE 은 파일로 내려준다.
@@ -39,9 +40,9 @@ public class RestApiExecuteService {
     public RestApiResult execute(HttpServletRequest request, HttpServletResponse response, String rawBody) {
         try {
             HttpMethodType httpMethod = HttpMethodType.valueOf(request.getMethod().toUpperCase(Locale.ROOT));
-            String apiPath = apiPathOf(request);
+            RequestPath requestPath = requestPathOf(request);
 
-            MatchedApi matched = findApi(httpMethod, apiPath);
+            MatchedApi matched = findApi(requestPath.applicationId(), httpMethod, requestPath.apiPath());
             RestApi restApi = matched.restApi();
             List<RestApiParameter> parameters = restApiParameterRepository.findByRestApiIdOrderByOrderNum(restApi.getId());
 
@@ -54,7 +55,12 @@ public class RestApiExecuteService {
 
             Map<String, List<Map<String, Object>>> messages = restApiRequestMapper.map(restApi, parameters, requestData);
 
-            ResponseMessage responseMessage = workflowService.execute(request, response, createRequestMessage(restApi.getWorkflowCode(), messages));
+            ResponseMessage responseMessage = workflowService.execute(
+                    request,
+                    response,
+                    requestPath.applicationId(),
+                    createRequestMessage(restApi.getWorkflowCode(), messages)
+            );
 
             if(!ResultType.SUCCESS.equals(responseMessage.getResultType())) {
                 return new RestApiResult.Json(responseMessage.getStatus(), responseMessage);
@@ -92,8 +98,12 @@ public class RestApiExecuteService {
         return body;
     }
 
-    // 컨텍스트 경로와 URL_PREFIX 를 뗀 나머지. 아무것도 없으면 / 로 본다.
-    static String apiPathOf(HttpServletRequest request) {
+    /**
+     * /{applicationId}URL_PREFIX{apiPath} 를 applicationId 와 apiPath 로 나눈다. (컨텍스트 경로는 먼저 뗀다)
+     * 예) /ehr/rest/goals/42 → applicationId=ehr, apiPath=/goals/42. URL_PREFIX 뒤에 아무것도 없으면 / 로 본다.
+     * 이 모양이 아니면 정의된 API 가 있을 수 없으므로 404 로 처리한다.
+     */
+    static RequestPath requestPathOf(HttpServletRequest request) throws BusinessException {
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
 
@@ -101,18 +111,32 @@ public class RestApiExecuteService {
             uri = uri.substring(contextPath.length());
         }
 
-        String path = uri.startsWith(RestApi.URL_PREFIX) ? uri.substring(RestApi.URL_PREFIX.length()) : uri;
+        int slash = uri.indexOf('/', 1);
+        if(!uri.startsWith("/") || slash < 0) {
+            throw new BusinessException(RestApiErrorMessage.NOT_FOUND_API);
+        }
 
-        return RestApiService.normalizePath(path.isEmpty() ? "/" : path);
+        String applicationId = uri.substring(1, slash);
+        String rest = uri.substring(slash);
+
+        boolean prefixMatched = rest.equals(RestApi.URL_PREFIX) || rest.startsWith(RestApi.URL_PREFIX + "/");
+        if(applicationId.isEmpty() || !prefixMatched) {
+            throw new BusinessException(RestApiErrorMessage.NOT_FOUND_API);
+        }
+
+        String path = rest.substring(RestApi.URL_PREFIX.length());
+
+        return new RequestPath(applicationId, RestApiService.normalizePath(path.isEmpty() ? "/" : path));
     }
 
-    MatchedApi findApi(HttpMethodType httpMethod, String apiPath) throws BusinessException {
+    // 요청한 애플리케이션의 API 중에서만 찾는다. 다른 애플리케이션에 같은 경로가 있어도 404/405 판단에 섞이지 않는다.
+    MatchedApi findApi(String applicationId, HttpMethodType httpMethod, String apiPath) throws BusinessException {
         PathContainer pathContainer = PathContainer.parsePath(apiPath);
 
         List<MatchedApi> sameMethod = new ArrayList<>();
         boolean pathMatchedOtherMethod = false;
 
-        for(RestApi restApi : restApiRepository.findAll()) {
+        for(RestApi restApi : restApiRepository.findByApplicationId(applicationId)) {
             if(!restApi.isEnabled()) {
                 continue;
             }
@@ -169,5 +193,8 @@ public class RestApiExecuteService {
     }
 
     record MatchedApi(RestApi restApi, PathPattern pattern, Map<String, String> pathVariables) {
+    }
+
+    record RequestPath(String applicationId, String apiPath) {
     }
 }

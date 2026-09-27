@@ -23,15 +23,33 @@ public class MenuDto {
     private List<MenuDto> children;
 
     public static List<MenuDto> of(List<Menu> menuList) {
+        return of(menuList, null);
+    }
+
+    /**
+     * applicationId 가 있으면 그 애플리케이션의 메뉴만 담는다. 하위 메뉴도 끝까지 같은 기준으로 거르고,
+     * 걸러진 뒤 남은 하위 메뉴가 없으면 말단(isLeafNode)으로 본다. null 이면 거르지 않는다.
+     */
+    public static List<MenuDto> of(List<Menu> menuList, String applicationId) {
         List<MenuDto> result = new ArrayList<>();
         for(Menu menu : menuList) {
-            result.add(of(menu));
+            if(belongsTo(menu, applicationId)) {
+                result.add(of(menu, applicationId));
+            }
         }
 
         return result;
     }
 
     public static MenuDto of(Menu menu) {
+        return of(menu, null);
+    }
+
+    private static boolean belongsTo(Menu menu, String applicationId) {
+        return menu != null && (applicationId == null || applicationId.equals(menu.getApplicationId()));
+    }
+
+    private static MenuDto of(Menu menu, String applicationId) {
         if(menu == null) {
             return null;
         }
@@ -50,12 +68,9 @@ public class MenuDto {
             parentMenuCd = parentMenu.getMenuCd();
         }
 
-        List<MenuDto> children = new ArrayList<>();
-        if(menu.getChildren() != null) {
-            for(Menu childrenMenu : menu.getChildren()) {
-                children.add(of(childrenMenu));
-            }
-        }
+        List<MenuDto> children = menu.getChildren() == null
+                ? new ArrayList<>()
+                : of(menu.getChildren(), applicationId);
 
         return MenuDto.builder()
                 .id(menu.getId())
@@ -65,7 +80,7 @@ public class MenuDto {
                 .objectCode(objectCode)
                 .objectPath(objectPath)
                 .icon(menu.getIcon())
-                .isLeafNode(menu.isLeafNode())
+                .isLeafNode(applicationId == null ? menu.isLeafNode() : children.isEmpty())
                 .parentMenuCd(parentMenuCd)
                 .children(children)
                 .build();

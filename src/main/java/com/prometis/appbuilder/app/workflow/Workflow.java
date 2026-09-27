@@ -7,12 +7,15 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="WORKFLOW_UQ",columnNames={"WORKFLOW_CODE"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="WORKFLOW_UQ",columnNames={"APPLICATION_ID","WORKFLOW_CODE"})})
 @Entity
 public class Workflow {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String workflowCode;

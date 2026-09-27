@@ -1,0 +1,1283 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    /* ============ Full-height page shell ============ */
+    /* adminlte.js의 fixLayoutHeight()가 로드 시 html/body에 인라인 height:auto를
+       강제로 지정해버려서 일반 규칙으로는 무시된다. !important로 덮어써야 한다. */
+    html, body {
+        height: 100% !important;
+        margin: 0;
+    }
+
+    .wrapper {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .wrapper > div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    /* ============ App shell ============ */
+    .menu-app {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    /* ============ Tree pane ============ */
+    .menu-tree-pane {
+        width: 340px;
+        flex: 0 0 340px;
+        border-right: 1px solid #eef0f2;
+        display: flex;
+        flex-direction: column;
+        background: #fbfbfc;
+    }
+
+    .menu-tree-header {
+        padding: 14px;
+        border-bottom: 1px solid #eef0f2;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .menu-tree-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .menu-tree-header-top h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .btn-new-root-menu {
+        border: none;
+        border-radius: 8px;
+        background: #4A90E2;
+        color: #fff;
+        padding: 7px 12px;
+        font-weight: 600;
+        font-size: 12.5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .btn-new-root-menu:hover {
+        background: #3d7fce;
+    }
+
+    .menu-search {
+        position: relative;
+    }
+
+    .menu-search input {
+        width: 100%;
+        padding: 6px 30px 6px 10px;
+        border: 1px solid #d7dbe0;
+        border-radius: 6px;
+        font-size: 12.5px;
+    }
+
+    .menu-search i {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    .menu-tree-toolbar {
+        display: flex;
+        gap: 6px;
+    }
+
+    .menu-tree-toolbar button {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 12px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 7px;
+        padding: 6px 8px;
+        cursor: pointer;
+        color: #374151;
+    }
+
+    .menu-tree-toolbar button:hover {
+        background: #f1f3f5;
+    }
+
+    .menu-tree-toolbar button:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    .menu-tree-toolbar button.btn-danger-outline {
+        color: #dc2626;
+        border-color: #f3c9c9;
+    }
+
+    .menu-tree-toolbar button.btn-danger-outline:hover:not(:disabled) {
+        background: #fef2f2;
+    }
+
+    .menu-tree-wrap {
+        flex: 1;
+        overflow: auto;
+        padding: 10px 8px;
+    }
+
+    .menu-tree-empty {
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+        padding: 32px 12px;
+        line-height: 1.6;
+    }
+
+    /* ============ jsTree skin override ============ */
+    #menu_tree {
+        min-height: 40px;
+    }
+
+    #menu_tree.jstree-default .jstree-anchor {
+        height: 32px;
+        line-height: 32px;
+        font-size: 13px;
+        color: #374151;
+        border-radius: 6px;
+        padding-right: 8px;
+    }
+
+    #menu_tree.jstree-default .jstree-hovered {
+        background: #f1f3f5;
+        box-shadow: none;
+    }
+
+    #menu_tree.jstree-default .jstree-clicked {
+        background: #eef5ff;
+        color: #1d4ed8;
+        box-shadow: none;
+    }
+
+    #menu_tree.jstree-default .jstree-wholerow-hovered {
+        background: #f1f3f5;
+    }
+
+    #menu_tree.jstree-default .jstree-wholerow-clicked {
+        background: #eef5ff;
+    }
+
+    #menu_tree.jstree-default .jstree-wholerow {
+        height: 32px;
+        border-radius: 6px;
+    }
+
+    #menu_tree.jstree-default .jstree-icon.fas,
+    #menu_tree.jstree-default .jstree-icon.far,
+    #menu_tree.jstree-default .jstree-icon.fa {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    #menu_tree.jstree-default .jstree-clicked .jstree-icon.fas,
+    #menu_tree.jstree-default .jstree-clicked .jstree-icon.far,
+    #menu_tree.jstree-default .jstree-clicked .jstree-icon.fa {
+        color: #1d4ed8;
+    }
+
+    #menu_tree .jstree-anchor .fa-plus {
+        color: #16a34a !important;
+    }
+
+    #menu_tree .jstree-anchor .fa-pen {
+        color: #d97706 !important;
+    }
+
+    #menu_tree .jstree-anchor .fa-trash {
+        color: #dc2626 !important;
+        text-decoration: line-through;
+    }
+
+    #menu_tree.jstree-default .jstree-search {
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+
+    /* ============ Detail pane ============ */
+    .menu-detail-pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .menu-detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 18px;
+        border-bottom: 1px solid #eef0f2;
+        min-height: 52px;
+    }
+
+    .menu-breadcrumb {
+        font-size: 13px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
+    .menu-breadcrumb b {
+        color: #1f2937;
+        font-weight: 700;
+    }
+
+    .menu-detail-actions {
+        display: flex;
+        gap: 6px;
+        flex: 0 0 auto;
+    }
+
+    .menu-detail-actions button {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 7px;
+        padding: 6px 12px;
+        cursor: pointer;
+        color: #374151;
+        white-space: nowrap;
+    }
+
+    .menu-detail-actions button:hover {
+        background: #f1f3f5;
+    }
+
+    .menu-detail-actions button.btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    .menu-detail-actions button.btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    .menu-detail-actions button.btn-danger {
+        color: #dc2626;
+        border-color: #f3c9c9;
+    }
+
+    .menu-detail-actions button.btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    .menu-detail-actions button:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .menu-detail-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 22px 28px;
+    }
+
+    .menu-empty-state {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #9199a3;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .menu-empty-state i {
+        font-size: 34px;
+        color: #d7dbe0;
+    }
+
+    .menu-empty-state p {
+        margin: 0;
+        font-size: 13.5px;
+        line-height: 1.7;
+    }
+
+    .menu-pending-delete-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: #fef2f2;
+        border: 1px solid #f3c9c9;
+        color: #b91c1c;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 12.5px;
+        margin-bottom: 18px;
+    }
+
+    .menu-pending-delete-banner button {
+        border: 1px solid #f3c9c9;
+        background: #fff;
+        color: #b91c1c;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .menu-pending-delete-banner button:hover {
+        background: #fee2e2;
+    }
+
+    .menu-field {
+        margin-bottom: 18px;
+        max-width: 560px;
+    }
+
+    .menu-field label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .menu-field-hint {
+        font-size: 11.5px;
+        color: #9199a3;
+        margin-top: 5px;
+    }
+
+    .menu-field-row {
+        display: flex;
+        gap: 16px;
+        max-width: 560px;
+    }
+
+    .menu-field-row .menu-field {
+        flex: 1;
+        max-width: none;
+    }
+
+    .menu-input {
+        width: 100%;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        padding: 8px 10px;
+        font-size: 13.5px;
+        color: #1f2937;
+    }
+
+    .menu-input:focus {
+        outline: none;
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+    }
+
+    .menu-input.menu-input-lg {
+        font-size: 16px;
+        font-weight: 600;
+        padding: 10px 12px;
+    }
+
+    .menu-input-readonly {
+        width: 100%;
+        border: 1px solid #eef0f2;
+        background: #f8f9fa;
+        border-radius: 7px;
+        padding: 8px 10px;
+        font-size: 13.5px;
+        color: #6b7280;
+    }
+
+    /* ============ Icon field ============ */
+    .menu-icon-group {
+        display: flex;
+        gap: 8px;
+        position: relative;
+    }
+
+    .menu-icon-preview {
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 7px;
+        border: 1px solid #d7dbe0;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #4A90E2;
+        font-size: 15px;
+    }
+
+    .menu-icon-pick-btn {
+        flex: 0 0 auto;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        border-radius: 7px;
+        padding: 0 12px;
+        font-size: 12.5px;
+        color: #374151;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .menu-icon-pick-btn:hover {
+        background: #f1f3f5;
+    }
+
+    .menu-icon-picker-panel {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        width: 340px;
+        max-height: 260px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 10px 28px rgba(16, 24, 40, .14);
+        padding: 10px;
+        z-index: 20;
+        display: none;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+    }
+
+    .menu-icon-picker-panel.show {
+        display: grid;
+    }
+
+    .menu-icon-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 4px;
+        border-radius: 7px;
+        cursor: pointer;
+        color: #4b5563;
+    }
+
+    .menu-icon-option:hover {
+        background: #eef5ff;
+        color: #1d4ed8;
+    }
+
+    .menu-icon-option i {
+        font-size: 15px;
+    }
+
+    .menu-icon-option span {
+        font-size: 9.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    /* ============ Object picker field ============ */
+    .menu-object-group {
+        position: relative;
+    }
+
+    .menu-object-hint {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        margin-top: 6px;
+    }
+
+    .menu-object-hint.ok {
+        color: #16a34a;
+    }
+
+    .menu-object-hint.none {
+        color: #9199a3;
+    }
+
+    .menu-object-hint.warn {
+        color: #d97706;
+    }
+
+    .menu-object-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        max-height: 240px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 28px rgba(16, 24, 40, .14);
+        z-index: 20;
+        display: none;
+    }
+
+    .menu-object-dropdown.show {
+        display: block;
+    }
+
+    .menu-object-dropdown-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .menu-object-dropdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .menu-object-dropdown-item:hover {
+        background: #eef5ff;
+    }
+
+    .menu-object-dropdown-item .obj-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .menu-object-dropdown-item .obj-meta {
+        font-size: 11px;
+        color: #9199a3;
+    }
+
+    .menu-object-dropdown-empty {
+        padding: 12px;
+        font-size: 12px;
+        color: #9199a3;
+        text-align: center;
+    }
+</style>
+<script th:fragment="script">
+    const MENU_TREE_ID = 'menu_tree';
+    const MENU_ICON_PRESETS = [
+        'fas fa-home','fas fa-th-large','fas fa-table','fas fa-list','fas fa-list-ul',
+        'fas fa-cog','fas fa-cogs','fas fa-tools','fas fa-wrench','fas fa-sitemap',
+        'fas fa-project-diagram','fas fa-database','fas fa-server','fas fa-network-wired','fas fa-plug',
+        'fas fa-users','fas fa-user','fas fa-user-shield','fas fa-shield-alt','fas fa-key',
+        'fas fa-lock','fas fa-unlock','fas fa-chart-bar','fas fa-chart-pie','fas fa-chart-line',
+        'fas fa-folder','fas fa-folder-open','fas fa-file','fas fa-file-alt','fas fa-clipboard-list',
+        'fas fa-tasks','fas fa-bell','fas fa-envelope','fas fa-bullhorn','fas fa-comments',
+        'fas fa-globe','fas fa-code','fas fa-terminal','fas fa-book','fas fa-bookmark',
+        'fas fa-star','fas fa-flag','fas fa-tag','fas fa-tags','fas fa-search',
+        'fas fa-filter','fas fa-calendar-alt','fas fa-clock','fas fa-map-marker-alt','fas fa-building',
+        'fas fa-briefcase','fas fa-shopping-cart','fas fa-credit-card','fas fa-dollar-sign','fas fa-truck',
+        'fas fa-box','fas fa-boxes','fas fa-warehouse','fas fa-question-circle','fas fa-info-circle',
+        'fas fa-exclamation-triangle','far fa-circle'
+    ];
+
+    let selectedNodeId = null;
+    let objectListCache = null;
+
+    $( document ).ready(function() {
+        init();
+    });
+
+    function init() {
+        initTree();
+        initIconPicker();
+        initObjectPicker();
+        showEmptyState();
+        getList();
+    }
+
+    function isEmpty(v) {
+        return (v === undefined || v === null || v === '');
+    }
+
+    function ifEmpty(v, rv) {
+        return v ? v : rv;
+    }
+
+    /* ================= Tree ================= */
+
+    function initTree() {
+        $('#'+MENU_TREE_ID).jstree({
+            "core" : {
+                "themes" : {
+                    "name" : "default",
+                    "responsive": true,
+                    "dots": false
+                },
+                "multiple": false,
+                "check_callback": function (op, node, parent, pos, more) {
+                    if (op === "create_node") {
+                        if (parent && parent.data && parent.data.status === "C") {
+                            alert("상위 메뉴를 저장 후에 생성가능합니다.");
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                "data" : false
+            },
+            "plugins": ["dnd","contextmenu","search","wholerow"],
+            "dnd": {
+                "copy": false,
+                "inside_pos": "last",
+                "drag_selection": true,
+                "touch": true
+            },
+            "search": {
+                "show_only_matches": true,
+                "show_only_matches_children": true
+            },
+            contextmenu: {
+                items: function(node) {
+                    return {
+                        "Create": {
+                            "label": "하위 메뉴 추가",
+                            "icon": "fas fa-plus",
+                            "action": function() {
+                                createChildMenu(node);
+                            }
+                        },
+                        "Delete": {
+                            "label": "삭제",
+                            "icon": "fas fa-trash",
+                            "action": function() {
+                                markNodeDeleted(node);
+                            }
+                        }
+                    };
+                },
+                select_node: true,
+                show_at_node: true
+            }
+        })
+        .on('select_node.jstree', function (e, data) {
+            selectedNodeId = data.node.id;
+            updateToolbarState();
+            renderSelectedNode(data.node, data.instance);
+        })
+        .on('deselect_node.jstree deselect_all.jstree', function () {
+            selectedNodeId = null;
+            updateToolbarState();
+        })
+        .on('create_node.jstree', function (e, data) {
+            const tree = $('#'+MENU_TREE_ID).jstree(true);
+
+            data.node.data.status = "C";
+            tree.set_icon(data.node, "fas fa-plus");
+
+            tree.deselect_all(true);
+            tree.select_node(data.node);
+            tree.edit(data.node);
+        })
+        .on("rename_node.jstree", function (e, data) {
+            const tree = $('#'+MENU_TREE_ID).jstree(true);
+
+            if (isEmpty(data.node.data.status)) {
+                data.node.data.status = "U";
+                tree.set_icon(data.node, "fas fa-pen");
+            }
+
+            data.node.data.menuNm = data.text;
+            renderSelectedNode(data.node, tree);
+        })
+        .on('move_node.jstree', function(e, data) {
+            const tree = $('#'+MENU_TREE_ID).jstree(true);
+
+            const node = data.node;
+            const newParentNode = tree.get_node(data.parent);
+
+            if (isEmpty(node.data.status)) {
+                node.data.status = "U";
+                tree.set_icon(node, "fas fa-pen");
+            }
+
+            node.data.orderNum = data.position;
+            node.data.parentMenuCd = (newParentNode.id === '#') ? '' : newParentNode.data.menuCd;
+
+            if (selectedNodeId === node.id) {
+                renderSelectedNode(node, tree);
+            }
+        });
+
+        let searchTimer = null;
+        $('#menuSearch').on('input', function() {
+            clearTimeout(searchTimer);
+            const value = this.value;
+            searchTimer = setTimeout(function() {
+                $('#'+MENU_TREE_ID).jstree(true).search(value);
+            }, 200);
+        });
+    }
+
+    function updateToolbarState() {
+        const hasSelection = !!selectedNodeId;
+        $('#btnAddChildMenu, #btnDeleteMenu').prop('disabled', !hasSelection);
+    }
+
+    function createRootMenu() {
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+        const rootChildren = tree.get_node('#').children;
+
+        tree.create_node(null, {
+            text: "새 메뉴",
+            data: {
+                menuCd: "",
+                menuNm: "새 메뉴",
+                parentMenuCd: "",
+                orderNum: rootChildren.length
+            }
+        });
+    }
+
+    function createChildMenuFromToolbar() {
+        if (!selectedNodeId) return;
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+        createChildMenu(tree.get_node(selectedNodeId));
+    }
+
+    function createChildMenu(node) {
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+        const siblings = tree.get_node(node).children;
+
+        tree.create_node(node, {
+            text: "새 메뉴",
+            data: {
+                menuCd: "",
+                menuNm: "새 메뉴",
+                parentMenuCd: node.data.menuCd,
+                orderNum: siblings.length
+            }
+        });
+    }
+
+    function deleteMenuFromToolbar() {
+        if (!selectedNodeId) return;
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+        markNodeDeleted(tree.get_node(selectedNodeId));
+    }
+
+    function markNodeDeleted(node) {
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+
+        if (node.data.status === 'C') {
+            tree.delete_node(node);
+            if (selectedNodeId === node.id) {
+                selectedNodeId = null;
+                updateToolbarState();
+                showEmptyState();
+            }
+            return;
+        }
+
+        node.data.status = 'D';
+        tree.set_icon(node, "fas fa-trash");
+        renderSelectedNode(node, tree);
+    }
+
+    function cancelPendingDelete() {
+        if (!selectedNodeId) return;
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+        const node = tree.get_node(selectedNodeId);
+
+        node.data.status = 'U';
+        tree.set_icon(node, "fas fa-pen");
+        renderSelectedNode(node, tree);
+    }
+
+    function toTree(r) {
+        const children = [];
+        if (!isEmpty(r.children)) {
+            for (let i = 0; i < r.children.length; i++) {
+                children.push(toTree(r.children[i]));
+            }
+        }
+
+        return {
+            "status": "",
+            "text": r.menuNm,
+            "children": children,
+            "icon": r.icon,
+            "data": r
+        };
+    }
+
+    function getList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/menu/tree`, {},
+            function(response){
+                const nodeData = [];
+                if (!isEmpty(response)) {
+                    for (let i = 0; i < response.length; i++) {
+                        nodeData.push(toTree(response[i]));
+                    }
+                }
+
+                const tree = $('#'+MENU_TREE_ID).jstree(true);
+                tree.settings.core.data = nodeData;
+                tree.refresh();
+
+                $('#menuTreeEmpty').toggle(nodeData.length === 0);
+
+                selectedNodeId = null;
+                updateToolbarState();
+                showEmptyState();
+            },
+            function(error){
+                alert('조회하는데 실패하였습니다.');
+            }
+        );
+    }
+
+    /* ================= Detail panel ================= */
+
+    function showEmptyState() {
+        $('#menuDetailEmpty').show();
+        $('#menuDetailForm').hide();
+        $('#menuBreadcrumb').text('메뉴를 선택하세요');
+        $('#btnSaveMenu, #btnDeleteSelectedMenu').prop('disabled', true);
+    }
+
+    function renderSelectedNode(node, tree) {
+        const status = node.data.status;
+
+        let parentMenuNm = '최상위 메뉴';
+        if (node.parent && node.parent !== '#') {
+            const parentNode = tree.get_node(node.parent);
+            if (parentNode) {
+                parentMenuNm = parentNode.text;
+            }
+        }
+
+        if (!isEmpty(status) && status === "C") {
+            const parentNode = tree.get_node(node.parent);
+            setContent({
+                status: status,
+                id: '',
+                menuCd: node.data.menuCd,
+                menuNm: node.data.menuNm,
+                objectCode: '',
+                parentMenuCd: node.data.parentMenuCd,
+                parentMenuNm: parentMenuNm,
+                orderNum: parentNode.children.indexOf(node.id),
+                icon: node.data.icon
+            });
+        }
+        else {
+            setContent(Object.assign({}, node.data, {parentMenuNm: parentMenuNm}));
+        }
+
+        $('#menuBreadcrumb').html('<b>' + tree.get_path(node, ' / ') + '</b>');
+        $('#menuDetailEmpty').hide();
+        $('#menuDetailForm').show();
+        $('#btnSaveMenu').prop('disabled', false);
+        $('#btnDeleteSelectedMenu').prop('disabled', false);
+    }
+
+    function onMenuFieldChange(field, value) {
+        $('#'+field).val(value);
+
+        if (isEmpty($('#status').val())) {
+            $('#status').val('U');
+        }
+
+        if (field === 'icon') {
+            renderIconPreview(value);
+        }
+        else if (field === 'objectCode') {
+            renderObjectHint(value);
+        }
+
+        syncFieldToNode();
+    }
+
+    function syncFieldToNode() {
+        if (!selectedNodeId) return;
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+        const node = tree.get_node(selectedNodeId);
+        if (!node) return;
+
+        node.data.menuNm = $('#menuNm').val();
+        node.data.menuCd = $('#menuCd').val();
+        node.data.objectCode = $('#objectCode').val();
+        node.data.icon = $('#icon').val();
+        node.data.status = $('#status').val();
+
+        // rename_node()는 rename_node.jstree 이벤트를 발생시켜 상세폼을 다시 그리게 되고,
+        // 그러면 지금 타이핑 중인 #menuNm의 값을 다시 세팅하면서 커서 위치가 끝으로
+        // 튀는 문제가 생긴다. set_text()는 이벤트 없이 트리 라벨만 조용히 갱신한다.
+        if ($('#menuNm').val() !== node.text) {
+            tree.set_text(node, $('#menuNm').val() || '(이름없음)');
+        }
+
+        if (node.data.status === 'U') {
+            tree.set_icon(node, 'fas fa-pen');
+        }
+    }
+
+    function save() {
+        const status = $('#status').val();
+        const id = $('#id').val();
+
+        if (status === 'C') {
+            insertContent();
+        }
+        else if (status === 'U') {
+            updateContent(id);
+        }
+        else if (status === 'D') {
+            deleteContent();
+        }
+        else {
+            alert('변경된 내용이 없습니다.');
+        }
+    }
+
+    function insertContent() {
+        httpClient.post(`/${APPLICATION_ID}/console/api/menu`, {}, getContent(),
+            function(response){
+                alert('저장완료되었습니다.');
+                getList();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function updateContent(id) {
+        httpClient.put(`/${APPLICATION_ID}/console/api/menu/${id}`, {}, getContent(),
+            function(response){
+                alert('저장완료되었습니다.');
+                getList();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function deleteContent() {
+        const id = $('#id').val();
+
+        httpClient.delete(`/${APPLICATION_ID}/console/api/menu/${id}`, {},
+            function(response){
+                alert('삭제 처리 완료되었습니다.');
+                getList();
+            },
+            function(error){
+                alert('error');
+            }
+        );
+    }
+
+    function getContent() {
+        return {
+            status: $('#status').val(),
+            id: $('#id').val(),
+            menuCd: $('#menuCd').val(),
+            menuNm: $('#menuNm').val(),
+            objectCode: $('#objectCode').val(),
+            parentMenuCd: $('#parentMenuCd').val(),
+            icon: ifEmpty($('#icon').val(), null),
+            orderNum: $('#orderNum').val()
+        };
+    }
+
+    function setContent(params) {
+        $('#status').val(params.status);
+        $('#id').val(params.id);
+        $('#menuCd').val(params.menuCd);
+        $('#menuNm').val(params.menuNm);
+        $('#objectCode').val(params.objectCode);
+        $('#parentMenuCd').val(params.parentMenuCd);
+        $('#parentMenuNmDisplay').val(params.parentMenuNm || '최상위 메뉴');
+        $('#orderNum').val(params.orderNum);
+        $('#icon').val(params.icon);
+
+        renderIconPreview(params.icon);
+        renderObjectHint(params.objectCode);
+
+        $('#menuPendingDeleteBanner').toggle(params.status === 'D');
+    }
+
+    /* ================= Icon picker ================= */
+
+    function initIconPicker() {
+        const $panel = $('#menuIconPickerPanel');
+
+        for (const iconClass of MENU_ICON_PRESETS) {
+            const label = iconClass.split(' ').pop().replace('fa-', '');
+            const $opt = $(`
+                <div class="menu-icon-option" title="${iconClass}">
+                    <i class="${iconClass}"></i>
+                    <span>${label}</span>
+                </div>
+            `);
+
+            $opt.on('click', function() {
+                onMenuFieldChange('icon', iconClass);
+                $panel.removeClass('show');
+            });
+
+            $panel.append($opt);
+        }
+
+        $('#btnToggleIconPicker').on('click', function(e) {
+            e.stopPropagation();
+            $panel.toggleClass('show');
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.menu-icon-group').length) {
+                $panel.removeClass('show');
+            }
+        });
+    }
+
+    function renderIconPreview(icon) {
+        const $preview = $('#menuIconPreview');
+        $preview.empty();
+        if (icon) {
+            $preview.append(`<i class="${icon}"></i>`);
+        }
+    }
+
+    /* ================= Object code picker ================= */
+
+    function initObjectPicker() {
+        const $input = $('#objectCode');
+        const $dropdown = $('#menuObjectDropdown');
+
+        $input.on('focus input', function() {
+            loadObjectList(function() {
+                renderObjectDropdown(this.value);
+                $dropdown.addClass('show');
+            }.bind(this));
+        });
+
+        $input.on('input', function() {
+            onMenuFieldChange('objectCode', this.value);
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.menu-object-group').length) {
+                $dropdown.removeClass('show');
+            }
+        });
+    }
+
+    function loadObjectList(callback) {
+        if (objectListCache) {
+            callback();
+            return;
+        }
+
+        httpClient.get(`/${APPLICATION_ID}/console/api/object`, {},
+            function(response) {
+                objectListCache = response || [];
+                callback();
+            },
+            function(error) {
+                objectListCache = [];
+                callback();
+            }
+        );
+    }
+
+    function renderObjectDropdown(keyword) {
+        const $dropdown = $('#menuObjectDropdown');
+        $dropdown.empty();
+
+        const kw = (keyword || '').toLowerCase();
+        const filtered = (objectListCache || []).filter(o =>
+            !kw ||
+            (o.objectCode || '').toLowerCase().includes(kw) ||
+            (o.objectName || '').toLowerCase().includes(kw)
+        ).slice(0, 30);
+
+        if (filtered.length === 0) {
+            $dropdown.append(`<div class="menu-object-dropdown-empty">일치하는 페이지가 없습니다.</div>`);
+            return;
+        }
+
+        for (const obj of filtered) {
+            const $item = $(`
+                <div class="menu-object-dropdown-item">
+                    <div class="obj-name">${obj.objectName || '(이름없음)'}</div>
+                    <div class="obj-meta">${obj.objectCode}${obj.path ? ' · ' + obj.path : ''}</div>
+                </div>
+            `);
+
+            $item.on('click', function() {
+                onMenuFieldChange('objectCode', obj.objectCode);
+                $dropdown.removeClass('show');
+            });
+
+            $dropdown.append($item);
+        }
+    }
+
+    function renderObjectHint(objectCode) {
+        const $hint = $('#menuObjectHint');
+
+        if (!objectCode) {
+            $hint.attr('class', 'menu-object-hint none').html('<i class="fas fa-minus-circle"></i> 연결된 페이지가 없습니다.');
+            return;
+        }
+
+        if (!objectListCache) {
+            $hint.attr('class', 'menu-object-hint none').html('&nbsp;');
+            return;
+        }
+
+        const found = objectListCache.find(o => o.objectCode === objectCode);
+        if (found) {
+            const pathSuffix = found.path ? ` (${found.path})` : '';
+            $hint.attr('class', 'menu-object-hint ok').html(`<i class="fas fa-check-circle"></i> ${found.objectName}${pathSuffix}`);
+        }
+        else {
+            $hint.attr('class', 'menu-object-hint warn').html('<i class="fas fa-exclamation-triangle"></i> 일치하는 페이지를 찾을 수 없습니다.');
+        }
+    }
+</script>
+<div th:fragment="view">
+    <div class="menu-app">
+        <aside class="menu-tree-pane">
+            <div class="menu-tree-header">
+                <div class="menu-tree-header-top">
+                    <h3>메뉴 관리</h3>
+                    <button type="button" class="btn-new-root-menu" onclick="createRootMenu()">
+                        <i class="fas fa-plus"></i> 새 메뉴
+                    </button>
+                </div>
+                <div class="menu-search">
+                    <input type="text" id="menuSearch" placeholder="메뉴 검색" autocomplete="off">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="menu-tree-toolbar">
+                    <button type="button" id="btnAddChildMenu" onclick="createChildMenuFromToolbar()" disabled title="선택한 메뉴 아래에 하위 메뉴를 추가합니다">
+                        <i class="fas fa-level-down-alt"></i> 하위 추가
+                    </button>
+                    <button type="button" id="btnDeleteMenu" class="btn-danger-outline" onclick="deleteMenuFromToolbar()" disabled>
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                    <button type="button" onclick="getList()" title="새로고침">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="menu-tree-wrap">
+                <div id="menu_tree"></div>
+                <div id="menuTreeEmpty" class="menu-tree-empty" style="display:none;">
+                    등록된 메뉴가 없습니다.<br>
+                    "새 메뉴" 버튼으로 첫 메뉴를 추가하세요.
+                </div>
+            </div>
+        </aside>
+
+        <div class="menu-detail-pane">
+            <div class="menu-detail-header">
+                <div class="menu-breadcrumb" id="menuBreadcrumb">메뉴를 선택하세요</div>
+                <div class="menu-detail-actions">
+                    <button type="button" onclick="getList()"><i class="fas fa-undo"></i> 복원</button>
+                    <button type="button" id="btnSaveMenu" class="btn-primary" onclick="save()" disabled><i class="fas fa-save"></i> 저장</button>
+                    <button type="button" id="btnDeleteSelectedMenu" class="btn-danger" onclick="deleteMenuFromToolbar()" disabled><i class="fas fa-trash"></i> 삭제</button>
+                </div>
+            </div>
+
+            <div class="menu-detail-body">
+                <div class="menu-empty-state" id="menuDetailEmpty">
+                    <i class="fas fa-sitemap"></i>
+                    <p>왼쪽 트리에서 메뉴를 선택하거나<br>"새 메뉴" 버튼으로 메뉴를 추가하세요.</p>
+                </div>
+
+                <div id="menuDetailForm" style="display:none;">
+                    <div class="menu-pending-delete-banner" id="menuPendingDeleteBanner" style="display:none;">
+                        <span><i class="fas fa-exclamation-triangle"></i> 이 메뉴는 저장 시 삭제됩니다.</span>
+                        <button type="button" onclick="cancelPendingDelete()">삭제 취소</button>
+                    </div>
+
+                    <input type="hidden" id="status">
+                    <input type="hidden" id="id">
+                    <input type="hidden" id="parentMenuCd">
+                    <input type="hidden" id="orderNum">
+
+                    <div class="menu-field">
+                        <label>메뉴명</label>
+                        <input type="text" id="menuNm" class="menu-input menu-input-lg" placeholder="메뉴 이름을 입력하세요" autocomplete="off" oninput="onMenuFieldChange('menuNm', this.value)">
+                    </div>
+
+                    <div class="menu-field-row">
+                        <div class="menu-field">
+                            <label>메뉴코드</label>
+                            <input type="text" id="menuCd" class="menu-input" placeholder="menu_code" autocomplete="off" oninput="onMenuFieldChange('menuCd', this.value)">
+                        </div>
+                        <div class="menu-field">
+                            <label>상위 메뉴</label>
+                            <input type="text" id="parentMenuNmDisplay" class="menu-input-readonly" readonly>
+                            <div class="menu-field-hint">트리에서 드래그하여 상위 메뉴/순서를 변경할 수 있습니다.</div>
+                        </div>
+                    </div>
+
+                    <div class="menu-field menu-object-group">
+                        <label>연결 페이지</label>
+                        <input type="text" id="objectCode" class="menu-input" placeholder="페이지 이름 또는 코드로 검색" autocomplete="off">
+                        <div class="menu-object-dropdown" id="menuObjectDropdown"></div>
+                        <div class="menu-object-hint none" id="menuObjectHint"></div>
+                    </div>
+
+                    <div class="menu-field menu-icon-group">
+                        <div style="flex:1;">
+                            <label>아이콘</label>
+                            <input type="text" id="icon" class="menu-input" placeholder="예: fas fa-home" autocomplete="off" oninput="onMenuFieldChange('icon', this.value)">
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <div class="menu-icon-preview" id="menuIconPreview"></div>
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <button type="button" class="menu-icon-pick-btn" id="btnToggleIconPicker"><i class="fas fa-icons"></i> 선택</button>
+                        </div>
+                        <div class="menu-icon-picker-panel" id="menuIconPickerPanel"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

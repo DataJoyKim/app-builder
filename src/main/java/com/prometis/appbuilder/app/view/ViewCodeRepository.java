@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ViewCodeRepository extends JpaRepository<ViewCode, Long> {
-    List<ViewCode> findByObjectCode(String objectCode);
+    List<ViewCode> findByApplicationIdAndObjectCode(String applicationId, String objectCode);
+
+    List<ViewCode> findByApplicationId(String applicationId);
 }

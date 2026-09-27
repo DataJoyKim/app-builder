@@ -236,7 +236,7 @@ class VbGrid extends ViewObject {
 
         this.optionPanel.clickEvent('column-setting',(e) => {
             const changeOptionValue = super.changeOptionValue;
-            App.modalPopup.open('/console/view-jsgrid-column',{title:'컬럼설정 팝업',size:"modal-xl",messageId:'JSGRID_COLUMN_REQUEST'},{columns:options.columns});
+            App.modalPopup.open(`/${APPLICATION_ID}/console/view-jsgrid-column`,{title:'컬럼설정 팝업',size:"modal-xl",messageId:'JSGRID_COLUMN_REQUEST'},{columns:options.columns});
             App.modalPopup.receiveParam('JSGRID_COLUMN_RESULT',function(data){
                 if(data.columns) {
                     changeOptionValue($el, options, 'columns', data.columns);

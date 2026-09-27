@@ -7,12 +7,14 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="VIEW_CODE_UQ",columnNames={"objectCode","name"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="VIEW_CODE_UQ",columnNames={"applicationId","objectCode","name"})})
 @Entity
 public class ViewCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, length = 100)
+    private String applicationId;
     @Column(nullable = false, length = 100)
     private String objectCode;
     @Column(nullable = false, length = 100)

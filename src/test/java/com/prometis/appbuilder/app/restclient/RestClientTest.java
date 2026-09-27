@@ -6,25 +6,65 @@ import com.prometis.appbuilder.app.executor.rest.HttpMethod;
 import com.prometis.appbuilder.app.executor.rest.RestExecutor;
 import com.prometis.appbuilder.app.executor.rest.RestExecutorRequest;
 import com.prometis.appbuilder.app.executor.rest.RestExecutorResponse;
-import com.prometis.appbuilder.app.restclient.*;
 import com.prometis.appbuilder.app.restclient.code.BodyMessageFormat;
 import com.prometis.appbuilder.app.restclient.code.ContentType;
+import com.prometis.appbuilder.app.restclient.code.MessageDataType;
 import com.prometis.appbuilder.app.restclient.code.ValueType;
-import org.junit.jupiter.api.Assertions;
+import com.sun.net.httpserver.HttpServer;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class RestClientTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    private void setDataSource() {
+/**
+ * RestClient 정의로 만든 요청이 실제로 어떻게 나가는지 로컬 테스트 서버로 받아서 확인한다.
+ * (외부 서버에 의존하지 않도록 JDK HttpServer 를 띄운다)
+ */
+class RestClientTest {
+    private static final String APPLICATION_ID = "ehr";
+    private static final String DATA_SOURCE = "testDataSource";
+
+    private HttpServer server;
+
+    // 테스트 서버가 받은 마지막 요청
+    private String receivedMethod;
+    private String receivedPath;
+    private String receivedQuery;
+    private String receivedHeader;
+    private String receivedBody;
+
+    @BeforeEach
+    void setUp() throws IOException {
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", exchange -> {
+            receivedMethod = exchange.getRequestMethod();
+            receivedPath = exchange.getRequestURI().getPath();
+            receivedQuery = exchange.getRequestURI().getQuery();
+            receivedHeader = exchange.getRequestHeaders().getFirst("test");
+            receivedBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+
+            byte[] response = "{\"result\":\"OK\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+
         List<DataSourceRestServer> metadataList = new ArrayList<>();
         metadataList.add(DataSourceRestServer.builder()
-                .dataSourceName("testDataSource")
-                .baseUrl("https://career.netmarble.com")
+                .applicationId(APPLICATION_ID)
+                .dataSourceName(DATA_SOURCE)
+                .baseUrl("http://127.0.0.1:" + server.getAddress().getPort())
                 .connectTimeout(6000)
                 .connectRequestTimeout(6000)
                 .connectionMaxTotal(100)
@@ -34,30 +74,33 @@ class RestClientTest {
         DataSourceRestServerRegister.initialize(metadataList);
     }
 
+    @AfterEach
+    void tearDown() {
+        server.stop(0);
+    }
+
     @Test
     public void getTest(){
-        setDataSource();
-
         // queryParams 설정
         List<RestClientQueryParam> queryParams = new ArrayList<>();
         queryParams.add(RestClientQueryParam.builder().paramName("codeKind").valueType(ValueType.PARAM_VALUE).build());
 
         // header 설정
         List<RestClientHeader> headers = new ArrayList<>();
-        headers.add(RestClientHeader.builder().name("test").valueType(ValueType.PARAM_VALUE).build());
-        headers.add(RestClientHeader.builder().name("Cookie").valueType(ValueType.PARAM_VALUE).build());
+        headers.add(RestClientHeader.builder().name("test").valueType(ValueType.INPUT_VALUE).inputValue("header-value").build());
 
         // 메타 정보 셋팅
         RestClient clientMeta = RestClient.builder()
+                .applicationId(APPLICATION_ID)
                 .clientName("testClient")
-                .dataSourceName("testDataSource")
+                .dataSourceName(DATA_SOURCE)
                 .method(HttpMethod.GET)
                 .path("/api/{version}/code")
                 .queryParams(queryParams)
                 .headers(headers)
                 .build();
 
-        RestExecutor executor = RestExecutor.createRestClientExecutor(clientMeta.getDataSourceName());
+        RestExecutor executor = RestExecutor.createRestClientExecutor(clientMeta.getApplicationId(), clientMeta.getDataSourceName());
 
         // 요청파라미터
         Map<String, Object> p = new HashMap<>();
@@ -71,39 +114,41 @@ class RestClientTest {
         // 요청
         RestExecutorResponse response =  executor.execute(request);
 
-        Assertions.assertNotNull(response);
-    }
+        assertEquals(200, response.getStatus().value());
+        assertEquals(Map.of("result", "OK"), response.getBody());
 
+        assertEquals("GET", receivedMethod);
+        assertEquals("/api/v1/code", receivedPath);
+        assertEquals("codeKind=CAR_COMPANY_CD", receivedQuery);
+        assertEquals("header-value", receivedHeader);
+    }
 
     @Test
     public void postTest(){
-        setDataSource();
-
-        // queryParams 설정
-        List<RestClientQueryParam> queryParams = new ArrayList<>();
-        //queryParams.add(RestClientQueryParam.builder().parameterName("codeKind").build());
-
         List<RestClientBody> bodyMessage = new ArrayList<>();
-        bodyMessage.add(RestClientBody.builder().paramName("carAnnoId").parentParamName("ROOT").orderNum(1).build());
-
-        // header 설정
-        List<RestClientHeader> headers = new ArrayList<>();
-        // headers.add(RestClientHeader.builder().key("Cookie").value("CAR=zJpsEzlVF6bjdxpOiKDE20FFpBtcykPGX51ZGaf0CHv/ZOPGEP6hsePQYXU3I1xJBlz6h36g7xPZSQ6NT/gJCDCGLb8eyoHlFsMEbNTeO4cxP4czry+x+N7mfMV4e4rdqQanBgUdsWnOp4T55q20X/hUJHs1QffR4eAY7MWAvLQ+InWfPJpNfXi7v4dFPkaRESREoNYR3nKsl8VqPphR3faWxHdw57DMvP7yWHeemM7JX5otMaEcs0v9LPlNIqfS4kv4ercdT6WqLdcF2RfgPKqLSp2dLmqQyx+kI3ifgrs2hWZ/baLIg3zgXSu/ttkmLT4SNIkbdcCMVa4wi2i1waxOUtEwMoyHqcqWaf85gMovQOZFXT7B3ZSHyEyb2OO1YcJqwbqzbWo/fOFJkQ+QS/2CpBjgMFNlaUraJJr0QRWNSEX1tSo75DYBG4DwviGXkckKSpffn/27AAOPUiAnSSN49rL5dy1Z//e8PqBhZdCb7T/u4O63OrAd4q2dAyUItn8ALmOwVMBxbvfYK8SIEw==").build());
+        bodyMessage.add(RestClientBody.builder()
+                .paramName("carAnnoId")
+                .parentParamName("ROOT")
+                .dataType(MessageDataType.STRING)
+                .valueType(ValueType.PARAM_VALUE)
+                .orderNum(1)
+                .build());
 
         // 메타 정보 셋팅
         RestClient clientMeta = RestClient.builder()
+                .applicationId(APPLICATION_ID)
                 .clientName("testClient")
-                .dataSourceName("testDataSource")
+                .dataSourceName(DATA_SOURCE)
                 .method(HttpMethod.POST)
                 .path("/api/{version}/mypage/users/bookmark")
-                .queryParams(queryParams)
+                .queryParams(new ArrayList<>())
                 .bodyMessageFormat(BodyMessageFormat.OBJECT)
                 .contentType(ContentType.APPLICATION_JSON)
-                .headers(headers)
+                .headers(new ArrayList<>())
                 .body(bodyMessage)
                 .build();
 
-        RestExecutor executor = RestExecutor.createRestClientExecutor(clientMeta.getDataSourceName());
+        RestExecutor executor = RestExecutor.createRestClientExecutor(clientMeta.getApplicationId(), clientMeta.getDataSourceName());
 
         // 요청파라미터
         Map<String, Object> p = new HashMap<>();
@@ -119,6 +164,10 @@ class RestClientTest {
         // 요청
         RestExecutorResponse response = executor.execute(request);
 
-        System.out.println(response);
+        assertEquals(200, response.getStatus().value());
+
+        assertEquals("POST", receivedMethod);
+        assertEquals("/api/v1/mypage/users/bookmark", receivedPath);
+        assertEquals("{\"carAnnoId\":\"1321\"}", receivedBody);
     }
 }

@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="NOTIFICATION_UQ",columnNames={"notificationName"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="NOTIFICATION_UQ",columnNames={"applicationId","notificationName"})})
 @Entity
 public class Notification {
     private static final String TO_ALIAS_DEFAULT = "to_address";
@@ -16,6 +16,9 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String notificationName;

@@ -13,9 +13,10 @@ public interface CommonCodeRepository extends JpaRepository<CommonCode, Long> {
         SELECT c
         FROM CommonCode c
         LEFT JOIN c.codeKind k
-        WHERE k.code IN :codeKindCodes
+        WHERE k.applicationId = :applicationId
+          AND k.code IN :codeKindCodes
     """)
-    List<CommonCode> findByCodeKindCodes(@Param("codeKindCodes") List<String> codeKindCodes);
+    List<CommonCode> findByCodeKindCodes(@Param("applicationId") String applicationId, @Param("codeKindCodes") List<String> codeKindCodes);
 
     List<CommonCode> findByCodeKind(CommonCodeKind codeKind);
 }

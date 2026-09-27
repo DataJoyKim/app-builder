@@ -63,8 +63,8 @@ public class RestExecutor {
                 .build();
     }
 
-    public static RestExecutor createRestClientExecutor(String dataSourceName) {
-        RestClient restClient = DataSourceRestServerRegister.getDataSource(LookupKey.generateKey(dataSourceName));
+    public static RestExecutor createRestClientExecutor(String applicationId, String dataSourceName) {
+        RestClient restClient = DataSourceRestServerRegister.getDataSource(LookupKey.generateKey(applicationId, dataSourceName));
 
         return new RestExecutor(restClient);
     }

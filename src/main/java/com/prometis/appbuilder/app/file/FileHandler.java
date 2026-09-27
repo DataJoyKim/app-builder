@@ -18,7 +18,7 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="FILE_HANDLER_UQ",columnNames={"handlerName"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="FILE_HANDLER_UQ",columnNames={"applicationId","handlerName"})})
 @Entity
 public class FileHandler {
     public static final String FILE_CONTENT_KEY_DEFAULT = "fileContent";
@@ -26,6 +26,9 @@ public class FileHandler {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String applicationId;
 
     @Column(nullable = false, length = 100)
     private String handlerName;

@@ -70,3 +70,37 @@ spring:
 server:
   port: 8080
 
+platform:
+  # 서버 기동 시 플랫폼 관리자 계정이 없으면 만든다. 이미 있으면 아무것도 바꾸지 않는다(비밀번호 포함).
+  sysadmin:
+    login-id: sysadmin
+    initial-password: rlaskrdud1!
+    user-name: sysadmin
+    email: ""
+  application:
+    # 애플리케이션ID는 서비스 경로의 prefix로 쓰인다 (예: ehr → https://test.domain.com/ehr).
+    # 이 서버가 이미 쓰는 최상위 경로와 겹치면 안 되므로, 새 최상위 경로
+    # (컨트롤러 매핑, static 폴더 등)를 추가하면 여기에도 추가해야 한다.
+    reserved-ids:
+      # 컨트롤러 최상위 경로
+      - api
+      - code
+      - console
+      - console-plat
+      - error
+      - login
+      - pages
+      - rest
+      - signup
+      - super-admin
+      - sysadmin
+      - workflow
+      # H2 콘솔 (spring.h2.console.path)
+      - h2-console
+      # 정적 리소스 폴더 (resources/static)
+      - asset
+      - core
+      - dist
+      - plugins
+      - ui
+

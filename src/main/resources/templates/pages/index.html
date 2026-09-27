@@ -5,9 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title></title>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-        <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-        <link rel="stylesheet" href="dist/css/adminlte.min.css">
-        <link rel="stylesheet" href="plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+        <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+        <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+        <link rel="stylesheet" href="/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
     </head>
     <body class="hold-transition sidebar-mini layout-fixed" data-panel-auto-height-mode="height">
 
@@ -91,14 +91,16 @@
             </aside>
         </div>
 
-        <script src="plugins/jquery/jquery.min.js"></script>
-        <script src="plugins/jquery-ui/jquery-ui.min.js"></script>
+        <script src="/core/Application.js"></script>
+
+        <script src="/plugins/jquery/jquery.min.js"></script>
+        <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
         <script>
           $.widget.bridge('uibutton', $.ui.button)
         </script>
-        <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
-        <script src="dist/js/adminlte.js?v=2"></script>
+        <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+        <script src="/dist/js/adminlte.js?v=2"></script>
         <script>
             $( document ).ready(function() {
                 console.log('version.0.0.1');
@@ -119,7 +121,7 @@
             function setLayout() {
                 $.ajax({
                   type: 'GET',
-                  url: '/api/layout',
+                  url: `/${APPLICATION_ID}/api/layout`,
                   data: {},
                   success: function(response) {
                     let data = response;
@@ -159,7 +161,7 @@
             function setProfile() {
                 $.ajax({
                   type: 'GET',
-                  url: '/api/profile',
+                  url: `/${APPLICATION_ID}/api/profile`,
                   data: {},
                   success: function(response) {
                   console.log('profile',response);
@@ -186,7 +188,7 @@
             function setRootMenu() {
                 $.ajax({
                   type: 'GET',
-                  url: '/api/menu/root',
+                  url: `/${APPLICATION_ID}/api/menu/root`,
                   success: function(response) {
                     let shtml = '';
 
@@ -206,7 +208,7 @@
             function setMenuTree(rootMenuCd) {
                 $.ajax({
                   type: 'GET',
-                  url: '/api/menu/tree',
+                  url: `/${APPLICATION_ID}/api/menu/tree`,
                   data: {"parentMenuCd":rootMenuCd},
                   success: function(response) {
                   console.log('response',response);
@@ -225,7 +227,7 @@
             }
 
             function getMenuHtml(menu) {
-                const menuPath = (menu.objectCode != null) ? '/pages/'+menu.objectCode : '#';
+                const menuPath = (menu.objectCode != null) ? `/${APPLICATION_ID}/pages/` + menu.objectCode : '#';
                 const menuItemClass = 'nav-icon ' + menu.icon;
 
                 let shtml = '';
@@ -254,14 +256,14 @@
                 let homeHtml = ``;
 
                 if(objectCode) {
-                    homeHtml += `<iframe src="/pages/${objectCode}"></iframe>`;
+                    homeHtml += `<iframe src="/${APPLICATION_ID}/pages/${objectCode}"></iframe>`;
                 }
 
                 $("#homeContent").html(homeHtml);
             }
 
             function moveConsole() {
-                window.open('/console', 'console');
+                window.open(`/${APPLICATION_ID}/console`, 'console');
             }
         </script>
     </body>
