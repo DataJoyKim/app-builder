@@ -43,10 +43,12 @@ public class LayoutRestController {
                 .useLogo(Boolean.valueOf((String) params.get("useLogo")))
                 .logoText((String) params.get("logoText"))
                 .logoBackgroundColor((String) params.get("logoBackgroundColor"))
+                .logoTextColor((String) params.get("logoTextColor"))
                 .logoLink((String) params.get("logoLink"))
                 .logoImg((String) params.get("logoImg"))
                 .layoutTitle((String) params.get("layoutTitle"))
                 .homeObjectCode((String) params.get("homeObjectCode"))
+                .faviconPath((String) params.get("faviconPath"))
                 .build();
 
         return new ResponseEntity<>(repository.save(createdData), HttpStatus.OK);
@@ -64,10 +66,12 @@ public class LayoutRestController {
                 Boolean.valueOf((String) params.get("useLogo")),
                 (String) params.get("logoText"),
                 (String) params.get("logoBackgroundColor"),
+                (String) params.get("logoTextColor"),
                 (String) params.get("logoLink"),
                 (String) params.get("logoImg"),
                 (String) params.get("layoutTitle"),
-                (String) params.get("homeObjectCode")
+                (String) params.get("homeObjectCode"),
+                (String) params.get("faviconPath")
         );
 
         repository.save(savedData);

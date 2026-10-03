@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/console/api/application")
@@ -46,7 +45,8 @@ public class ApplicationRestController {
 
     @PostMapping("")
     public ResponseEntity<?> insert(@RequestBody ApplicationRequest request) {
-        String error = validate(request, null);
+        String error = validateApplicationId(request);
+        if(error == null) error = validate(request);
         if(error != null) {
             return badRequest(error);
         }
@@ -66,13 +66,13 @@ public class ApplicationRestController {
         Application savedData = repository.findById(id)
                 .orElseThrow(RuntimeException::new);
 
-        String error = validate(request, id);
+        // applicationId는 생성 후 수정할 수 없으므로 요청 값은 무시한다
+        String error = validate(request);
         if(error != null) {
             return badRequest(error);
         }
 
         savedData.update(
-                request.getApplicationId().trim(),
                 request.getName().trim(),
                 request.getStatus(),
                 request.getDescription()
@@ -93,18 +93,22 @@ public class ApplicationRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private String validate(ApplicationRequest request, Long id) {
+    private String validateApplicationId(ApplicationRequest request) {
         String idError = applicationIdPolicy.validate(isBlank(request.getApplicationId()) ? null : request.getApplicationId().trim());
         if(idError != null) return idError;
+
+        if(repository.findByApplicationId(request.getApplicationId().trim()).isPresent()) {
+            return "이미 존재하는 애플리케이션ID입니다.";
+        }
+
+        return null;
+    }
+
+    private String validate(ApplicationRequest request) {
         if(isBlank(request.getName())) return "애플리케이션명을 입력해주세요.";
         if(isBlank(request.getStatus())
                 || Arrays.stream(ApplicationStatus.values()).noneMatch(s -> s.name().equals(request.getStatus()))) {
             return "상태를 선택해주세요.";
-        }
-
-        Optional<Application> sameId = repository.findByApplicationId(request.getApplicationId().trim());
-        if(sameId.isPresent() && !sameId.get().getId().equals(id)) {
-            return "이미 존재하는 애플리케이션ID입니다.";
         }
 
         return null;

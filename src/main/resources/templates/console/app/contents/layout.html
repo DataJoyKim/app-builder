@@ -109,6 +109,28 @@
         display: block;
     }
 
+    #layout-app .ds-switch-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        padding: 7px 10px;
+        background: #fff;
+    }
+
+    #layout-app .ds-switch-row-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    #layout-app .ds-switch-row .custom-control-label {
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
     #layout-app .ds-section-grid .form-control {
         width: 100%;
         box-sizing: border-box;
@@ -150,22 +172,7 @@
         });
 
         function init() {
-            var codes = {
-                "Boolean":[
-                    {code:"true",name:"true"},
-                    {code:"false",name:"false"}
-                ]
-            };
-
-            setCodes(codes);
-
             getList();
-        }
-
-        function setCodes(codes) {
-            App.util.setCodeBox("useAuthValidation", codes["Boolean"]);
-            App.util.setCodeBox("useProfile", codes["Boolean"]);
-            App.util.setCodeBox("useLogo", codes["Boolean"]);
         }
 
         function getList() {
@@ -239,30 +246,36 @@
         function getContent() {
             return {
                 id: $("#id").val(),
-                useAuthValidation: $("#useAuthValidation").val(),
-                useProfile: $("#useProfile").val(),
-                useLogo: $("#useLogo").val(),
+                // 서버(LayoutRestController)가 문자열로 받아 Boolean.valueOf 하므로 문자열로 보낸다
+                useAuthValidation: String(App.util.isCheck('useAuthValidation')),
+                useProfile: String(App.util.isCheck('useProfile')),
+                useLogo: String(App.util.isCheck('useLogo')),
                 logoText: $("#logoText").val(),
                 logoBackgroundColor: $("#logoBackgroundColor").val(),
+                logoTextColor: $("#logoTextColor").val(),
                 logoLink: $("#logoLink").val(),
                 logoImg: $("#logoImg").val(),
                 layoutTitle: $("#layoutTitle").val(),
-                homeObjectCode: $("#homeObjectCode").val()
+                homeObjectCode: $("#homeObjectCode").val(),
+                faviconPath: $("#faviconPath").val()
             }
         }
 
         function setContent(params) {
             $("#id").val(params.id);
-            $("#useAuthValidation").val(String(params.useAuthValidation));
-            $("#useProfile").val(String(params.useProfile));
-            $("#useLogo").val(String(params.useLogo));
+            App.util.check('useAuthValidation', params.useAuthValidation === true || params.useAuthValidation === 'true');
+            App.util.check('useProfile', params.useProfile === true || params.useProfile === 'true');
+            App.util.check('useLogo', params.useLogo === true || params.useLogo === 'true');
             $("#logoText").val(params.logoText);
             $("#logoBackgroundColor").val(params.logoBackgroundColor);
             $("#logoColorPicker").val(params.logoBackgroundColor || '#4A90E2');
+            $("#logoTextColor").val(params.logoTextColor);
+            $("#logoTextColorPicker").val(params.logoTextColor || '#FFFFFF');
             $("#logoLink").val(params.logoLink);
             $("#logoImg").val(params.logoImg);
             $("#layoutTitle").val(params.layoutTitle);
             $("#homeObjectCode").val(params.homeObjectCode);
+            $("#faviconPath").val(params.faviconPath);
           }
     </script>
 <div id="layout-app" th:fragment="view">
@@ -286,6 +299,10 @@
                         <label for="homeObjectCode">Home 오브젝트코드</label>
                         <input type="text" class="form-control" id="homeObjectCode" autocomplete="off">
                     </div>
+                    <div class="form-group col-12">
+                        <label for="faviconPath">브라우저 탭 아이콘 경로</label>
+                        <input type="text" class="form-control" id="faviconPath" autocomplete="off" maxlength="500" placeholder="예: /dist/img/favicon.ico 또는 https://.../favicon.png">
+                    </div>
                 </div>
             </div>
 
@@ -293,16 +310,31 @@
                 <div class="ds-section-header"><i class="fas fa-shield-alt"></i><span>인증 / 화면 요소</span></div>
                 <div class="ds-section-grid">
                     <div class="form-group col-4">
-                        <label for="useAuthValidation">인증사용</label>
-                        <select class="form-control" id="useAuthValidation"></select>
+                        <div class="ds-switch-row">
+                            <span class="ds-switch-row-title">인증사용</span>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="useAuthValidation">
+                                <label for="useAuthValidation" class="custom-control-label"></label>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group col-4">
-                        <label for="useProfile">프로필사용</label>
-                        <select class="form-control" id="useProfile"></select>
+                        <div class="ds-switch-row">
+                            <span class="ds-switch-row-title">프로필사용</span>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="useProfile">
+                                <label for="useProfile" class="custom-control-label"></label>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group col-4">
-                        <label for="useLogo">로고사용</label>
-                        <select class="form-control" id="useLogo"></select>
+                        <div class="ds-switch-row">
+                            <span class="ds-switch-row-title">로고사용</span>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="useLogo">
+                                <label for="useLogo" class="custom-control-label"></label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -310,22 +342,29 @@
             <div class="ds-section">
                 <div class="ds-section-header"><i class="fas fa-image"></i><span>로고</span></div>
                 <div class="ds-section-grid">
-                    <div class="form-group col-3">
-                        <label for="logoBackgroundColor">로고 색상</label>
+                    <div class="form-group col-4">
+                        <label for="logoText">로고 텍스트</label>
+                        <input type="text" class="form-control" id="logoText" autocomplete="off">
+                    </div>
+                    <div class="form-group col-4">
+                        <label for="logoBackgroundColor">로고 배경색</label>
                         <div class="ds-color-input">
                             <input type="color" id="logoColorPicker" onchange="$('#logoBackgroundColor').val(this.value)">
                             <input type="text" class="form-control" id="logoBackgroundColor" autocomplete="off" oninput="$('#logoColorPicker').val(this.value)">
                         </div>
                     </div>
-                    <div class="form-group col-3">
-                        <label for="logoText">로고 텍스트</label>
-                        <input type="text" class="form-control" id="logoText" autocomplete="off">
+                    <div class="form-group col-4">
+                        <label for="logoTextColor">로고 텍스트 색상</label>
+                        <div class="ds-color-input">
+                            <input type="color" id="logoTextColorPicker" onchange="$('#logoTextColor').val(this.value)">
+                            <input type="text" class="form-control" id="logoTextColor" autocomplete="off" placeholder="#FFFFFF" oninput="$('#logoTextColorPicker').val(this.value)">
+                        </div>
                     </div>
-                    <div class="form-group col-3">
+                    <div class="form-group col-6">
                         <label for="logoLink">로고 link</label>
                         <input type="text" class="form-control" id="logoLink" autocomplete="off">
                     </div>
-                    <div class="form-group col-3">
+                    <div class="form-group col-6">
                         <label for="logoImg">로고 img</label>
                         <input type="text" class="form-control" id="logoImg" autocomplete="off">
                     </div>

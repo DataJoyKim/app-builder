@@ -31,6 +31,7 @@ public class ViewBuilderController {
     public String moveAppIndex(
             HttpServletRequest request,
             HttpServletResponse httpResponse,
+            Model model,
             @PathVariable("applicationId") String applicationId
     ) {
         try {
@@ -52,6 +53,11 @@ public class ViewBuilderController {
             else {
                 return "/error/error403";
             }
+        }
+
+        // 브라우저 탭 아이콘은 첫 HTML 에 있어야 하므로 서버에서 렌더링한다
+        if(layout.getFaviconPath() != null && !layout.getFaviconPath().isBlank()) {
+            model.addAttribute("faviconPath", layout.getFaviconPath().trim());
         }
 
         return "/pages/index";

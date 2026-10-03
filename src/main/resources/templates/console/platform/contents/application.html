@@ -691,7 +691,8 @@
 
         function setContent(params) {
             $("#id").val(params.id);
-            $("#applicationId").val(params.applicationId);
+            // applicationId는 서비스 경로의 prefix라 생성 후에는 수정할 수 없다
+            $("#applicationId").val(params.applicationId).prop('disabled', !isEmpty(params.id));
             $("#name").val(params.name);
             $("#status").val(params.status || 'ACTIVE');
             $("#description").val(params.description);
@@ -919,9 +920,10 @@
                 .toggleClass('empty', isBlank)
                 .toggleClass('invalid', error !== null);
 
+            const locked = $("#applicationId").prop('disabled');
             $("#applicationIdHint")
                 .toggleClass('invalid', error !== null)
-                .text(error || APPLICATION_ID_HINT);
+                .text(error || (locked ? '애플리케이션ID는 생성 후 변경할 수 없습니다.' : APPLICATION_ID_HINT));
         }
 
           function newContent(){

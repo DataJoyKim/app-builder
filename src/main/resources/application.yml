@@ -78,6 +78,8 @@ platform:
     user-name: sysadmin
     email: ""
   application:
+    # 한 사용자가 관리자로 소유할 수 있는 애플리케이션 최대 개수 (애플리케이션 콘솔 > Application 에서 생성할 때 적용)
+    max-owned-count: 3
     # 애플리케이션ID는 서비스 경로의 prefix로 쓰인다 (예: ehr → https://test.domain.com/ehr).
     # 이 서버가 이미 쓰는 최상위 경로와 겹치면 안 되므로, 새 최상위 경로
     # (컨트롤러 매핑, static 폴더 등)를 추가하면 여기에도 추가해야 한다.

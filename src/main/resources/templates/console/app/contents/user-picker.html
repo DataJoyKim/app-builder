@@ -147,9 +147,12 @@
     }
 
     function getList() {
-        httpClient.get(`/${APPLICATION_ID}/console/api/user`, {},
+        // 이 애플리케이션에 등록된 사용자만 고른다. 사용자그룹은 플랫폼 사용자 ID(userId)로 저장하므로 id 를 userId 로 맞춘다
+        httpClient.get(`/${APPLICATION_ID}/console/api/app-user`, {},
             function(response){
-                USER_PICKER_LIST = response || [];
+                USER_PICKER_LIST = (response || [])
+                    .filter(item => item.loginId != null) // 삭제된 사용자 제외
+                    .map(item => ({id: item.userId, loginId: item.loginId, userName: item.userName}));
                 renderUserPickerList($("#userPickerSearch").val());
             },
             function(error){

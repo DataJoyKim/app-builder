@@ -14,7 +14,8 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    // 서비스 경로의 prefix로 쓰이므로 생성 후에는 바꾸지 않는다
+    @Column(nullable = false, length = 100, updatable = false)
     private String applicationId;
 
     @Column(nullable = false, length = 300)
@@ -27,12 +28,10 @@ public class Application {
     private String description;
 
     public void update(
-            String applicationId,
             String name,
             String status,
             String description
     ) {
-        this.applicationId = applicationId;
         this.name = name;
         this.status = status;
         this.description = description;

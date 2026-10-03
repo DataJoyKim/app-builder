@@ -113,12 +113,15 @@ class ModalPopup {
         );
     }
 
+    // 한 화면에서 여러 팝업 결과를 받을 수 있도록 messageId 별로 핸들러를 둔다 (같은 messageId 로 다시 등록하면 교체)
     receiveParam(receiveMessageId, _callback) {
-        if (this._messageHandler) {
-            window.removeEventListener('message', this._messageHandler);
+        this._messageHandlers = this._messageHandlers || {};
+
+        if (this._messageHandlers[receiveMessageId]) {
+            window.removeEventListener('message', this._messageHandlers[receiveMessageId]);
         }
 
-        this._messageHandler = function (event) {
+        const handler = function (event) {
             const {messageId, type, payload } = event.data || {};
 
             if(receiveMessageId !== messageId) {
@@ -130,7 +133,8 @@ class ModalPopup {
             }
         };
 
-        window.addEventListener('message', this._messageHandler);
+        this._messageHandlers[receiveMessageId] = handler;
+        window.addEventListener('message', handler);
     }
 
     close() {

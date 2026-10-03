@@ -1,0 +1,480 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<style th:fragment="style">
+    #application-manage-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #application-manage-app .ds-panel {
+        max-width: 1100px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #application-manage-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #application-manage-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #application-manage-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #application-manage-app .ds-count {
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        background: #f1f3f5;
+        border-radius: 999px;
+        padding: 1px 8px;
+    }
+
+    #application-manage-app .ds-count.full {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    #application-manage-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #application-manage-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+        white-space: nowrap;
+    }
+
+    #application-manage-app .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #application-manage-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #application-manage-app .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #application-manage-app .ds-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    #application-manage-app .ds-btn:disabled:hover {
+        background: #fff;
+    }
+
+    #application-manage-app .ds-btn-primary:disabled:hover {
+        background: #4A90E2;
+    }
+
+    #application-manage-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+    }
+
+    #application-manage-app .ds-list-item.current {
+        background: #f7faff;
+        border-left-color: #4A90E2;
+    }
+
+    #application-manage-app .ds-list-item-avatar {
+        flex: 0 0 auto;
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        background: #eef5ff;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    #application-manage-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    #application-manage-app .ds-list-item-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    #application-manage-app .ds-list-item-name {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #application-manage-app .ds-list-item-code {
+        font-size: 11.5px;
+        color: #6b7280;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #application-manage-app .ds-list-item-desc {
+        font-size: 11.5px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #application-manage-app .ds-badge {
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    #application-manage-app .ds-badge.current {
+        background: #eef5ff;
+        color: #1d4ed8;
+    }
+
+    #application-manage-app .ds-badge.inactive {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    #application-manage-app .ds-list-item-actions {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 6px;
+    }
+
+    #application-manage-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #application-manage-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    #application-manage-app .ds-panel-footer {
+        padding: 10px 16px;
+        background: #fbfbfc;
+        font-size: 11.5px;
+        color: #9199a3;
+    }
+
+    /* 생성 모달 */
+    #applicationCreateModal .modal-title {
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    #applicationCreateModal label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+
+    #applicationCreateModal .form-control {
+        font-size: 13px;
+    }
+
+    #applicationCreateModal .ds-field-hint {
+        display: block;
+        margin-top: 5px;
+        font-size: 11px;
+        color: #9199a3;
+    }
+
+    #applicationCreateModal .ds-field-hint.invalid {
+        color: #dc2626;
+    }
+
+    #applicationCreateModal .ds-path-preview {
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: #6b7280;
+        word-break: break-all;
+    }
+
+    #applicationCreateModal .ds-path-preview strong {
+        color: #1d4ed8;
+    }
+</style>
+<script th:fragment="script">
+    // 서버(ApplicationIdPolicy)의 검증 규칙과 동일하게 유지. 예약 경로는 저장 시 서버가 검사한다
+    const APPLICATION_ID_PATTERN = /^[a-z0-9_-]+$/;
+    const APPLICATION_ID_HINT = "영문 소문자, 숫자, '_', '-'만 사용할 수 있습니다. 생성 후에는 변경할 수 없습니다.";
+
+    let OWNED = {applications: [], maxOwnedCount: 0, creatable: false};
+
+    $( document ).ready(function() {
+        init();
+    });
+
+    function init() {
+        getList();
+    }
+
+    function alertError(error) {
+        const message = error && error.responseJSON && error.responseJSON.message;
+        alert(message || 'error');
+    }
+
+    function getList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/application-manage`, {},
+            function(response){
+                OWNED = response || {applications: [], maxOwnedCount: 0, creatable: false};
+                renderList();
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+
+    function renderList() {
+        const applications = OWNED.applications || [];
+
+        $("#ownedCount")
+            .text(`${applications.length} / ${OWNED.maxOwnedCount}`)
+            .toggleClass('full', !OWNED.creatable);
+        $("#openCreateModalBtn")
+            .prop('disabled', !OWNED.creatable)
+            .attr('title', OWNED.creatable ? '' : `애플리케이션은 최대 ${OWNED.maxOwnedCount}개까지 소유할 수 있습니다.`);
+
+        const $body = $("#ownedListBody");
+        $body.empty();
+
+        if(applications.length === 0) {
+            $body.append(`
+                <div class="ds-list-empty">
+                    <i class="fas fa-th-large"></i>
+                    <span>소유한 애플리케이션이 없습니다.</span>
+                </div>
+            `);
+            return;
+        }
+
+        for(const item of applications) {
+            const isCurrent = item.applicationId === APPLICATION_ID;
+            const $item = $(`
+                <div class="ds-list-item">
+                    <span class="ds-list-item-avatar"></span>
+                    <div class="ds-list-item-main">
+                        <div class="ds-list-item-title">
+                            <span class="ds-list-item-name"></span>
+                        </div>
+                        <span class="ds-list-item-code"></span>
+                        <span class="ds-list-item-desc"></span>
+                    </div>
+                    <div class="ds-list-item-actions">
+                        <button type="button" class="ds-btn" data-action="app"><i class="fas fa-external-link-alt"></i>애플리케이션 접속</button>
+                        <button type="button" class="ds-btn ds-btn-primary" data-action="console"><i class="fas fa-tools"></i>콘솔 접속</button>
+                    </div>
+                </div>
+            `);
+
+            const name = item.name || item.applicationId;
+            $item.toggleClass('current', isCurrent);
+            $item.find('.ds-list-item-avatar').text(name.trim().charAt(0).toUpperCase());
+            $item.find('.ds-list-item-name').text(name);
+            $item.find('.ds-list-item-code').text(`${window.location.origin}/${item.applicationId}`);
+            $item.find('.ds-list-item-desc').text(item.description || '').toggle(!!item.description);
+
+            const $title = $item.find('.ds-list-item-title');
+            if(isCurrent) {
+                $title.append('<span class="ds-badge current">현재 콘솔</span>');
+            }
+            if(item.status === 'INACTIVE') {
+                $title.append('<span class="ds-badge inactive">미사용</span>');
+            }
+
+            $item.find('[data-action="app"]').on('click', () => openApplication(item.applicationId));
+            $item.find('[data-action="console"]').on('click', () => openApplicationConsole(item.applicationId));
+
+            $body.append($item);
+        }
+    }
+
+    function openApplication(applicationId) {
+        window.open(`/${encodeURIComponent(applicationId)}`, '_blank');
+    }
+
+    function openApplicationConsole(applicationId) {
+        window.open(`/${encodeURIComponent(applicationId)}/console`, '_blank');
+    }
+
+    // ---- 생성 ----
+    function openCreateModal() {
+        if(!OWNED.creatable) {
+            alert(`애플리케이션은 최대 ${OWNED.maxOwnedCount}개까지 소유할 수 있습니다.`);
+            return;
+        }
+
+        $("#newApplicationId").val('');
+        $("#newApplicationName").val('');
+        $("#newApplicationDescription").val('');
+        renderNewIdHint();
+
+        $("#applicationCreateModal").modal('show');
+    }
+
+    // 입력 형식 오류 메시지 (통과하면 null)
+    function newIdError(applicationId) {
+        if(applicationId === '') return null;
+        if(APPLICATION_ID_PATTERN.test(applicationId)) return null;
+
+        return /[A-Z]/.test(applicationId)
+            ? '대문자는 사용할 수 없습니다. 영문 소문자, 숫자, \'_\', \'-\'만 사용할 수 있습니다.'
+            : '사용할 수 없는 문자가 있습니다. 영문 소문자, 숫자, \'_\', \'-\'만 사용할 수 있습니다.';
+    }
+
+    function renderNewIdHint() {
+        const applicationId = ($("#newApplicationId").val() || '').trim();
+        const error = newIdError(applicationId);
+
+        $("#newApplicationIdHint")
+            .toggleClass('invalid', error !== null)
+            .text(error || APPLICATION_ID_HINT);
+
+        $("#newApplicationPathOrigin").text(`${window.location.origin}/`);
+        $("#newApplicationPathPrefix").text(applicationId || '{applicationId}');
+    }
+
+    function createApplication() {
+        const applicationId = ($("#newApplicationId").val() || '').trim();
+        const name = ($("#newApplicationName").val() || '').trim();
+
+        if(applicationId === '') {
+            alert("애플리케이션ID를 입력해주세요.");
+            return;
+        }
+        if(newIdError(applicationId) !== null) {
+            alert(newIdError(applicationId));
+            return;
+        }
+        if(name === '') {
+            alert("애플리케이션명을 입력해주세요.");
+            return;
+        }
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/application-manage`, {}, {
+                applicationId: applicationId,
+                name: name,
+                description: $("#newApplicationDescription").val()
+            },
+            function(response){
+                alert("애플리케이션이 생성되었습니다.");
+                $("#applicationCreateModal").modal('hide');
+                getList();
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+</script>
+<div id="application-manage-app" th:fragment="view">
+    <section class="ds-panel">
+        <div class="ds-panel-header">
+            <h3><i class="fas fa-th-large"></i> 내 애플리케이션 <span class="ds-count" id="ownedCount">0 / 0</span></h3>
+            <div class="ds-panel-tools">
+                <button type="button" class="ds-btn" onclick="getList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                <button type="button" class="ds-btn ds-btn-primary" id="openCreateModalBtn" onclick="openCreateModal()" disabled><i class="fas fa-plus"></i>애플리케이션 생성</button>
+            </div>
+        </div>
+        <div id="ownedListBody"></div>
+        <div class="ds-panel-footer">관리자로 지정된 애플리케이션이 표시됩니다. 직접 생성한 애플리케이션은 자동으로 관리자로 지정됩니다.</div>
+    </section>
+
+    <div class="modal fade" id="applicationCreateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">애플리케이션 생성</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="newApplicationId">애플리케이션ID</label>
+                        <input type="text" class="form-control" id="newApplicationId" autocomplete="off" maxlength="100" placeholder="예: ehr" oninput="renderNewIdHint()">
+                        <div class="ds-path-preview"><i class="fas fa-link"></i> <span id="newApplicationPathOrigin"></span><strong id="newApplicationPathPrefix">{applicationId}</strong></div>
+                        <span class="ds-field-hint" id="newApplicationIdHint"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="newApplicationName">애플리케이션명</label>
+                        <input type="text" class="form-control" id="newApplicationName" autocomplete="off" maxlength="300">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="newApplicationDescription">설명</label>
+                        <textarea class="form-control" id="newApplicationDescription" rows="3" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="createApplication()"><i class="fas fa-check"></i> 생성</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

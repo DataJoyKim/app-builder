@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title></title>
+        <link rel="icon" th:if="${faviconPath}" th:href="${faviconPath}">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
         <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
         <link rel="stylesheet" href="/dist/css/adminlte.min.css">
@@ -151,7 +152,7 @@
                 logoHtml += `<div style="background-color:${data.logoBackgroundColor}">`;
                 logoHtml += `   <a href="${data.logoLink}" class="brand-link">`;
                 logoHtml += `       <img src="${data.logoImg}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">`;
-                logoHtml += `       <span style="color:#FFFFFF;font-weight:bold;font-size: 19px;">${data.logoText}</span>`;
+                logoHtml += `       <span style="color:${data.logoTextColor || '#FFFFFF'};font-weight:bold;font-size: 19px;">${data.logoText}</span>`;
                 logoHtml += `   </a>`;
                 logoHtml += `</div>`;
 

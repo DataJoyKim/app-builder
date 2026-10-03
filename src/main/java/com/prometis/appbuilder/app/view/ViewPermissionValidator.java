@@ -21,7 +21,7 @@ public class ViewPermissionValidator {
 
     public void validate(AuthenticatedUser user, ViewObject accessViewObject) throws BusinessException {
         List<GrantedPermission> grantedPermissionList = user.getGrantedPermissions();
-        if(grantedPermissionList.isEmpty()) {
+        if(grantedPermissionList == null || grantedPermissionList.isEmpty()) {
             throw new BusinessException(ViewErrorMessage.NOT_HAS_PERMISSIONS);
         }
 
