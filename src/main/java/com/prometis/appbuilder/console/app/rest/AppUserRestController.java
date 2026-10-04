@@ -1,12 +1,18 @@
 package com.prometis.appbuilder.console.app.rest;
 
 import com.prometis.appbuilder.app.security.appuser.AppUser;
+import com.prometis.appbuilder.app.security.appuser.AppUserManageException;
 import com.prometis.appbuilder.app.security.appuser.AppUserService;
+import com.prometis.appbuilder.console.app.dto.AppUserAuthorityRequest;
 import com.prometis.appbuilder.console.app.dto.AppUserCandidateResponse;
 import com.prometis.appbuilder.console.app.dto.AppUserRegisterRequest;
 import com.prometis.appbuilder.console.app.dto.AppUserResponse;
 import com.prometis.appbuilder.platform.user.User;
 import com.prometis.appbuilder.platform.user.UserRepository;
+import com.prometis.appbuilder.security.exception.SecurityBusinessException;
+import com.prometis.appbuilder.security.service.AuthenticationService;
+import com.prometis.appbuilder.security.token.TokenCookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 애플리케이션 사용자(AppUser) 등록. 플랫폼 사용자(User)에 있는 사람만 등록할 수 있다.
+ * 애플리케이션 사용자(AppUser) 등록/권한 변경/삭제. 플랫폼 사용자(User)에 있는 사람만 등록할 수 있다.
  */
 @RestController
 @RequestMapping("/{applicationId}/console/api/app-user")
@@ -26,9 +32,13 @@ public class AppUserRestController {
     private AppUserService appUserService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @GetMapping("")
-    public ResponseEntity<?> getList(@PathVariable("applicationId") String applicationId) {
+    public ResponseEntity<?> getList(@PathVariable("applicationId") String applicationId, HttpServletRequest httpRequest) {
+        // 화면이 본인 행의 권한 변경/삭제를 막을 수 있도록 본인 여부(me)를 함께 준다
+        Long loginUserId = loginUserIdOf(httpRequest);
         List<AppUser> appUsers = appUserService.getAppUsers(applicationId);
 
         Map<Long, User> users = userRepository.findAllById(appUsers.stream().map(AppUser::getUserId).toList())
@@ -36,7 +46,7 @@ public class AppUserRestController {
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
         List<AppUserResponse> results = appUsers.stream()
-                .map(appUser -> AppUserResponse.of(appUser, users.get(appUser.getUserId())))
+                .map(appUser -> AppUserResponse.of(appUser, users.get(appUser.getUserId()), loginUserId))
                 .toList();
 
         return new ResponseEntity<>(results, HttpStatus.OK);
@@ -82,6 +92,64 @@ public class AppUserRestController {
                 "registered", registered.size(),
                 "skipped", userIds.size() - registered.size()
         ), HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/authority")
+    public ResponseEntity<?> changeAuthority(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("id") Long id,
+            @RequestBody AppUserAuthorityRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long requesterUserId = loginUserIdOf(httpRequest);
+        if(requesterUserId == null) {
+            return unauthorized();
+        }
+
+        try {
+            AppUser appUser = appUserService.changeAuthority(applicationId, id, request.getAuthority(), requesterUserId);
+            User user = userRepository.findById(appUser.getUserId()).orElse(null);
+
+            return new ResponseEntity<>(AppUserResponse.of(appUser, user, requesterUserId), HttpStatus.OK);
+        }
+        catch (AppUserManageException e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("id") Long id,
+            HttpServletRequest httpRequest
+    ) {
+        Long requesterUserId = loginUserIdOf(httpRequest);
+        if(requesterUserId == null) {
+            return unauthorized();
+        }
+
+        try {
+            appUserService.deleteAppUser(applicationId, id, requesterUserId);
+
+            return new ResponseEntity<>(Map.of("deleted", 1), HttpStatus.OK);
+        }
+        catch (AppUserManageException e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    // 로그인한 사용자의 userId. 콘솔 필터를 통과했으면 있어야 하지만, 확인할 수 없으면 null
+    private Long loginUserIdOf(HttpServletRequest httpRequest) {
+        try {
+            return authenticationService.authentication(TokenCookie.resolveAccessToken(httpRequest)).getUserId();
+        }
+        catch (SecurityBusinessException e) {
+            return null;
+        }
+    }
+
+    private ResponseEntity<?> unauthorized() {
+        return new ResponseEntity<>(Map.of("message", "로그인이 필요합니다."), HttpStatus.UNAUTHORIZED);
     }
 
     private ResponseEntity<?> badRequest(String message) {

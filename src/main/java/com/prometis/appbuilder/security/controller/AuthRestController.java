@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthRestController {
@@ -30,5 +32,13 @@ public class AuthRestController {
         TokenCookie.setRefreshToken(httpResponse, token.getRefreshToken());
 
         return new ResponseEntity<>(token, HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse httpResponse) {
+        TokenCookie.clear(httpResponse);
+
+        // HttpClient.post 는 JSON 응답을 기대하므로 빈 객체를 돌려준다
+        return new ResponseEntity<>(Map.of(), HttpStatus.OK);
     }
 }

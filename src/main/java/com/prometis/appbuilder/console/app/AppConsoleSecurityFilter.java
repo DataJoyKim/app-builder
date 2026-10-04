@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
  * 애플리케이션 콘솔(/{applicationId}/console/**) 접근을 막는다.
  * 서블릿 URL 패턴은 중간 와일드카드(/*&#47;console/*)를 지원하지 않아 /* 에 등록하고, 콘솔 경로인지는 여기서 직접 가린다.
  * - /{applicationId}/console, /{applicationId}/console/... : 로그인 + 애플리케이션 관리자(또는 플랫폼관리자)인지 검사한다.
+ *   단, 관리자 가입 화면/API(/{applicationId}/console/join, /{applicationId}/console/api/join/...)는 계정이 없는 사람이 쓰므로 통과시킨다.
  * - /console, /console/... : 플랫폼 콘솔이라 PlatformConsoleSecurityFilter 가 맡으므로 여기서는 건드리지 않는다.
  *   (/console/console 도 applicationId 가 "console" 인 애플리케이션 콘솔로 보지 않는다. console 은 예약된 ID 다)
  * - 그 밖의 경로 : 콘솔이 아니므로 그대로 통과시킨다.
@@ -42,7 +43,7 @@ public class AppConsoleSecurityFilter implements Filter {
         String path = pathOf(httpRequest);
 
         String applicationId = applicationIdOf(path);
-        if(applicationId == null) {
+        if(applicationId == null || isJoinPath(path, applicationId)) {
             chain.doFilter(request, response);
             return;
         }
@@ -83,6 +84,15 @@ public class AppConsoleSecurityFilter implements Filter {
         }
 
         return uri;
+    }
+
+    /**
+     * 애플리케이션 관리자 가입 화면(/{applicationId}/console/join)과 가입 API(/{applicationId}/console/api/join/...)는
+     * 아직 계정이 없는 사람이 쓰므로 로그인/권한을 검사하지 않는다. 없는 애플리케이션은 가입 화면/API 가 직접 막는다.
+     */
+    static boolean isJoinPath(String path, String applicationId) {
+        String consolePath = "/" + applicationId + "/" + CONSOLE_SEGMENT;
+        return path.equals(consolePath + "/join") || path.startsWith(consolePath + "/api/join/");
     }
 
     /**

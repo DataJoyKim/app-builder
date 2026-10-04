@@ -22,7 +22,7 @@
                 </ul>
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" role="button">
+                        <a class="nav-link" href="#" onclick="logout(`/${APPLICATION_ID}`); return false;" role="button" title="로그아웃">
                             <i class="fas fa-sign-out-alt"></i>
                         </a>
                     </li>
@@ -93,6 +93,7 @@
         </div>
 
         <script src="/core/Application.js"></script>
+        <script src="/core/Logout.js"></script>
 
         <script src="/plugins/jquery/jquery.min.js"></script>
         <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>

@@ -34,10 +34,20 @@ public class UserGroupPermissionRestController {
         return new ResponseEntity<>(results, HttpStatus.OK);
     }
 
+    // 권한 화면: 이 권한을 받은 사용자 그룹들
+    @GetMapping("/by-permission/{permissionId}")
+    public ResponseEntity<?> getByPermission(@PathVariable("applicationId") String applicationId, @PathVariable("permissionId") Long permissionId) {
+        List<UserGroupPermission> results = repository.findByPermissionId(permissionId).stream()
+                .filter(owned -> owned.getUserGroup() != null && applicationId.equals(owned.getUserGroup().getApplicationId()))
+                .toList();
+
+        return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
     @PostMapping("")
     public ResponseEntity<?> create(@PathVariable("applicationId") String applicationId, @RequestBody Map<String,Object> params) {
-        Long userGroupId = Long.valueOf((String) params.get("userGroupId"));
-        Long permissionId = Long.valueOf((String) params.get("permissionId"));
+        Long userGroupId = idOf(params.get("userGroupId"));
+        Long permissionId = idOf(params.get("permissionId"));
 
         UserGroup userGroup = userGroupRepository.findById(userGroupId)
                 .filter(owned -> applicationId.equals(owned.getApplicationId()))
@@ -46,6 +56,11 @@ public class UserGroupPermissionRestController {
         Permission permission = permissionRepository.findById(permissionId)
                 .filter(owned -> applicationId.equals(owned.getApplicationId()))
                 .orElseThrow(RuntimeException::new);
+
+        // 같은 그룹에 같은 권한을 두 번 주지 않는다 (전파 여부는 기존 연결을 수정한다)
+        if(repository.existsByUserGroupIdAndPermissionId(userGroupId, permissionId)) {
+            return new ResponseEntity<>(Map.of("message", "이미 이 권한을 받은 사용자 그룹입니다."), HttpStatus.BAD_REQUEST);
+        }
 
         Boolean lowerPermissionGrant = Boolean.TRUE.equals(params.get("lowerPermissionGrant"));
 
@@ -64,8 +79,8 @@ public class UserGroupPermissionRestController {
                 .filter(owned -> owned.getUserGroup() != null && applicationId.equals(owned.getUserGroup().getApplicationId()))
                 .orElseThrow(RuntimeException::new);
 
-        Long userGroupId = Long.valueOf((String) params.get("userGroupId"));
-        Long permissionId = Long.valueOf((String) params.get("permissionId"));
+        Long userGroupId = idOf(params.get("userGroupId"));
+        Long permissionId = idOf(params.get("permissionId"));
 
         UserGroup userGroup = userGroupRepository.findById(userGroupId)
                 .filter(owned -> applicationId.equals(owned.getApplicationId()))
@@ -93,5 +108,10 @@ public class UserGroupPermissionRestController {
         repository.deleteById(savedData.getId());
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    // 화면에 따라 id 를 문자열("3") 또는 숫자(3)로 보낸다
+    private static Long idOf(Object value) {
+        return Long.valueOf(String.valueOf(value));
     }
 }

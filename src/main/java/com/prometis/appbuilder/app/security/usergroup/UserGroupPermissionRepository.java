@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface UserGroupPermissionRepository extends JpaRepository<UserGroupPermission, Long> {
     List<UserGroupPermission> findByUserGroupId(Long userGroupId);
+
+    List<UserGroupPermission> findByPermissionId(Long permissionId);
+
+    boolean existsByUserGroupIdAndPermissionId(Long userGroupId, Long permissionId);
 }

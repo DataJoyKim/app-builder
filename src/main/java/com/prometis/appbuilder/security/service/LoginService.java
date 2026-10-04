@@ -36,6 +36,13 @@ public class LoginService {
             throw new SecurityBusinessException(SecurityErrorMessage.FAULT_PASSWORD);
         }
 
+        return issueTokens(user, client);
+    }
+
+    /**
+     * 이미 확인된 사용자에게 토큰을 발급한다. (비밀번호 로그인, 가입 완료 후 자동 로그인)
+     */
+    public AuthTokenResponse issueTokens(User user, Client client) {
         AuthenticatedUser authenticatedUser = AuthenticatedUser.createAuthenticatedUser(user);
 
         String accessToken = jwtProvider.generateAccessToken(authenticatedUser.getUserId());

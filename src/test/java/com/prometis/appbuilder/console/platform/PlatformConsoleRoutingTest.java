@@ -53,6 +53,21 @@ class PlatformConsoleRoutingTest {
     }
 
     @Test
+    void 가입_화면은_콘솔_화면보다_먼저_잡힌다() throws Exception {
+        assertEquals(com.prometis.appbuilder.platform.join.JoinViewController.class, handlerOf("GET", "/ehr/console/join"));
+        assertEquals(com.prometis.appbuilder.platform.join.JoinRestController.class, handlerOf("POST", "/ehr/console/api/join/request"));
+    }
+
+    @Test
+    void 앱_가입_페이지는_플랫폼_콘솔_화면과_겹치지_않는다() throws Exception {
+        assertEquals(com.prometis.appbuilder.platform.join.AppSignupController.class, handlerOf("GET", "/ehr/signup"));
+        assertEquals(com.prometis.appbuilder.platform.join.AppSignupController.class, handlerOf("POST", "/ehr/api/signup/apply"));
+        assertEquals(com.prometis.appbuilder.platform.join.SignupController.class, handlerOf("GET", "/signup"));
+        assertEquals(com.prometis.appbuilder.platform.join.SignupController.class, handlerOf("POST", "/api/signup/request"));
+        assertEquals(PlatformConsoleViewController.class, handlerOf("GET", "/console/signup"));
+    }
+
+    @Test
     void 플랫폼_콘솔_화면은_console_platform_템플릿을_쓴다() {
         PlatformConsoleViewController controller = new PlatformConsoleViewController();
         ExtendedModelMap model = new ExtendedModelMap();

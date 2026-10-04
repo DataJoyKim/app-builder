@@ -129,6 +129,25 @@ class AppConsoleSecurityFilterTest {
         verifyNoInteractions(applicationGuard, appAuthenticationService, appConsoleAccessValidator);
     }
 
+    // 관리자 가입 화면/API 는 계정이 없는 사람이 쓰므로 검사하지 않는다
+    @ParameterizedTest
+    @ValueSource(strings = {"/ehr/console/join", "/ehr/console/api/join/request", "/ehr/console/api/join/verify"})
+    public void 가입_화면과_가입_API는_로그인_없이_통과한다(String uri) throws Exception {
+        Result result = run(uri);
+
+        assertTrue(result.passed(), uri);
+        verifyNoInteractions(applicationGuard, appAuthenticationService, appConsoleAccessValidator);
+    }
+
+    // join 과 이름만 비슷한 콘솔 경로는 여전히 검사한다
+    @ParameterizedTest
+    @ValueSource(strings = {"/ehr/console/joined", "/ehr/console/api/join", "/ehr/console/api/joins/request", "/ehr/console/join/x"})
+    public void 가입과_비슷한_다른_경로는_검사한다(String uri) throws Exception {
+        when(appAuthenticationService.authentication(any(), any())).thenThrow(new SecurityBusinessException(SecurityErrorMessage.NOT_LOGIN));
+
+        assertFalse(run(uri).passed(), uri);
+    }
+
     @Test
     public void 컨텍스트_경로는_떼고_판단한다() throws Exception {
         when(appAuthenticationService.authentication(any(), any())).thenReturn(user());

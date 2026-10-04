@@ -265,6 +265,76 @@
         color: #1d4ed8;
     }
 
+    /* 등록된 사용자 행의 권한 변경 / 삭제 */
+    #app-user-app .ds-role-select {
+        flex: 0 0 auto;
+        height: 26px;
+        padding: 0 6px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        background: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+    }
+
+    #app-user-app .ds-role-select.admin {
+        border-color: #bcd4f6;
+        background: #eef5ff;
+        color: #1d4ed8;
+    }
+
+    #app-user-app .ds-role-select:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #app-user-app .ds-icon-btn {
+        flex: 0 0 auto;
+        width: 26px;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        background: none;
+        color: #9199a3;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background-color .12s ease, color .12s ease;
+    }
+
+    #app-user-app .ds-icon-btn.danger:hover {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+    #app-user-app .ds-role-select:disabled,
+    #app-user-app .ds-icon-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    #app-user-app .ds-icon-btn:disabled:hover {
+        background: none;
+        border-color: transparent;
+        color: #9199a3;
+    }
+
+    #app-user-app .ds-me {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+        vertical-align: 1px;
+    }
+
     #app-user-app .ds-list-empty {
         display: flex;
         flex-direction: column;
@@ -296,6 +366,448 @@
         font-size: 11.5px;
         color: #9199a3;
     }
+
+    /* ---- 탭: 사용자 / 가입 · 초대 ---- */
+    #app-user-app .ds-tabs {
+        display: flex;
+        gap: 2px;
+        margin: 0 0 16px;
+        padding: 0;
+        list-style: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    #app-user-app .ds-tabs .nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        border-radius: 8px 8px 0 0;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        background: transparent;
+    }
+
+    #app-user-app .ds-tabs .nav-link.active {
+        background: #fff;
+        color: #1d4ed8;
+        box-shadow: inset 0 -2px 0 #4A90E2;
+    }
+
+    #app-user-app .ds-tab-badge {
+        display: none;
+        min-width: 18px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 10.5px;
+        line-height: 18px;
+        text-align: center;
+    }
+
+    /* ---- 가입 방식 ---- */
+    #app-user-app .ds-dirty {
+        display: none;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #b45309;
+    }
+
+    #app-user-app .ds-join-body {
+        padding: 14px 16px 16px;
+    }
+
+    #app-user-app .ds-policy-group {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    #app-user-app .ds-policy {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin: 0;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        font-weight: normal;
+        cursor: pointer;
+        transition: border-color .12s ease, background-color .12s ease;
+    }
+
+    #app-user-app .ds-policy:hover {
+        border-color: #bcd4f6;
+    }
+
+    #app-user-app .ds-policy:has(input:checked) {
+        border-color: #4A90E2;
+        background: #f7faff;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .10);
+    }
+
+    #app-user-app .ds-policy input {
+        position: absolute;
+        top: 13px;
+        right: 12px;
+        margin: 0;
+    }
+
+    #app-user-app .ds-policy-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-right: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    #app-user-app .ds-policy-title i {
+        width: 16px;
+        color: #4A90E2;
+        text-align: center;
+    }
+
+    #app-user-app .ds-policy-desc {
+        font-size: 11.5px;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    #app-user-app .ds-policy-use {
+        margin-top: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #1d4ed8;
+    }
+
+    #app-user-app .ds-join-options {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+
+    #app-user-app .ds-join-option {
+        flex: 1 1 280px;
+        min-width: 0;
+    }
+
+    #app-user-app .ds-field-label {
+        margin: 0 0 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #6b7280;
+    }
+
+    #app-user-app .ds-select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+        background: #fff;
+    }
+
+    #app-user-app .ds-join-warning {
+        display: none;
+        gap: 8px;
+        flex: 1 1 280px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 11.5px;
+        line-height: 1.5;
+    }
+
+    #app-user-app .ds-join-warning i {
+        margin-top: 2px;
+    }
+
+    /* ---- 받는 경로: 가입자 초대 / 가입 페이지 ---- */
+    #app-user-app .ds-channel-row {
+        margin-top: 16px;
+    }
+
+    #app-user-app .ds-panel.ds-channel-invite {
+        flex: 3 1 0;
+    }
+
+    #app-user-app .ds-panel.ds-channel-page {
+        flex: 2 1 0;
+    }
+
+    #app-user-app .ds-channel-tag {
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    #app-user-app .ds-channel-tag.off {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    #app-user-app .ds-channel-tag.approval {
+        background: #fffbeb;
+        color: #b45309;
+    }
+
+    #app-user-app .ds-section {
+        padding: 12px 16px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #app-user-app .ds-section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    /* 여러 이메일 입력 (칩) */
+    #app-user-app .ds-email-input {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-height: 40px;
+        max-height: 140px;
+        overflow-y: auto;
+        padding: 6px 8px;
+        border: 1px solid #d7dbe0;
+        border-radius: 8px;
+        background: #fff;
+        cursor: text;
+    }
+
+    #app-user-app .ds-email-input:focus-within {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+    }
+
+    #app-user-app .ds-email-input input {
+        flex: 1 1 200px;
+        min-width: 120px;
+        border: none;
+        outline: none;
+        padding: 3px 2px;
+        font-size: 12.5px;
+    }
+
+    #app-user-app .ds-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        max-width: 100%;
+        padding: 2px 4px 2px 9px;
+        border-radius: 999px;
+        background: #eef5ff;
+        color: #1d4ed8;
+        font-size: 12px;
+    }
+
+    #app-user-app .ds-chip.invalid {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    #app-user-app .ds-chip span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #app-user-app .ds-chip button {
+        border: none;
+        background: none;
+        padding: 0 4px;
+        color: inherit;
+        font-size: 11px;
+        line-height: 1;
+        cursor: pointer;
+        opacity: .7;
+    }
+
+    #app-user-app .ds-chip button:hover {
+        opacity: 1;
+    }
+
+    #app-user-app .ds-invite-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    #app-user-app .ds-invite-actions .ds-hint {
+        flex: 1 1 200px;
+    }
+
+    #app-user-app .ds-invite-actions-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #app-user-app .ds-invite-result {
+        display: none;
+        margin-top: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 12px;
+    }
+
+    #app-user-app .ds-invite-result-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 600;
+    }
+
+    #app-user-app .ds-invite-result-body {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    #app-user-app .ds-invite-result-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    #app-user-app .ds-invite-result-row:last-child {
+        border-bottom: none;
+    }
+
+    #app-user-app .ds-invite-result-row .email {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #app-user-app .ds-invite-result-row .state {
+        flex: 0 0 auto;
+        font-size: 11px;
+        font-weight: 600;
+        color: #047857;
+    }
+
+    #app-user-app .ds-invite-result-row .state.warn {
+        color: #b45309;
+    }
+
+    #app-user-app .ds-invite-result-row .state.fail {
+        color: #b91c1c;
+    }
+
+    #app-user-app .ds-invite-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #app-user-app .ds-invite-link input {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 6px 8px;
+        border: 1px solid #d7dbe0;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 12px;
+        color: #374151;
+    }
+
+    #app-user-app .ds-invite-list {
+        max-height: 360px;
+        overflow-y: auto;
+    }
+
+    #app-user-app .ds-invite-meta {
+        font-size: 11px;
+        color: #9199a3;
+    }
+
+    #app-user-app .ds-status {
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    #app-user-app .ds-status.PENDING {
+        background: #eef5ff;
+        color: #1d4ed8;
+    }
+
+    #app-user-app .ds-status.ACCEPTED {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    #app-user-app .ds-status.EXPIRED {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    #app-user-app .ds-off-note {
+        display: flex;
+        gap: 10px;
+        padding: 14px 16px;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    #app-user-app .ds-off-note i {
+        margin-top: 3px;
+        color: #9ca3af;
+    }
+
+    #app-user-app .ds-icon-btn.approve:hover {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #047857;
+    }
+
+    @media (max-width: 900px) {
+        #app-user-app .ds-layout {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        #app-user-app .ds-policy-group {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 <script th:fragment="script">
     // 등록된 애플리케이션 사용자
@@ -315,12 +827,16 @@
     });
 
     function init() {
+        initInviteEmailInput();
         reload();
     }
 
     function reload() {
         getAppUserList();
         getCandidateList();
+        getInvitationList();
+        getJoinSetting();
+        getJoinRequestList();
     }
 
     function alertError(error) {
@@ -348,7 +864,7 @@
             </div>
         `);
 
-        const name = item.userName || item.loginId || `(삭제된 사용자 #${item.userId})`;
+        const name = displayNameOf(item);
         $item.find('.ds-list-item-avatar').text(name.trim().charAt(0).toUpperCase());
         $item.find('.ds-list-item-name').text(name);
         $item.find('.ds-list-item-code').text([item.loginId, item.email].filter(v => v).join(' · '));
@@ -397,12 +913,73 @@
 
         for(const item of filtered) {
             const $item = createUserItem(item);
-            $item.append($('<span class="ds-role"></span>')
-                .toggleClass('admin', item.authority === 'APPLICATION_ADMIN')
-                .text(AUTHORITY_LABEL[item.authority] || item.authority || '-'));
 
+            const $authority = $('<select class="ds-role-select" title="권한 변경"></select>');
+            for(const authority of Object.keys(AUTHORITY_LABEL)) {
+                $authority.append($('<option></option>').val(authority).text(AUTHORITY_LABEL[authority]));
+            }
+            // 목록에 없는 권한 값이면 그대로 보여주되 고를 수는 없게 한다
+            if(item.authority && !AUTHORITY_LABEL[item.authority]) {
+                $authority.prepend($('<option disabled></option>').val(item.authority).text(item.authority));
+            }
+            $authority.val(item.authority).toggleClass('admin', item.authority === 'APPLICATION_ADMIN');
+            $authority.on('change', function() {
+                changeAuthority(item, $(this).val(), $(this));
+            });
+
+            const $delete = $('<button type="button" class="ds-icon-btn danger" title="애플리케이션 사용자에서 삭제"><i class="fas fa-trash-alt"></i></button>');
+            $delete.on('click', function() {
+                deleteAppUser(item);
+            });
+
+            // 본인은 권한 변경/삭제할 수 없다 (서버도 막는다)
+            if(item.me) {
+                $item.find('.ds-list-item-name').append(' <span class="ds-me">나</span>');
+                $authority.prop('disabled', true).attr('title', '본인의 권한은 변경할 수 없습니다.');
+                $delete.prop('disabled', true).attr('title', '본인은 삭제할 수 없습니다.');
+            }
+
+            $item.append($authority, $delete);
             $body.append($item);
         }
+    }
+
+    function displayNameOf(item) {
+        return item.userName || item.loginId || `(삭제된 사용자 #${item.userId})`;
+    }
+
+    function changeAuthority(item, authority, $select) {
+        const label = AUTHORITY_LABEL[authority] || authority;
+        if(!confirm(`${displayNameOf(item)}의 권한을 '${label}'(으)로 변경하시겠습니까?`)) {
+            $select.val(item.authority);
+            return;
+        }
+
+        httpClient.put(`/${APPLICATION_ID}/console/api/app-user/${item.id}/authority`, {}, {authority: authority},
+            function(response){
+                item.authority = response ? response.authority : authority;
+                $select.val(item.authority).toggleClass('admin', item.authority === 'APPLICATION_ADMIN');
+            },
+            function(error){
+                $select.val(item.authority);
+                alertError(error);
+            }
+        );
+    }
+
+    function deleteAppUser(item) {
+        if(!confirm(`${displayNameOf(item)}을(를) 애플리케이션 사용자에서 삭제하시겠습니까?\n삭제하면 이 애플리케이션에 접속할 수 없고, 이 애플리케이션의 사용자 그룹 소속도 함께 삭제됩니다.`)) {
+            return;
+        }
+
+        httpClient.delete(`/${APPLICATION_ID}/console/api/app-user/${item.id}`, {},
+            function(response){
+                reload();
+            },
+            function(error){
+                alertError(error);
+            }
+        );
     }
 
     // ---- 등록할 사용자 검색/선택 ----
@@ -531,6 +1108,456 @@
         register(filtered.map(item => item.userId));
     }
 
+    // ---- 가입자 초대 ----
+    const INVITATION_STATUS_LABEL = {
+        PENDING: '대기',
+        ACCEPTED: '수락',
+        EXPIRED: '만료'
+    };
+    // 서버(JoinService.EMAIL_PATTERN)와 같은 규칙
+    const INVITE_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const MAX_INVITE_EMAILS = 50;
+
+    // 입력한 초대 이메일 (칩으로 보여준다)
+    let INVITE_EMAILS = [];
+    // 마지막으로 보낸 초대 결과 (링크 모두 복사용)
+    let LAST_INVITE_RESULTS = [];
+
+    function formatDateTime(value) {
+        return value ? String(value).replace('T', ' ').slice(0, 16) : '';
+    }
+
+    function isInviteEmail(email) {
+        return email.length <= 100 && INVITE_EMAIL_PATTERN.test(email);
+    }
+
+    // Enter, 쉼표, 세미콜론, 공백으로 칩을 만들고, 여러 줄/메일 주소록 형식("홍길동 <a@b.com>; ...") 붙여넣기도 받는다
+    function initInviteEmailInput() {
+        const $input = $("#inviteEmailInput");
+
+        $input.on('keydown', function(e) {
+            const separator = e.key === 'Enter' || e.key === ',' || e.key === ';' || e.key === ' ' || (e.key === 'Tab' && this.value.trim());
+            if(separator) {
+                e.preventDefault();
+                addInviteEmails(this.value, false);
+                this.value = '';
+            }
+            else if(e.key === 'Backspace' && this.value === '' && INVITE_EMAILS.length > 0) {
+                INVITE_EMAILS.pop();
+                renderInviteEmails();
+            }
+        });
+
+        $input.on('paste', function(e) {
+            const text = (e.originalEvent.clipboardData || window.clipboardData).getData('text') || '';
+            e.preventDefault();
+            addInviteEmails(this.value + '\n' + text, true);
+            this.value = '';
+        });
+
+        $input.on('blur', function() {
+            if(this.value.trim()) {
+                addInviteEmails(this.value, false);
+                this.value = '';
+            }
+        });
+
+        renderInviteEmails();
+    }
+
+    // pasted 면 글 속에서 이메일 모양만 뽑는다 (이름 등은 버린다)
+    function addInviteEmails(text, pasted) {
+        const tokens = pasted && String(text).includes('@')
+            ? (String(text).match(/[^\s,;<>"'()]+@[^\s,;<>"'()]+/g) || [])
+            : String(text).split(/[\s,;]+/);
+
+        const known = new Set(INVITE_EMAILS.map(email => email.toLowerCase()));
+        for(const token of tokens) {
+            const email = token.replace(/^[<"']+|[>"']+$/g, '').trim();
+            if(!email || known.has(email.toLowerCase())) continue;
+
+            known.add(email.toLowerCase());
+            INVITE_EMAILS.push(email);
+        }
+
+        renderInviteEmails();
+    }
+
+    function removeInviteEmail(email) {
+        INVITE_EMAILS = INVITE_EMAILS.filter(item => item !== email);
+        renderInviteEmails();
+    }
+
+    function renderInviteEmails() {
+        const $box = $("#inviteEmailBox");
+        $box.find('.ds-chip').remove();
+
+        const $input = $("#inviteEmailInput");
+        for(const email of INVITE_EMAILS) {
+            const $chip = $('<span class="ds-chip"><span></span><button type="button" title="빼기">&times;</button></span>');
+            $chip.find('span').text(email);
+            if(!isInviteEmail(email)) {
+                $chip.addClass('invalid').attr('title', '이메일 형식이 올바르지 않습니다.');
+            }
+            $chip.find('button').on('click', function(e) {
+                e.stopPropagation();
+                removeInviteEmail(email);
+            });
+            $input.before($chip);
+        }
+
+        const invalidCount = INVITE_EMAILS.filter(email => !isInviteEmail(email)).length;
+        const total = INVITE_EMAILS.length;
+
+        let hint = `한 번에 ${MAX_INVITE_EMAILS}명까지 초대할 수 있습니다.`;
+        if(invalidCount > 0) {
+            hint = `형식이 잘못된 이메일 ${invalidCount}개를 고치거나 빼주세요.`;
+        }
+        else if(total > MAX_INVITE_EMAILS) {
+            hint = `${MAX_INVITE_EMAILS}명까지만 초대할 수 있습니다. (지금 ${total}명)`;
+        }
+
+        $("#inviteEmailHint").text(hint).css('color', invalidCount > 0 || total > MAX_INVITE_EMAILS ? '#b91c1c' : '');
+        $("#inviteEmailCount").text(total);
+        $("#inviteSendBtn").prop('disabled', total === 0 || invalidCount > 0 || total > MAX_INVITE_EMAILS);
+    }
+
+    function createInvitations() {
+        // 입력 중인 글자도 칩으로 넣고 보낸다
+        const pending = $("#inviteEmailInput").val();
+        if(pending && pending.trim()) {
+            addInviteEmails(pending, false);
+            $("#inviteEmailInput").val('');
+        }
+        if($("#inviteSendBtn").prop('disabled')) {
+            return;
+        }
+
+        const authority = $("#inviteAuthority").val();
+        const roleLabel = AUTHORITY_LABEL[authority] || authority;
+        const adminWarning = authority === 'APPLICATION_ADMIN' ? '\n관리자는 이 애플리케이션 콘솔 전체를 관리할 수 있습니다.' : '';
+        if(!confirm(`${INVITE_EMAILS.length}명을 ${roleLabel}(으)로 초대하시겠습니까?${adminWarning}`)) {
+            return;
+        }
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/app-invitation/batch`, {}, {emails: INVITE_EMAILS, authority: authority},
+            function(response){
+                const results = (response && response.results) || [];
+                LAST_INVITE_RESULTS = results;
+
+                // 실패한 이메일만 입력칸에 남겨 고쳐서 다시 보낼 수 있게 한다
+                INVITE_EMAILS = results.filter(item => !item.success).map(item => item.email);
+                renderInviteEmails();
+                renderInviteResult(response);
+                getInvitationList();
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+
+    function renderInviteResult(response) {
+        const results = (response && response.results) || [];
+        const mailFailed = results.filter(item => item.success && !item.mailSent).length;
+
+        let summary = `${response.invited}명 초대`;
+        if(response.failed > 0) summary += ` · ${response.failed}명 실패`;
+        if(mailFailed > 0) summary += ` · ${mailFailed}명은 메일을 보내지 못해 링크를 직접 전달해야 합니다`;
+        $("#inviteResultSummary").text(summary);
+        $("#copyAllLinksBtn").toggle(results.some(item => item.success));
+
+        const $body = $("#inviteResultBody");
+        $body.empty();
+        for(const item of results) {
+            const $row = $('<div class="ds-invite-result-row"><span class="email"></span><span class="state"></span></div>');
+            $row.find('.email').text(item.email);
+
+            const $state = $row.find('.state');
+            if(!item.success) {
+                $state.addClass('fail').text(item.message || '실패');
+            }
+            else if(item.mailSent) {
+                $state.text('메일 발송');
+            }
+            else {
+                $state.addClass('warn').text('메일 미발송 · 링크 전달 필요');
+            }
+
+            if(item.success && item.link) {
+                const $copy = $('<button type="button" class="ds-icon-btn" title="초대 링크 복사"><i class="fas fa-link"></i></button>');
+                $copy.on('click', () => copyText(item.link));
+                $row.append($copy);
+            }
+
+            $body.append($row);
+        }
+
+        $("#inviteResult").show();
+    }
+
+    // 성공한 초대를 "이메일<탭>링크" 줄로 복사한다 (엑셀/메신저에 붙여넣기 좋게)
+    function copyAllInviteLinks() {
+        const lines = LAST_INVITE_RESULTS
+            .filter(item => item.success && item.link)
+            .map(item => `${item.email}\t${item.link}`);
+        if(lines.length === 0) return;
+
+        copyText(lines.join('\n'), '초대 링크');
+    }
+
+    function getInvitationList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/app-invitation`, {},
+            function(response){
+                renderInvitationList(response || []);
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+
+    function renderInvitationList(invitations) {
+        $("#invitationCount").text(invitations.filter(item => item.status === 'PENDING').length);
+
+        const $body = $("#invitationListBody");
+        $body.empty();
+
+        if(invitations.length === 0) {
+            renderEmpty($body, 'fa-envelope-open-text', '보낸 초대가 없습니다.');
+            return;
+        }
+
+        for(const item of invitations) {
+            const $item = $(`
+                <div class="ds-list-item">
+                    <span class="ds-list-item-avatar"><i class="fas fa-envelope"></i></span>
+                    <div class="ds-list-item-main">
+                        <span class="ds-list-item-name"></span>
+                        <span class="ds-invite-meta"></span>
+                    </div>
+                    <span class="ds-role"></span>
+                    <span class="ds-status"></span>
+                </div>
+            `);
+
+            $item.find('.ds-list-item-name').text(item.email);
+            $item.find('.ds-invite-meta').text(item.status === 'ACCEPTED'
+                ? `초대 ${formatDateTime(item.createdAt)} · 수락 ${formatDateTime(item.acceptedAt)}`
+                : `초대 ${formatDateTime(item.createdAt)} · 만료 ${formatDateTime(item.expiresAt)}`);
+            $item.find('.ds-role')
+                .toggleClass('admin', item.authority === 'APPLICATION_ADMIN')
+                .text(AUTHORITY_LABEL[item.authority] || item.authority);
+            $item.find('.ds-status').addClass(item.status).text(INVITATION_STATUS_LABEL[item.status] || item.status);
+
+            if(item.link) {
+                const $copy = $('<button type="button" class="ds-icon-btn" title="초대 링크 복사"><i class="fas fa-link"></i></button>');
+                $copy.on('click', () => copyText(item.link));
+                $item.append($copy);
+            }
+
+            const $delete = $('<button type="button" class="ds-icon-btn danger"><i class="fas fa-times"></i></button>')
+                .attr('title', item.status === 'PENDING' ? '초대 취소' : '목록에서 삭제');
+            $delete.on('click', () => revokeInvitation(item));
+            $item.append($delete);
+
+            $body.append($item);
+        }
+    }
+
+    function revokeInvitation(item) {
+        const message = item.status === 'PENDING'
+            ? `${item.email} 초대를 취소하시겠습니까?\n보낸 초대 링크는 더 이상 쓸 수 없습니다.`
+            : `${item.email} 초대를 목록에서 삭제하시겠습니까?`;
+        if(!confirm(message)) return;
+
+        httpClient.delete(`/${APPLICATION_ID}/console/api/app-invitation/${item.id}`, {},
+            function(response){
+                getInvitationList();
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+
+    // http 접속 등으로 클립보드 API 를 쓸 수 없으면 직접 복사하도록 보여준다
+    function copyText(text, label) {
+        const name = label || '초대 링크';
+        if(navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text)
+                .then(() => alert(`${name}를 복사했습니다.`))
+                .catch(() => prompt(`${name}를 복사해주세요.`, text));
+            return;
+        }
+        prompt(`${name}를 복사해주세요.`, text);
+    }
+
+    // ---- 가입 방식 ----
+    // 서버에 저장된 설정. 가입 페이지 영역은 저장된 값 기준으로 보여준다 (고르기만 하고 저장하지 않은 값이 아니라)
+    let SAVED_JOIN_SETTING = {joinPolicy: 'INVITE_ONLY', defaultUserGroupId: ''};
+    let JOIN_REQUEST_COUNT = 0;
+
+    function getJoinSetting() {
+        $("#appSignupLink").val(`${window.location.origin}/${encodeURIComponent(APPLICATION_ID)}/signup`);
+
+        // 그룹 목록을 먼저 채워야 저장된 기본 그룹을 고를 수 있다
+        httpClient.get(`/${APPLICATION_ID}/console/api/user-group`, {},
+            function(groups){
+                const $select = $("#defaultUserGroupId");
+                $select.find('option:not(:first)').remove();
+                for(const group of (groups || [])) {
+                    $select.append($('<option></option>').val(group.id).text(`${group.name} (${group.code})`));
+                }
+
+                httpClient.get(`/${APPLICATION_ID}/console/api/app-join/setting`, {},
+                    function(setting){
+                        applyJoinSetting(setting);
+                    },
+                    function(error){
+                        alertError(error);
+                    }
+                );
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+
+    function applyJoinSetting(setting) {
+        SAVED_JOIN_SETTING = {
+            joinPolicy: setting.joinPolicy || 'INVITE_ONLY',
+            defaultUserGroupId: setting.defaultUserGroupId == null ? '' : String(setting.defaultUserGroupId)
+        };
+
+        $(`input[name="joinPolicy"][value="${SAVED_JOIN_SETTING.joinPolicy}"]`).prop('checked', true);
+        $("#defaultUserGroupId").val(SAVED_JOIN_SETTING.defaultUserGroupId);
+
+        renderJoinSettingDirty();
+        renderSignupPage();
+    }
+
+    function selectedJoinPolicy() {
+        return $('input[name="joinPolicy"]:checked').val() || 'INVITE_ONLY';
+    }
+
+    function renderJoinSettingDirty() {
+        const policy = selectedJoinPolicy();
+        const dirty = policy !== SAVED_JOIN_SETTING.joinPolicy
+            || ($("#defaultUserGroupId").val() || '') !== SAVED_JOIN_SETTING.defaultUserGroupId;
+
+        $("#joinSettingDirty").toggle(dirty);
+        $("#joinOpenWarning").css('display', policy === 'INVITE_ONLY' ? 'none' : 'flex');
+    }
+
+    function saveJoinSetting() {
+        const policy = selectedJoinPolicy();
+        if(policy === 'OPEN' && SAVED_JOIN_SETTING.joinPolicy !== 'OPEN'
+                && !confirm("자유 가입을 켜면 가입 페이지 링크를 아는 누구나 바로 사용자가 됩니다.\n'로그인한 사용자 누구나' 권한의 화면/워크플로우를 확인하셨나요?")) {
+            return;
+        }
+
+        httpClient.put(`/${APPLICATION_ID}/console/api/app-join/setting`, {}, {
+                joinPolicy: policy,
+                defaultUserGroupId: $("#defaultUserGroupId").val() || null
+            },
+            function(response){
+                applyJoinSetting(response);
+                alert('가입 방식을 저장했습니다.');
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+
+    // 가입 페이지 영역: 초대만 → 꺼짐, 신청 후 승인 → 링크 + 가입 신청, 자유 가입 → 링크
+    function renderSignupPage() {
+        const policy = SAVED_JOIN_SETTING.joinPolicy;
+
+        const tag = {
+            INVITE_ONLY: {text: '사용 안 함', cls: 'off'},
+            APPROVAL: {text: '신청 후 승인', cls: 'approval'},
+            OPEN: {text: '자유 가입', cls: ''}
+        }[policy] || {text: policy, cls: 'off'};
+        $("#signupPageTag").removeClass('off approval').addClass(tag.cls).text(tag.text);
+
+        $("#signupPageOff").toggle(policy === 'INVITE_ONLY');
+        $("#signupPageLinkSection").toggle(policy !== 'INVITE_ONLY');
+        $("#appSignupLinkHint").text(policy === 'APPROVAL'
+            ? '링크로 들어온 사람은 가입을 신청합니다. 아래 가입 신청을 승인해주세요. 이미 계정이 있는 사람은 로그인해서 신청합니다.'
+            : '링크로 들어온 사람은 바로 사용자가 됩니다. 이미 계정이 있는 사람은 로그인해서 가입합니다.');
+
+        // 다른 가입 방식으로 바꾼 뒤에도 남은 신청은 처리할 수 있게 보여준다
+        $("#joinRequestSection").toggle(policy === 'APPROVAL' || JOIN_REQUEST_COUNT > 0);
+    }
+
+    // ---- 가입 신청 ----
+    function getJoinRequestList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/app-join/request`, {},
+            function(response){
+                renderJoinRequestList(response || []);
+            },
+            function(error){
+                alertError(error);
+            }
+        );
+    }
+
+    function renderJoinRequestList(requests) {
+        JOIN_REQUEST_COUNT = requests.length;
+        $("#joinRequestCount").text(requests.length);
+        $("#joinRequestBadge").text(requests.length).toggle(requests.length > 0);
+        renderSignupPage();
+
+        const $body = $("#joinRequestListBody");
+        $body.empty();
+
+        if(requests.length === 0) {
+            renderEmpty($body, 'fa-user-clock', '승인을 기다리는 신청이 없습니다.');
+            return;
+        }
+
+        for(const item of requests) {
+            const $item = createUserItem(item);
+            $item.find('.ds-list-item-code').text(
+                [item.loginId, item.email, `신청 ${formatDateTime(item.requestedAt)}`].filter(v => v).join(' · '));
+
+            const $approve = $('<button type="button" class="ds-icon-btn approve" title="승인"><i class="fas fa-check"></i></button>');
+            $approve.on('click', () => decideJoinRequest(item, true));
+            const $reject = $('<button type="button" class="ds-icon-btn danger" title="거절"><i class="fas fa-times"></i></button>');
+            $reject.on('click', () => decideJoinRequest(item, false));
+
+            $item.append($approve, $reject);
+            $body.append($item);
+        }
+    }
+
+    function decideJoinRequest(item, approve) {
+        const name = displayNameOf(item);
+        if(!confirm(approve ? `${name}의 가입을 승인하시겠습니까?` : `${name}의 가입 신청을 거절하시겠습니까?`)) return;
+
+        const url = `/${APPLICATION_ID}/console/api/app-join/request/${item.id}`;
+        // 저장하지 않은 가입 방식을 덮어쓰지 않도록 사용자 목록과 신청 목록만 다시 읽는다
+        const done = function(response){
+            getAppUserList();
+            getCandidateList();
+            getJoinRequestList();
+        };
+        const fail = function(error){
+            alertError(error);
+            getJoinRequestList();
+        };
+
+        if(approve) {
+            httpClient.post(`${url}/approve`, {}, {}, done, fail);
+        }
+        else {
+            httpClient.delete(url, {}, done, fail);
+        }
+    }
+
     function register(userIds) {
         httpClient.post(`/${APPLICATION_ID}/console/api/app-user`, {}, {userIds: userIds},
             function(response){
@@ -549,42 +1576,185 @@
     }
 </script>
 <div id="app-user-app" th:fragment="view">
-    <div class="ds-layout">
-        <section class="ds-panel">
-            <div class="ds-panel-header">
-                <h3><i class="fas fa-users"></i> 등록된 사용자 <span class="ds-count" id="appUserCount">0</span></h3>
-                <div class="ds-panel-tools">
-                    <button type="button" class="ds-btn" onclick="reload()"><i class="fas fa-sync-alt"></i>새로고침</button>
-                </div>
-            </div>
-            <div class="ds-list-search">
-                <i class="fas fa-search"></i>
-                <input type="text" id="appUserSearch" placeholder="로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderAppUserList()">
-            </div>
-            <div class="ds-list-body" id="appUserListBody"></div>
-        </section>
+    <ul class="nav ds-tabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="app-user-tab" data-toggle="pill" href="#app-user-pane" role="tab" aria-controls="app-user-pane" aria-selected="true">
+                <i class="fas fa-users"></i>사용자
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="app-join-tab" data-toggle="pill" href="#app-join-pane" role="tab" aria-controls="app-join-pane" aria-selected="false">
+                <i class="fas fa-door-open"></i>가입 · 초대
+                <span class="ds-tab-badge" id="joinRequestBadge" title="승인을 기다리는 가입 신청">0</span>
+            </a>
+        </li>
+    </ul>
 
-        <section class="ds-panel">
-            <div class="ds-panel-header">
-                <h3><i class="fas fa-user-plus"></i> 사용자 등록 <span class="ds-count" id="candidateCount">0</span></h3>
-                <div class="ds-panel-tools">
-                    <button type="button" class="ds-btn" id="registerAllBtn" onclick="registerAll()" title="검색된 사용자를 모두 선택해서 등록합니다" disabled><i class="fas fa-check-double"></i>모두선택등록</button>
-                    <button type="button" class="ds-btn ds-btn-primary" id="registerSelectedBtn" onclick="registerSelected()" disabled><i class="fas fa-check"></i>선택 등록 (<span id="registerSelectedCount">0</span>)</button>
+    <div class="tab-content">
+        <!-- 사용자: 등록된 사용자 / 이미 가입한 플랫폼 사용자 등록 -->
+        <div class="tab-pane fade show active" id="app-user-pane" role="tabpanel" aria-labelledby="app-user-tab">
+            <div class="ds-layout">
+                <section class="ds-panel">
+                    <div class="ds-panel-header">
+                        <h3><i class="fas fa-users"></i> 등록된 사용자 <span class="ds-count" id="appUserCount">0</span></h3>
+                        <div class="ds-panel-tools">
+                            <button type="button" class="ds-btn" onclick="reload()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                        </div>
+                    </div>
+                    <div class="ds-list-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="appUserSearch" placeholder="로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderAppUserList()">
+                    </div>
+                    <div class="ds-list-body" id="appUserListBody"></div>
+                </section>
+
+                <section class="ds-panel">
+                    <div class="ds-panel-header">
+                        <h3><i class="fas fa-user-plus"></i> 사용자 등록 <span class="ds-count" id="candidateCount">0</span></h3>
+                        <div class="ds-panel-tools">
+                            <button type="button" class="ds-btn" id="registerAllBtn" onclick="registerAll()" title="검색된 사용자를 모두 선택해서 등록합니다" disabled><i class="fas fa-check-double"></i>모두선택등록</button>
+                            <button type="button" class="ds-btn ds-btn-primary" id="registerSelectedBtn" onclick="registerSelected()" disabled><i class="fas fa-check"></i>선택 등록 (<span id="registerSelectedCount">0</span>)</button>
+                        </div>
+                    </div>
+                    <div class="ds-list-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="candidateSearch" placeholder="로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderCandidateList()">
+                    </div>
+                    <div class="ds-select-bar">
+                        <label><input type="checkbox" id="candidateSelectAll" onchange="toggleAllCandidates(this.checked)" disabled>전체선택</label>
+                        <span><strong id="selectedCount">0</strong>명 선택<button type="button" class="ds-link" id="clearSelectionBtn" onclick="clearSelection()" style="display:none">선택 해제</button></span>
+                    </div>
+                    <div class="ds-list-body ds-candidate-list" id="candidateListBody"></div>
+                    <div class="ds-panel-footer">
+                        <span class="ds-hint">이미 플랫폼 계정이 있는 사람을 바로 등록합니다. 계정이 없는 사람은 '가입 · 초대' 탭에서 초대하세요.</span>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- 가입 · 초대: ① 가입 방식 → ② 사람을 받는 경로(가입자 초대 / 가입 페이지) -->
+        <div class="tab-pane fade" id="app-join-pane" role="tabpanel" aria-labelledby="app-join-tab">
+            <section class="ds-panel">
+                <div class="ds-panel-header">
+                    <h3><i class="fas fa-door-open"></i> 가입 방식</h3>
+                    <div class="ds-panel-tools">
+                        <span class="ds-dirty" id="joinSettingDirty"><i class="fas fa-circle"></i> 저장되지 않은 변경</span>
+                        <button type="button" class="ds-btn ds-btn-primary" onclick="saveJoinSetting()"><i class="fas fa-save"></i>저장</button>
+                    </div>
                 </div>
+                <div class="ds-join-body">
+                    <div class="ds-policy-group">
+                        <label class="ds-policy">
+                            <input type="radio" name="joinPolicy" value="INVITE_ONLY" onchange="renderJoinSettingDirty()">
+                            <span class="ds-policy-title"><i class="fas fa-envelope"></i>초대만</span>
+                            <span class="ds-policy-desc">관리자가 초대한 사람만 들어옵니다. 가입 페이지로는 가입할 수 없습니다.</span>
+                            <span class="ds-policy-use">→ 가입자 초대 사용</span>
+                        </label>
+                        <label class="ds-policy">
+                            <input type="radio" name="joinPolicy" value="APPROVAL" onchange="renderJoinSettingDirty()">
+                            <span class="ds-policy-title"><i class="fas fa-user-check"></i>신청 후 승인</span>
+                            <span class="ds-policy-desc">가입 페이지에서 신청하고, 관리자가 승인하면 사용자가 됩니다.</span>
+                            <span class="ds-policy-use">→ 가입 페이지 링크 공유 + 가입 신청 승인</span>
+                        </label>
+                        <label class="ds-policy">
+                            <input type="radio" name="joinPolicy" value="OPEN" onchange="renderJoinSettingDirty()">
+                            <span class="ds-policy-title"><i class="fas fa-door-open"></i>자유 가입</span>
+                            <span class="ds-policy-desc">가입 페이지에서 가입하면 바로 사용자가 됩니다.</span>
+                            <span class="ds-policy-use">→ 가입 페이지 링크 공유</span>
+                        </label>
+                    </div>
+
+                    <div class="ds-join-options">
+                        <div class="ds-join-option">
+                            <div class="ds-field-label">기본 사용자 그룹</div>
+                            <select class="ds-select" id="defaultUserGroupId" onchange="renderJoinSettingDirty()">
+                                <option value="">그룹에 넣지 않음</option>
+                            </select>
+                            <div class="ds-hint">초대나 가입 페이지로 새로 들어온 사용자를 넣을 그룹입니다. 그 그룹의 권한을 처음부터 받습니다.</div>
+                        </div>
+                        <div class="ds-join-warning" id="joinOpenWarning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>권한을 <b>'로그인한 사용자 누구나'</b>로 설정한 화면과 워크플로우는, 가입 페이지로 들어온 사람도 바로 쓸 수 있습니다. 가입을 열기 전에 권한 설정을 확인해주세요.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="ds-layout ds-channel-row">
+                <!-- 가입자 초대: 가입 방식과 상관없이 항상 쓸 수 있다 -->
+                <section class="ds-panel ds-channel-invite">
+                    <div class="ds-panel-header">
+                        <h3><i class="fas fa-paper-plane"></i> 가입자 초대</h3>
+                        <span class="ds-channel-tag">항상 사용 가능</span>
+                    </div>
+                    <div class="ds-section">
+                        <div class="ds-email-input" id="inviteEmailBox" onclick="$('#inviteEmailInput').focus()">
+                            <input type="text" id="inviteEmailInput" autocomplete="off" placeholder="이메일 입력 후 Enter · 쉼표/줄바꿈으로 여러 명 붙여넣기">
+                        </div>
+                        <div class="ds-invite-actions">
+                            <span class="ds-hint" id="inviteEmailHint">한 번에 50명까지 초대할 수 있습니다.</span>
+                            <div class="ds-invite-actions-right">
+                                <select class="ds-role-select" id="inviteAuthority" title="초대받은 사람이 받을 권한">
+                                    <option value="APPLICATION_USER">사용자로 초대</option>
+                                    <option value="APPLICATION_ADMIN">관리자로 초대</option>
+                                </select>
+                                <button type="button" class="ds-btn ds-btn-primary" id="inviteSendBtn" onclick="createInvitations()" disabled>
+                                    <i class="fas fa-paper-plane"></i>초대 보내기 (<span id="inviteEmailCount">0</span>)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="ds-invite-result" id="inviteResult">
+                            <div class="ds-invite-result-head">
+                                <span id="inviteResultSummary"></span>
+                                <button type="button" class="ds-btn" id="copyAllLinksBtn" onclick="copyAllInviteLinks()"><i class="fas fa-copy"></i>링크 모두 복사</button>
+                            </div>
+                            <div class="ds-invite-result-body" id="inviteResultBody"></div>
+                        </div>
+                    </div>
+                    <div class="ds-section-title" style="padding: 12px 16px 0;">
+                        <span>보낸 초대 <span class="ds-count" id="invitationCount">0</span></span>
+                        <button type="button" class="ds-btn" onclick="getInvitationList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                    </div>
+                    <div class="ds-invite-list" id="invitationListBody"></div>
+                    <div class="ds-panel-footer">
+                        <span class="ds-hint">초대받은 사람은 메일의 링크에서 그 이메일로 가입하거나, 기존 계정으로 로그인해 수락합니다. 링크는 한 번만 쓸 수 있고, 같은 이메일을 다시 초대하면 이전 링크는 쓸 수 없게 됩니다.</span>
+                    </div>
+                </section>
+
+                <!-- 가입 페이지: 저장된 가입 방식에 따라 꺼짐 / 승인 / 자유 -->
+                <section class="ds-panel ds-channel-page">
+                    <div class="ds-panel-header">
+                        <h3><i class="fas fa-link"></i> 가입 페이지</h3>
+                        <span class="ds-channel-tag off" id="signupPageTag">사용 안 함</span>
+                    </div>
+
+                    <div class="ds-off-note" id="signupPageOff">
+                        <i class="fas fa-lock"></i>
+                        <span>가입 방식이 <b>초대만</b>이라 가입 페이지로는 가입할 수 없습니다. 가입 방식을 '신청 후 승인'이나 '자유 가입'으로 저장하면 사용할 수 있습니다.</span>
+                    </div>
+
+                    <div class="ds-section" id="signupPageLinkSection">
+                        <div class="ds-section-title">가입 페이지 링크</div>
+                        <div class="ds-invite-link">
+                            <input type="text" id="appSignupLink" readonly onclick="this.select()">
+                            <button type="button" class="ds-btn" onclick="copyText($('#appSignupLink').val(), '가입 페이지 링크')"><i class="fas fa-copy"></i>복사</button>
+                        </div>
+                        <div class="ds-hint" id="appSignupLinkHint" style="margin-top:6px;"></div>
+                    </div>
+
+                    <div id="joinRequestSection">
+                        <div class="ds-section-title" style="padding: 12px 16px 0;">
+                            <span>가입 신청 <span class="ds-count" id="joinRequestCount">0</span></span>
+                            <button type="button" class="ds-btn" onclick="getJoinRequestList()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                        </div>
+                        <div class="ds-invite-list" id="joinRequestListBody"></div>
+                        <div class="ds-panel-footer">
+                            <span class="ds-hint">승인하면 사용자로 등록되고 기본 사용자 그룹에 들어갑니다. 거절하면 신청이 지워지고, 다시 신청할 수 있습니다.</span>
+                        </div>
+                    </div>
+                </section>
             </div>
-            <div class="ds-list-search">
-                <i class="fas fa-search"></i>
-                <input type="text" id="candidateSearch" placeholder="로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderCandidateList()">
-            </div>
-            <div class="ds-select-bar">
-                <label><input type="checkbox" id="candidateSelectAll" onchange="toggleAllCandidates(this.checked)" disabled>전체선택</label>
-                <span><strong id="selectedCount">0</strong>명 선택<button type="button" class="ds-link" id="clearSelectionBtn" onclick="clearSelection()" style="display:none">선택 해제</button></span>
-            </div>
-            <div class="ds-list-body ds-candidate-list" id="candidateListBody"></div>
-            <div class="ds-panel-footer">
-                <span class="ds-hint">플랫폼에 가입된 사용자 중 이 애플리케이션에 아직 등록되지 않은 사용자만 표시됩니다.</span>
-            </div>
-        </section>
+        </div>
     </div>
 </div>
 </html>

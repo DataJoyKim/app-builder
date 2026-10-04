@@ -8,4 +8,7 @@ public interface UserGroupUserRepository extends JpaRepository<UserGroupUser, Lo
     List<UserGroupUser> findByUserId(Long userId);
 
     List<UserGroupUser> findByUserGroupId(Long userGroupId);
+
+    // 한 애플리케이션의 사용자 그룹에 들어가 있는 소속만
+    List<UserGroupUser> findByUserIdAndUserGroupApplicationId(Long userId, String applicationId);
 }

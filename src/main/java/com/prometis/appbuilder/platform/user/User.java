@@ -1,7 +1,5 @@
 package com.prometis.appbuilder.platform.user;
 
-import com.prometis.core.crypto.PasswordEncoder;
-import com.prometis.core.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,21 +30,6 @@ public class User {
 
     @Column(length = 100)
     private String authority;
-
-    public static User signUp(PasswordEncoder passwordEncoder, SignUpRequest request) throws BusinessException {
-        if(!request.getPassword().equals(request.getCheckPassword())) {
-            throw new BusinessException(UserErrorMessage.DIFFERENT_CHECK_PASSWORD);
-        }
-
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-
-        return User.builder()
-                .loginId(request.getLoginId())
-                .userName(request.getUserName())
-                .password(encodedPassword)
-                .email(request.getEmail())
-                .build();
-    }
 
     public void update(
             String loginId,

@@ -414,20 +414,145 @@
         color: #9199a3;
         font-size: 12.5px;
     }
+
+    /* ---- 사용자그룹 바인딩 ---- */
+    #permission-app .gp-picker {
+        background: #fbfbfc;
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+    #permission-app .gp-picker-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #permission-app .gp-picker-head .ds-list-search {
+        flex: 1 1 240px;
+        padding: 0;
+        border-bottom: none;
+    }
+
+    #permission-app .gp-picker-head .ds-list-search i {
+        left: 10px;
+    }
+
+    #permission-app .gp-check {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    #permission-app .gp-candidates {
+        max-height: 240px;
+        overflow-y: auto;
+        background: #fff;
+    }
+
+    #permission-app .gp-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    #permission-app .gp-row:last-child {
+        border-bottom: none;
+    }
+
+    #permission-app .gp-row-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #permission-app .gp-name {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #permission-app .gp-name em {
+        font-style: normal;
+        font-weight: 400;
+        color: #9199a3;
+        margin-left: 4px;
+    }
+
+    #permission-app .gp-path {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #permission-app .gp-bound {
+        font-size: 11px;
+        font-weight: 700;
+        color: #047857;
+        white-space: nowrap;
+    }
+
+    #permission-app .gp-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    #permission-app .gp-toggle.on {
+        color: #1d4ed8;
+    }
+
+    #permission-app .gp-hint {
+        padding: 0 2px 10px;
+        font-size: 11.5px;
+        color: #9199a3;
+        line-height: 1.5;
+    }
 </style>
 <script th:fragment="script">
         let PERMISSION_LIST = [];
         let SELECTED_PERMISSION_ID = null;
         let MENU_PERMISSION_LIST = [];
         let MENU_PERMISSION_EDIT_ID = null;
+        // 이 애플리케이션의 사용자 그룹 (트리를 펼친 목록: 경로, 깊이, 하위 그룹 수 포함)
+        let USER_GROUP_LIST = [];
+        // 선택한 권한을 받은 사용자 그룹 연결 (UserGroupPermission)
+        let GROUP_PERMISSION_LIST = [];
 
         $( document ).ready(function() {
-            console.log('version.0.0.4');
+            console.log('version.0.0.5');
             init();
         });
 
         function init() {
             getList();
+            getUserGroupList();
         }
 
         function getList() {
@@ -506,6 +631,7 @@
                 function(response){
                     setContentData(response);
                     getMenuPermission(response.code);
+                    getGroupPermission();
                 },
                 function(error){
                     alert('error');
@@ -530,6 +656,12 @@
             httpClient.post(`/${APPLICATION_ID}/console/api/permission`,{},getContent(),
                 function(response){
                     alert("저장완료되었습니다.");
+                    // 저장한 권한을 선택해 두어야 바로 메뉴접근권한/사용자그룹을 연결할 수 있다
+                    if(response && response.id) {
+                        SELECTED_PERMISSION_ID = response.id;
+                        setContentData(response);
+                        getGroupPermission();
+                    }
                     getList();
                 },
                 function(error){
@@ -557,6 +689,8 @@
               function(response){
                   alert("삭제 처리 완료되었습니다.");
                   SELECTED_PERMISSION_ID = null;
+                  GROUP_PERMISSION_LIST = [];
+                  renderGroupPermission();
                   getList();
               },
               function(error){
@@ -592,6 +726,8 @@
             $("#permissionListBody .ds-list-item").removeClass('selected');
             MENU_PERMISSION_LIST = [];
             renderMenuPermissionList();
+            GROUP_PERMISSION_LIST = [];
+            renderGroupPermission();
 
             setContent({
                 id:'',
@@ -738,6 +874,231 @@
               }
           );
         }
+
+        // ---- 사용자그룹 바인딩 ----
+        function alertError(error) {
+            const message = error && error.responseJSON && error.responseJSON.message;
+            alert(message || 'error');
+        }
+
+        // 저장된(선택된) 권한의 id. 신규 작성 중이면 null
+        function currentPermissionId() {
+            const id = $("#id").val();
+            return isEmpty(id) ? null : id;
+        }
+
+        function getUserGroupList() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/user-group/tree`, {},
+                function(response){
+                    USER_GROUP_LIST = flattenUserGroups(response || [], [], 0);
+                    renderGroupPermission();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        // 트리를 화면에 쓰기 좋은 목록으로 편다: 경로(상위 > 하위)와 하위 그룹 수를 함께 둔다
+        function flattenUserGroups(nodes, parents, depth) {
+            let result = [];
+            for(const node of nodes) {
+                const path = parents.concat(node.name || node.code);
+                const children = flattenUserGroups(node.children || [], path, depth + 1);
+                result.push({
+                    id: node.id,
+                    code: node.code,
+                    name: node.name,
+                    path: path.join(' > '),
+                    depth: depth,
+                    descendantCount: children.length
+                });
+                result = result.concat(children);
+            }
+            return result;
+        }
+
+        function getGroupPermission() {
+            const permissionId = currentPermissionId();
+            if(!permissionId) {
+                GROUP_PERMISSION_LIST = [];
+                renderGroupPermission();
+                return;
+            }
+
+            httpClient.get(`/${APPLICATION_ID}/console/api/user-group/permission/by-permission/${permissionId}`, {},
+                function(response){
+                    GROUP_PERMISSION_LIST = response || [];
+                    renderGroupPermission();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function renderGroupPermission() {
+            renderBoundGroups();
+            renderGroupCandidates();
+        }
+
+        function userGroupOf(id) {
+            return USER_GROUP_LIST.find(group => String(group.id) === String(id));
+        }
+
+        // 연결된 그룹
+        function renderBoundGroups() {
+            const $body = $("#groupPermissionList");
+            $body.empty();
+            $("#groupPermissionCount").text(GROUP_PERMISSION_LIST.length);
+
+            if(!currentPermissionId()) {
+                $body.append('<div class="rel-empty">권한을 선택하거나 먼저 저장해주세요.</div>');
+                return;
+            }
+            if(GROUP_PERMISSION_LIST.length === 0) {
+                $body.append('<div class="rel-empty">이 권한을 받은 사용자 그룹이 없습니다.</div>');
+                return;
+            }
+
+            for(const item of GROUP_PERMISSION_LIST) {
+                const userGroup = item.userGroup || {};
+                const group = userGroupOf(userGroup.id) || {path: userGroup.name, descendantCount: 0};
+                const lowerGrant = item.lowerPermissionGrant === true;
+
+                const $row = $(`
+                    <div class="gp-row">
+                        <div class="gp-row-main">
+                            <span class="gp-name"></span>
+                            <span class="gp-path"></span>
+                        </div>
+                        <label class="gp-toggle">
+                            <input type="checkbox">
+                            <span>하위 그룹 전파</span>
+                        </label>
+                        <button type="button" class="rel-icon-btn danger" title="연결 해제"><i class="fas fa-times"></i></button>
+                    </div>
+                `);
+
+                $row.find('.gp-name').text(userGroup.name || userGroup.code).append($('<em></em>').text(userGroup.code));
+                $row.find('.gp-path').text(group.descendantCount > 0
+                    ? `${group.path} · 하위 그룹 ${group.descendantCount}개`
+                    : group.path);
+
+                const $toggle = $row.find('.gp-toggle').toggleClass('on', lowerGrant)
+                    .attr('title', group.descendantCount > 0 ? '하위 그룹 사용자에게도 이 권한을 줍니다.' : '하위 그룹이 없어 지금은 영향이 없습니다.');
+                $toggle.find('input').prop('checked', lowerGrant).on('change', function() {
+                    updateLowerPermissionGrant(item, $(this).prop('checked'));
+                });
+
+                $row.find('.rel-icon-btn.danger').on('click', function() {
+                    unbindUserGroup(item);
+                });
+
+                $body.append($row);
+            }
+        }
+
+        // 검색해서 연결할 그룹
+        function renderGroupCandidates() {
+            const $body = $("#gpCandidateList");
+            $body.empty();
+
+            const enabled = !!currentPermissionId();
+            $("#gpSearch, #gpLowerGrant").prop('disabled', !enabled);
+            if(!enabled) {
+                return;
+            }
+
+            const kw = ($("#gpSearch").val() || '').trim().toLowerCase();
+            const boundIds = new Set(GROUP_PERMISSION_LIST.map(item => String(item.userGroup && item.userGroup.id)));
+            const filtered = USER_GROUP_LIST.filter(group => !kw
+                || (group.code || '').toLowerCase().includes(kw)
+                || (group.name || '').toLowerCase().includes(kw)
+                || (group.path || '').toLowerCase().includes(kw));
+
+            if(filtered.length === 0) {
+                $body.append(`<div class="rel-empty">${USER_GROUP_LIST.length === 0 ? '등록된 사용자 그룹이 없습니다.' : '검색 결과가 없습니다.'}</div>`);
+                return;
+            }
+
+            for(const group of filtered) {
+                const $row = $(`
+                    <div class="gp-row">
+                        <div class="gp-row-main">
+                            <span class="gp-name"></span>
+                            <span class="gp-path"></span>
+                        </div>
+                    </div>
+                `);
+                $row.find('.gp-name').text(group.name || group.code).append($('<em></em>').text(group.code));
+                $row.find('.gp-path').text(group.descendantCount > 0 ? `${group.path} · 하위 그룹 ${group.descendantCount}개` : group.path);
+
+                if(boundIds.has(String(group.id))) {
+                    $row.append('<span class="gp-bound"><i class="fas fa-check"></i> 연결됨</span>');
+                }
+                else {
+                    const $add = $('<button type="button" class="ds-btn"><i class="fas fa-plus"></i>연결</button>');
+                    $add.on('click', () => bindUserGroup(group));
+                    $row.append($add);
+                }
+
+                $body.append($row);
+            }
+        }
+
+        function bindUserGroup(group) {
+            const permissionId = currentPermissionId();
+            if(!permissionId) {
+                alert('먼저 권한을 저장해주세요.');
+                return;
+            }
+
+            httpClient.post(`/${APPLICATION_ID}/console/api/user-group/permission`, {}, {
+                    userGroupId: String(group.id),
+                    permissionId: String(permissionId),
+                    lowerPermissionGrant: $("#gpLowerGrant").prop('checked')
+                },
+                function(response){
+                    getGroupPermission();
+                },
+                function(error){
+                    alertError(error);
+                    getGroupPermission();
+                }
+            );
+        }
+
+        function updateLowerPermissionGrant(item, lowerPermissionGrant) {
+            httpClient.put(`/${APPLICATION_ID}/console/api/user-group/permission/${item.id}`, {}, {
+                    userGroupId: String(item.userGroup.id),
+                    permissionId: String(currentPermissionId()),
+                    lowerPermissionGrant: lowerPermissionGrant
+                },
+                function(response){
+                    item.lowerPermissionGrant = lowerPermissionGrant;
+                    renderBoundGroups();
+                },
+                function(error){
+                    alertError(error);
+                    getGroupPermission();
+                }
+            );
+        }
+
+        function unbindUserGroup(item) {
+            const name = (item.userGroup && (item.userGroup.name || item.userGroup.code)) || '';
+            if(!confirm(`${name} 그룹의 이 권한 연결을 해제하시겠습니까?`)) return;
+
+            httpClient.delete(`/${APPLICATION_ID}/console/api/user-group/permission/${item.id}`, {},
+                function(response){
+                    getGroupPermission();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
     </script>
 <div id="permission-app" th:fragment="view">
     <div class="ds-layout">
@@ -762,6 +1123,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="menu-permission-tab" data-toggle="pill" href="#menu-permission" role="tab" aria-controls="menu-permission" aria-selected="false">메뉴접근권한</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="group-permission-tab" data-toggle="pill" href="#group-permission" role="tab" aria-controls="group-permission" aria-selected="false">사용자그룹</a>
                 </li>
             </ul>
             <div class="tab-content" id="permission-tabContent">
@@ -804,6 +1168,34 @@
                             </div>
                         </div>
                         <div class="rel-list" id="menuPermissionList"></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="group-permission" role="tabpanel" aria-labelledby="group-permission-tab">
+                    <div class="ds-tab-toolbar">
+                        <h4>사용자그룹 <span id="groupPermissionCount">0</span></h4>
+                        <div class="ds-panel-tools">
+                            <button type="button" class="ds-btn" onclick="getUserGroupList(); getGroupPermission();"><i class="fas fa-sync-alt"></i>새로고침</button>
+                        </div>
+                    </div>
+                    <div class="rel-body">
+                        <div class="gp-hint">
+                            이 권한을 받을 사용자 그룹을 연결합니다. 그룹에 속한 사용자가 이 권한을 받습니다.
+                            <b>하위 그룹 전파</b>를 켜면 그 그룹의 하위 그룹(모든 깊이)에 속한 사용자도 이 권한을 받습니다.
+                        </div>
+                        <div class="gp-picker">
+                            <div class="gp-picker-head">
+                                <div class="ds-list-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="gpSearch" placeholder="그룹 코드, 이름, 경로로 검색" autocomplete="off" oninput="renderGroupCandidates()" disabled>
+                                </div>
+                                <label class="gp-check" title="연결할 때 하위 그룹 전파를 켠 상태로 연결합니다">
+                                    <input type="checkbox" id="gpLowerGrant" disabled>
+                                    하위 그룹에도 전파하며 연결
+                                </label>
+                            </div>
+                            <div class="gp-candidates" id="gpCandidateList"></div>
+                        </div>
+                        <div class="rel-list" id="groupPermissionList"></div>
                     </div>
                 </div>
             </div>

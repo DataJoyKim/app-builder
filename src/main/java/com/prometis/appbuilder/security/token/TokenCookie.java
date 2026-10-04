@@ -48,4 +48,17 @@ public class TokenCookie {
 
         response.addCookie(cookie);
     }
+
+    // 로그아웃: 같은 이름/경로의 쿠키를 즉시 만료시켜 덮어쓴다
+    public static void clear(HttpServletResponse response) {
+        for(String name : new String[]{ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME}) {
+            Cookie cookie = new Cookie(name, "");
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+
+            response.addCookie(cookie);
+        }
+    }
 }

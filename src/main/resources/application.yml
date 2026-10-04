@@ -67,6 +67,20 @@ spring:
           threadPool:
             threadCount: 5
 
+  # 플랫폼 공통 메일 서버 (가입 인증코드, 관리자 초대 메일에 쓴다).
+  # host 가 없으면 메일을 보내지 않고 인증코드를 서버 로그에 남긴다(개발용).
+  # mail:
+  #   host: smtp.gmail.com
+  #   port: 587
+  #   username: noreply@example.com
+  #   password: app-password
+  #   properties:
+  #     mail.smtp.auth: true
+  #     mail.smtp.starttls.enable: true
+  #     mail.smtp.connectiontimeout: 5000
+  #     mail.smtp.timeout: 5000
+  #     mail.smtp.writetimeout: 5000
+
 server:
   port: 8080
 
@@ -86,6 +100,7 @@ platform:
     reserved-ids:
       # 컨트롤러 최상위 경로
       - api
+      - applications
       - code
       - console
       - console-plat
@@ -106,3 +121,17 @@ platform:
       - plugins
       - ui
 
+  # 가입: 공개 가입(/signup) + 애플리케이션 관리자 초대 합류(/{applicationId}/console/join?token=...)
+  join:
+    # 메일로 보낸 인증코드의 유효시간 (예: 5m, 300s)
+    verification-code-ttl: 5m
+    # 인증코드를 틀릴 수 있는 횟수. 넘으면 인증코드를 다시 받아야 한다
+    max-verify-attempts: 5
+    # 같은 이메일로 인증코드를 다시 받기까지 기다리는 시간 (메일 폭탄 방지, 0s 면 제한 없음)
+    resend-cooldown: 60s
+    # 관리자 초대 링크의 유효기간
+    invitation-ttl: 7d
+    # 메일 보내는 사람. 비어 있으면 spring.mail.username
+    mail-from: ""
+    # 초대 메일 링크의 앞부분 (예: https://builder.example.com). 비어 있으면 초대한 요청의 주소를 쓴다 (프록시 뒤라면 설정)
+    public-base-url: ""
