@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${mode == 'SIGNUP' ? '가입 - App Builder' : applicationName + (mode == 'INVITE' ? ' 초대' : ' 가입') + ' - App Builder'}">가입 - App Builder</title>
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background: #f0f4f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", Arial, sans-serif;
+            color: #1f1f1f;
+        }
+
+        .join {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            border-radius: 28px;
+            padding: 36px;
+        }
+
+        .join-logo {
+            text-align: center;
+            font-size: 20px;
+            color: #444746;
+            margin-bottom: 16px;
+        }
+
+        .join-logo b {
+            color: #0b57d0;
+        }
+
+        .join-title {
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        .join-subtitle {
+            margin: 0 0 24px;
+            text-align: center;
+            font-size: 14px;
+            color: #444746;
+            line-height: 1.5;
+        }
+
+        .join-app {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 4px 12px;
+            border: 1px solid #c4c7c5;
+            border-radius: 999px;
+            font-size: 13px;
+            color: #1f1f1f;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #444746;
+        }
+
+        .field input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid #c4c7c5;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #1f1f1f;
+            background: #fff;
+        }
+
+        .field input:focus {
+            border-color: #0b57d0;
+            box-shadow: 0 0 0 1px #0b57d0;
+            outline: none;
+        }
+
+        .field input[readonly] {
+            background: #f8f9fa;
+            color: #5f6368;
+        }
+
+        .field-code input {
+            height: 52px;
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 10px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hint {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        .timer {
+            font-weight: 600;
+            color: #0b57d0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer.expired {
+            color: #d93025;
+        }
+
+        .message {
+            display: none;
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .message.error {
+            display: block;
+            background: #fce8e6;
+            color: #c5221f;
+        }
+
+        .message.info {
+            display: block;
+            background: #e8f0fe;
+            color: #174ea6;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 40px;
+            padding: 0 22px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: #0b57d0;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0842a0;
+        }
+
+        .btn-text {
+            background: none;
+            color: #0b57d0;
+            padding: 0 8px;
+        }
+
+        .btn-text:hover {
+            background: #f2f6fc;
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .footer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        .footer a {
+            color: #0b57d0;
+            text-decoration: none;
+        }
+
+        /* 초대 수락 / 초대를 쓸 수 없을 때 안내 */
+        .panel {
+            padding: 18px;
+            border: 1px solid #e3e3e3;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1f1f1f;
+            text-align: center;
+        }
+
+        .panel i.panel-icon {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 26px;
+            color: #0b57d0;
+        }
+
+        .panel.error i.panel-icon {
+            color: #d93025;
+        }
+
+        .panel strong {
+            word-break: break-all;
+        }
+
+        .panel .actions {
+            justify-content: center;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 22px 0 16px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-top: 1px solid #e3e3e3;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                justify-content: flex-start;
+                background: #fff;
+                padding: 16px 0;
+            }
+
+            .join {
+                border-radius: 0;
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+<!--
+  세 가지 가입에 같이 쓰는 화면 (model.mode)
+  - SIGNUP     : 공개 가입 (/signup). 누구나 계정을 만든다
+  - INVITE     : 애플리케이션 초대 합류 (/{applicationId}/console/join?token=...). 초대받은 이메일로만, 초대받은 권한으로 합류한다
+  - APP_SIGNUP : 애플리케이션 가입 (/{applicationId}/signup). 그 앱의 가입 방식(joinPolicy)대로 가입하거나 신청한다
+  showForm : 새 계정 가입 폼을 보여줄지 (로그인한 상태면 폼 대신 기존 계정으로 수락/가입)
+-->
+<body th:with="showForm=${mode == 'SIGNUP'
+        or (mode == 'INVITE' and invitationError == null and loginUserName == null)
+        or (mode == 'APP_SIGNUP' and joinPolicy != 'INVITE_ONLY' and loginUserName == null)}">
+<main class="join">
+    <div class="join-logo"><b>App</b> Builder</div>
+
+    <th:block th:if="${mode == 'SIGNUP'}">
+        <h1 class="join-title">가입</h1>
+        <p class="join-subtitle">가입하면 나만의 애플리케이션을 바로 만들 수 있습니다.</p>
+    </th:block>
+    <th:block th:if="${mode == 'INVITE'}">
+        <h1 class="join-title" th:text="${invitationRoleLabel == null ? '초대' : invitationRoleLabel + ' 초대'}">초대</h1>
+        <p class="join-subtitle">
+            <th:block th:if="${invitationRoleLabel != null}">아래 애플리케이션의 <span th:text="${invitationRoleLabel}">관리자</span>로 초대되었습니다.<br></th:block>
+            <span class="join-app"><i class="fas fa-th-large"></i><span th:text="${applicationName}">애플리케이션</span></span>
+        </p>
+    </th:block>
+
+    <th:block th:if="${mode == 'APP_SIGNUP'}">
+        <h1 class="join-title">가입</h1>
+        <p class="join-subtitle">
+            <th:block th:if="${joinPolicy == 'OPEN'}">가입하면 아래 애플리케이션을 바로 이용할 수 있습니다.<br></th:block>
+            <th:block th:if="${joinPolicy == 'APPROVAL'}">가입을 신청하면 관리자가 승인한 뒤 아래 애플리케이션을 이용할 수 있습니다.<br></th:block>
+            <span class="join-app"><i class="fas fa-th-large"></i><span th:text="${applicationName}">애플리케이션</span></span>
+        </p>
+    </th:block>
+
+    <div class="message" id="message"></div>
+
+    <!-- 앱 가입: 이미 가입한 계정 -->
+    <div class="panel" th:if="${mode == 'APP_SIGNUP' and appJoinStatus == 'MEMBER'}">
+        <i class="fas fa-user-check panel-icon"></i>
+        <strong th:text="${loginUserName}">사용자</strong> 계정은 이미 가입되어 있습니다.
+        <div class="actions">
+            <a class="btn btn-primary" th:href="@{/{applicationId}(applicationId=${applicationId})}">애플리케이션으로 이동</a>
+        </div>
+    </div>
+
+    <!-- 앱 가입: 승인 대기 -->
+    <div class="panel" th:if="${mode == 'APP_SIGNUP' and appJoinStatus == 'PENDING'}">
+        <i class="fas fa-hourglass-half panel-icon"></i>
+        가입을 신청했습니다.<br>관리자가 승인하면 이용할 수 있습니다.
+        <div class="actions">
+            <a class="btn btn-text" href="/">홈으로</a>
+        </div>
+    </div>
+
+    <!-- 앱 가입: 초대만 받는 애플리케이션 -->
+    <div class="panel error" th:if="${mode == 'APP_SIGNUP' and joinPolicy == 'INVITE_ONLY' and appJoinStatus != 'MEMBER' and appJoinStatus != 'PENDING'}">
+        <i class="fas fa-lock panel-icon"></i>
+        <span th:text="${inviteOnlyMessage}">초대받은 사람만 가입할 수 있습니다.</span>
+        <div class="actions">
+            <a class="btn btn-text" href="/">홈으로</a>
+        </div>
+    </div>
+
+    <!-- 앱 가입: 로그인한 계정으로 가입/신청 -->
+    <div class="panel" th:if="${mode == 'APP_SIGNUP' and joinPolicy != 'INVITE_ONLY' and appJoinStatus == 'NONE'}">
+        <i class="fas fa-user-plus panel-icon"></i>
+        <strong th:text="${loginUserName}">사용자</strong> (<span th:text="${loginUserEmail}">email</span>) 계정으로
+        <span th:text="${joinPolicy == 'OPEN' ? '가입합니다.' : '가입을 신청합니다.'}">가입합니다.</span>
+        <div class="actions">
+            <button type="button" class="btn btn-text" onclick="logoutAndReload()">다른 계정으로</button>
+            <button type="button" class="btn btn-primary" id="applyBtn" onclick="applyToApplication()"
+                    th:text="${joinPolicy == 'OPEN' ? '가입하기' : '가입 신청'}">가입하기</button>
+        </div>
+    </div>
+
+    <!-- 초대를 쓸 수 없음 (없음/만료/사용됨) -->
+    <div class="panel error" th:if="${mode == 'INVITE' and invitationError != null}">
+        <i class="fas fa-exclamation-circle panel-icon"></i>
+        <span th:text="${invitationError}">유효하지 않은 초대 링크입니다.</span>
+        <div class="actions">
+            <a class="btn btn-primary" href="/">홈으로</a>
+        </div>
+    </div>
+
+    <!-- 초대받은 이메일의 계정으로 로그인한 상태: 수락만 하면 된다 -->
+    <div class="panel" th:if="${mode == 'INVITE' and invitationError == null and loginUserName != null and loginEmailMatches}">
+        <i class="fas fa-user-check panel-icon"></i>
+        <strong th:text="${loginUserName}">사용자</strong> (<span th:text="${loginUserEmail}">email</span>) 계정으로<br>
+        초대를 수락합니다.
+        <div class="actions">
+            <button type="button" class="btn btn-primary" id="acceptBtn" onclick="acceptInvitation()">초대 수락</button>
+        </div>
+    </div>
+
+    <!-- 다른 이메일의 계정으로 로그인한 상태 -->
+    <div class="panel error" th:if="${mode == 'INVITE' and invitationError == null and loginUserName != null and !loginEmailMatches}">
+        <i class="fas fa-user-times panel-icon"></i>
+        지금 <strong th:text="${loginUserEmail}">email</strong> 계정으로 로그인되어 있습니다.<br>
+        초대는 <strong th:text="${invitationEmail}">email</strong> 계정으로만 수락할 수 있습니다.
+        로그아웃한 뒤 그 계정으로 로그인하거나 새로 가입해주세요.
+        <div class="actions">
+            <button type="button" class="btn btn-primary" onclick="logoutAndReload()">로그아웃</button>
+        </div>
+    </div>
+
+    <!-- 새 계정으로 가입 (공개 가입, 로그인하지 않은 상태의 초대 합류/앱 가입) -->
+    <th:block th:if="${showForm}">
+        <!-- 1단계: 가입 정보 -->
+        <form class="step active" id="stepInfo" onsubmit="requestCode(); return false;" autocomplete="off">
+            <div class="field">
+                <label for="loginId">로그인ID</label>
+                <input type="text" id="loginId" maxlength="100" autocomplete="username">
+            </div>
+            <div class="field">
+                <label for="userName">이름</label>
+                <input type="text" id="userName" maxlength="100" autocomplete="name">
+            </div>
+            <div class="field">
+                <label for="email">이메일</label>
+                <input type="email" id="email" maxlength="100" autocomplete="email"
+                       th:value="${invitationEmail}" th:readonly="${mode == 'INVITE'}">
+                <div class="hint">
+                    <th:block th:if="${mode == 'INVITE'}">초대받은 이메일로만 가입할 수 있습니다. </th:block>
+                    이 주소로 인증코드를 보냅니다. 인증코드는 <span th:text="${codeTtlText}">5분</span> 동안 유효합니다.
+                </div>
+            </div>
+            <div class="field">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" autocomplete="new-password">
+            </div>
+            <div class="field">
+                <label for="checkPassword">비밀번호 확인</label>
+                <input type="password" id="checkPassword" autocomplete="new-password">
+            </div>
+            <div class="actions">
+                <a class="btn btn-text" href="#" onclick="moveLogin(); return false;">로그인</a>
+                <button type="submit" class="btn btn-primary" id="requestCodeBtn">인증코드 받기</button>
+            </div>
+        </form>
+
+        <!-- 2단계: 인증코드 -->
+        <form class="step" id="stepVerify" onsubmit="verifyCode(); return false;" autocomplete="off">
+            <div class="field">
+                <label for="sentEmail">인증코드를 보낸 이메일</label>
+                <input type="text" id="sentEmail" readonly>
+            </div>
+            <div class="field field-code">
+                <label for="code">인증코드</label>
+                <input type="text" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000">
+                <div class="hint">남은 시간 <span class="timer" id="timer">--:--</span> · 메일이 오지 않았다면 스팸함을 확인하거나 다시 받아주세요.</div>
+            </div>
+            <div class="actions">
+                <span>
+                    <button type="button" class="btn btn-text" onclick="backToInfo()">정보 수정</button>
+                    <button type="button" class="btn btn-text" id="resendBtn" onclick="requestCode(true)">인증코드 다시 받기</button>
+                </span>
+                <button type="submit" class="btn btn-primary" id="verifyBtn">가입 완료</button>
+            </div>
+        </form>
+    </th:block>
+</main>
+<div class="footer" th:if="${showForm}">
+    이미 계정이 있나요? <a href="#" onclick="moveLogin(); return false;"
+        th:text="${mode == 'INVITE' ? '로그인해서 초대 수락' : (mode == 'APP_SIGNUP' ? '로그인해서 가입' : '로그인')}">로그인</a>
+</div>
+
+<script th:inline="javascript">
+    const JOIN_API = /*[[${apiBase}]]*/ '/api/signup';
+    const MODE = /*[[${mode}]]*/ 'SIGNUP';
+    // 초대 합류일 때 링크의 token (그 밖에는 null)
+    const INVITATION_TOKEN = /*[[${token}]]*/ null;
+
+    let verificationKey = null;
+    let expiresAt = 0;
+    let timerHandle = null;
+
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    function showMessage(type, text) {
+        const box = $('message');
+        box.className = 'message' + (text ? ' ' + type : '');
+        box.textContent = text || '';
+    }
+
+    function showStep(stepId) {
+        document.querySelectorAll('.step').forEach(step => step.classList.toggle('active', step.id === stepId));
+    }
+
+    async function post(path, body) {
+        const response = await fetch(`${JOIN_API}/${path}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+
+        let data = {};
+        try {
+            data = await response.json();
+        }
+        catch (e) {
+            // 본문이 JSON 이 아니면 아래 오류 메시지를 쓴다
+        }
+
+        if(!response.ok) {
+            throw new Error(data.message || '요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        }
+        return data;
+    }
+
+    async function withBusy(button, task) {
+        button.disabled = true;
+        try {
+            await task();
+        }
+        finally {
+            button.disabled = false;
+        }
+    }
+
+    // 초대 합류/앱 가입은 로그인하면 이 화면으로 돌아와 로그인한 계정으로 수락/가입한다
+    function moveLogin() {
+        const returnUrl = MODE === 'SIGNUP' ? '/' : location.pathname + location.search;
+        location.href = '/login?returnUrl=' + encodeURIComponent(returnUrl);
+    }
+
+    function logoutAndReload() {
+        fetch('/api/auth/logout', {method: 'POST'})
+            .finally(() => location.reload());
+    }
+
+    // 이미 계정이 있는 사람: 로그인한 계정으로 초대 수락
+    function acceptInvitation() {
+        withBusy($('acceptBtn'), async () => {
+            try {
+                showMessage(null, '');
+                const response = await post('accept', {token: INVITATION_TOKEN});
+
+                alert('초대를 수락했습니다.');
+                location.href = response.redirectUrl || '/';
+            }
+            catch (error) {
+                showMessage('error', error.message);
+            }
+        });
+    }
+
+    // 앱 가입: 로그인한 계정으로 가입/신청
+    function applyToApplication() {
+        withBusy($('applyBtn'), async () => {
+            try {
+                showMessage(null, '');
+                const response = await post('apply', {});
+
+                alert(response.message);
+                location.href = response.redirectUrl || '/';
+            }
+            catch (error) {
+                showMessage('error', error.message);
+            }
+        });
+    }
+
+    // 1단계: 가입 정보를 보내고 인증코드 메일을 받는다. resend 면 2단계에서 다시 받기
+    function requestCode(resend) {
+        const loginId = $('loginId').value.trim();
+        const userName = $('userName').value.trim();
+        const email = $('email').value.trim();
+        const password = $('password').value;
+        const checkPassword = $('checkPassword').value;
+
+        if(!loginId) return invalid('로그인ID를 입력해주세요.', 'loginId');
+        if(!userName) return invalid('이름을 입력해주세요.', 'userName');
+        if(!email) return invalid('이메일을 입력해주세요.', 'email');
+        if(!password) return invalid('비밀번호를 입력해주세요.', 'password');
+        if(password !== checkPassword) return invalid('비밀번호와 비밀번호 확인이 다릅니다.', 'checkPassword');
+
+        const button = resend ? $('resendBtn') : $('requestCodeBtn');
+        withBusy(button, async () => {
+            try {
+                showMessage(null, '');
+                const response = await post('request', {loginId, userName, email, password, checkPassword, token: INVITATION_TOKEN});
+
+                verificationKey = response.verificationKey;
+                startTimer(response.expiresInSeconds);
+
+                $('sentEmail').value = response.email;
+                $('code').value = '';
+                showStep('stepVerify');
+                showMessage('info', resend ? '인증코드를 다시 보냈습니다. 이전 인증코드는 더 이상 쓸 수 없습니다.' : '인증코드를 메일로 보냈습니다.');
+                $('code').focus();
+            }
+            catch (error) {
+                // 다시 받기에 실패해도(예: 잠시 후 다시 받기) 이전 인증코드는 그대로 쓸 수 있으므로 2단계에 머문다
+                showMessage('error', error.message);
+            }
+        });
+    }
+
+    function invalid(text, focusId) {
+        showMessage('error', text);
+        $(focusId).focus();
+    }
+
+    // 2단계: 인증코드를 확인하면 가입(+ 초대 합류) + 로그인되고 루트(/)로 이동한다
+    function verifyCode() {
+        const code = $('code').value.trim();
+        if(!code) return invalid('인증코드를 입력해주세요.', 'code');
+        if(Date.now() >= expiresAt) {
+            showMessage('error', '인증코드가 만료되었습니다. 인증코드를 다시 받아주세요.');
+            return;
+        }
+
+        withBusy($('verifyBtn'), async () => {
+            try {
+                const response = await post('verify', {verificationKey, code});
+
+                stopTimer();
+                alert(response.message || '가입이 완료되었습니다.');
+                location.href = response.redirectUrl || '/';
+            }
+            catch (error) {
+                showMessage('error', error.message);
+                $('code').select();
+            }
+        });
+    }
+
+    function backToInfo() {
+        stopTimer();
+        verificationKey = null;
+        showMessage(null, '');
+        showStep('stepInfo');
+    }
+
+    function startTimer(seconds) {
+        stopTimer();
+        expiresAt = Date.now() + seconds * 1000;
+        renderTimer();
+        timerHandle = setInterval(renderTimer, 1000);
+    }
+
+    function stopTimer() {
+        if(timerHandle) {
+            clearInterval(timerHandle);
+            timerHandle = null;
+        }
+    }
+
+    function renderTimer() {
+        const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+        const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
+        const seconds = String(remaining % 60).padStart(2, '0');
+
+        $('timer').textContent = `${minutes}:${seconds}`;
+        $('timer').classList.toggle('expired', remaining === 0);
+
+        if(remaining === 0) {
+            stopTimer();
+            showMessage('error', '인증코드가 만료되었습니다. 인증코드를 다시 받아주세요.');
+        }
+    }
+
+    // 인증코드 칸에는 숫자만 (가입 폼이 없는 화면에서는 건너뛴다)
+    if($('code')) {
+        $('code').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        });
+    }
+</script>
+</body>
+</html>

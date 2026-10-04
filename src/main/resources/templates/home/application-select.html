@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>애플리케이션 선택 - App Builder</title>
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background: #f0f4f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", Arial, sans-serif;
+            color: #1f1f1f;
+        }
+
+        .chooser {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            border-radius: 28px;
+            padding: 36px 0 20px;
+        }
+
+        .chooser-header {
+            padding: 0 36px;
+            text-align: center;
+        }
+
+        .chooser-logo {
+            font-size: 20px;
+            color: #444746;
+            margin-bottom: 16px;
+        }
+
+        .chooser-logo b {
+            color: #0b57d0;
+        }
+
+        .chooser-title {
+            margin: 0 0 8px;
+            font-size: 26px;
+            font-weight: 400;
+        }
+
+        .chooser-subtitle {
+            margin: 0;
+            font-size: 15px;
+            color: #444746;
+        }
+
+        /* 로그인한 계정 */
+        .account-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 100%;
+            margin-top: 14px;
+            padding: 4px 12px 4px 4px;
+            border: 1px solid #c4c7c5;
+            border-radius: 999px;
+            font-size: 13px;
+            color: #1f1f1f;
+        }
+
+        .account-chip-avatar {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #0b57d0;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .account-chip-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 애플리케이션 목록 */
+        .app-list {
+            list-style: none;
+            margin: 28px 0 0;
+            padding: 0;
+            border-top: 1px solid #e3e3e3;
+        }
+
+        .app-item {
+            border-bottom: 1px solid #e3e3e3;
+        }
+
+        .app-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 36px;
+            color: inherit;
+            text-decoration: none;
+            transition: background-color .12s ease;
+        }
+
+        .app-link:hover,
+        .app-link:focus-visible {
+            background: #f2f6fc;
+            outline: none;
+        }
+
+        .app-avatar {
+            flex: 0 0 auto;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app-main {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .app-name {
+            font-size: 14px;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .app-desc {
+            font-size: 12.5px;
+            color: #5f6368;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .app-arrow {
+            flex: 0 0 auto;
+            color: #9aa0a6;
+            font-size: 12px;
+        }
+
+        .app-other-icon {
+            flex: 0 0 auto;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: #444746;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+        }
+
+        .app-other-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f1f1f;
+        }
+
+        .empty {
+            margin: 28px 36px 8px;
+            padding: 28px 16px;
+            border: 1px dashed #c4c7c5;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 13.5px;
+            color: #5f6368;
+            line-height: 1.6;
+        }
+
+        .empty i {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 24px;
+            color: #c4c7c5;
+        }
+
+        .empty-logout {
+            display: block;
+            margin: 16px auto 0;
+            padding: 8px 18px;
+            border: 1px solid #747775;
+            border-radius: 999px;
+            background: #fff;
+            color: #0b57d0;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        a.empty-logout {
+            width: fit-content;
+            text-decoration: none;
+        }
+
+        .empty-logout:hover {
+            background: #f2f6fc;
+        }
+
+        .footer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                justify-content: flex-start;
+                background: #fff;
+                padding: 16px 0;
+            }
+
+            .chooser {
+                border-radius: 0;
+                padding-top: 24px;
+            }
+
+            .chooser-header {
+                padding: 0 16px;
+            }
+
+            .app-link {
+                padding: 14px 16px;
+            }
+
+            .empty {
+                margin: 28px 16px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="chooser">
+    <div class="chooser-header">
+        <div class="chooser-logo"><b>App</b> Builder</div>
+        <h1 class="chooser-title">애플리케이션 선택</h1>
+        <p class="chooser-subtitle">접속할 애플리케이션을 선택하세요</p>
+        <div class="account-chip" th:title="${email}">
+            <span class="account-chip-avatar" th:text="${#strings.isEmpty(userName) ? '?' : #strings.toUpperCase(#strings.substring(userName, 0, 1))}">U</span>
+            <span class="account-chip-text" th:text="${userName + ' (' + loginId + ')'}">사용자</span>
+        </div>
+    </div>
+
+    <ul class="app-list" th:if="${!applications.isEmpty()}">
+        <li class="app-item" th:each="app : ${applications}">
+            <a class="app-link" th:href="@{/{applicationId}(applicationId=${app.applicationId})}" th:attr="data-app-id=${app.applicationId}">
+                <span class="app-avatar" th:text="${#strings.isEmpty(app.name) ? '?' : #strings.toUpperCase(#strings.substring(app.name, 0, 1))}">A</span>
+                <span class="app-main">
+                    <span class="app-name" th:text="${app.name}">애플리케이션</span>
+                    <span class="app-desc" th:text="${#strings.isEmpty(app.description) ? '/' + app.applicationId : app.description}">설명</span>
+                </span>
+                <i class="fas fa-chevron-right app-arrow"></i>
+            </a>
+        </li>
+        <li class="app-item">
+            <a class="app-link" href="/applications/manage">
+                <span class="app-other-icon"><i class="fas fa-plus"></i></span>
+                <span class="app-other-text">새 애플리케이션 만들기</span>
+            </a>
+        </li>
+        <li class="app-item">
+            <a class="app-link" href="#" onclick="logout(); return false;">
+                <span class="app-other-icon"><i class="far fa-user-circle"></i></span>
+                <span class="app-other-text">다른 계정으로 로그인</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="empty" th:if="${applications.isEmpty()}">
+        <i class="fas fa-th-large"></i>
+        가입된 애플리케이션이 없습니다.<br>
+        애플리케이션 관리자에게 사용자 등록을 요청하거나, 직접 애플리케이션을 만들어보세요.
+        <a class="empty-logout" href="/applications/manage">새 애플리케이션 만들기</a>
+        <button type="button" class="empty-logout" onclick="logout()">다른 계정으로 로그인</button>
+    </div>
+</main>
+<div class="footer">App Builder</div>
+
+<script>
+    // 애플리케이션마다 같은 색이 나오도록 ID 로 색을 고른다
+    const AVATAR_COLORS = ['#1a73e8', '#188038', '#d93025', '#e37400', '#9334e6', '#007b83', '#c5221f', '#185abc'];
+
+    document.querySelectorAll('.app-link[data-app-id]').forEach(function(link) {
+        const id = link.getAttribute('data-app-id');
+        let hash = 0;
+        for(let i = 0; i < id.length; i++) {
+            hash = (hash * 31 + id.charCodeAt(i)) | 0;
+        }
+        link.querySelector('.app-avatar').style.background = AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+    });
+
+    function logout() {
+        fetch('/api/auth/logout', {method: 'POST'})
+            .finally(function() {
+                location.href = '/login';
+            });
+    }
+</script>
+</body>
+</html>
