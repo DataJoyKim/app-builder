@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * 공개 가입. 누구나 /signup 에서 메일 인증을 거쳐 계정을 만든다 (홍보용으로 공개해도 남의 애플리케이션 권한은 생기지 않는다).
- * 가입을 마치면 로그인된 상태로 루트(/)로 가서, 자기 애플리케이션을 만드는 화면으로 이어진다.
+ * 가입을 마치면 애플리케이션 관리자(users.authority = APPLICATION_ADMIN)가 되고, 로그인된 상태로 루트(/)로 가서 애플리케이션 선택 화면으로 이어진다.
  */
 @Controller
 public class SignupController {

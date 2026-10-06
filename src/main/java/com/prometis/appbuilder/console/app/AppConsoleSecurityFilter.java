@@ -1,14 +1,12 @@
 package com.prometis.appbuilder.console.app;
 
-import com.prometis.appbuilder.app.security.AppAuthenticationService;
 import com.prometis.appbuilder.app.security.NotAppAdminException;
-import com.prometis.appbuilder.app.security.appuser.AppUserAccessValidator;
 import com.prometis.appbuilder.platform.application.ApplicationGuard;
 import com.prometis.appbuilder.platform.application.ApplicationNotFoundException;
 import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import com.prometis.appbuilder.security.exception.SecurityBusinessException;
+import com.prometis.appbuilder.security.service.AuthenticationService;
 import com.prometis.appbuilder.security.token.TokenCookie;
-import com.prometis.core.exception.BusinessException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 public class AppConsoleSecurityFilter implements Filter {
     private static final String CONSOLE_SEGMENT = "console";
 
-    private final AppAuthenticationService appAuthenticationService;
+    private final AuthenticationService authenticationService;
     private final AppConsoleAccessValidator appConsoleAccessValidator;
     private final ApplicationGuard applicationGuard;
 
@@ -57,7 +55,7 @@ public class AppConsoleSecurityFilter implements Filter {
         }
 
         try {
-            AuthenticatedUser user = appAuthenticationService.authentication(applicationId, TokenCookie.resolveAccessToken(httpRequest));
+            AuthenticatedUser user = authenticationService.authentication(TokenCookie.resolveAccessToken(httpRequest));
 
             appConsoleAccessValidator.validate(applicationId, user.getUserId());
         }

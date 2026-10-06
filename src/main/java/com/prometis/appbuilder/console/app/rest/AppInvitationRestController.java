@@ -44,7 +44,7 @@ public class AppInvitationRestController {
     ) {
         try {
             return new ResponseEntity<>(
-                    appInvitationService.create(applicationId, request.get("email"), request.get("authority"), loginUserIdOf(httpRequest), baseUrl()),
+                    appInvitationService.create(applicationId, request.get("email"), request.get("authority"), request.get("companyCode"), loginUserIdOf(httpRequest), baseUrl()),
                     HttpStatus.OK);
         }
         catch (JoinException e) {
@@ -85,7 +85,7 @@ public class AppInvitationRestController {
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("email", email);
             try {
-                AppInvitationResponse invitation = appInvitationService.create(applicationId, email, request.getAuthority(), inviterUserId, baseUrl);
+                AppInvitationResponse invitation = appInvitationService.create(applicationId, email, request.getAuthority(), request.getCompanyCode(), inviterUserId, baseUrl);
                 result.put("success", true);
                 result.put("link", invitation.getLink());
                 result.put("mailSent", invitation.getMailSent());

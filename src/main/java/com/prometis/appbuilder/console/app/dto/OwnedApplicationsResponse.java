@@ -15,4 +15,6 @@ public class OwnedApplicationsResponse {
     private List<Application> applications;
     private int maxOwnedCount;
     private Boolean creatable;
+    // 만들 수 없을 때 그 이유 (만들 수 있으면 null)
+    private String notCreatableReason;
 }

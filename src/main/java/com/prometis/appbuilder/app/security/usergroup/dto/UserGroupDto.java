@@ -11,6 +11,7 @@ import java.util.List;
 @Getter @AllArgsConstructor @Builder
 public class UserGroupDto {
     private Long id;
+    private String companyCode;
     private String code;
     private String name;
     private String parentUserGroupCode;
@@ -43,6 +44,7 @@ public class UserGroupDto {
 
         return UserGroupDto.builder()
                 .id(userGroup.getId())
+                .companyCode(userGroup.getCompanyCode())
                 .code(userGroup.getCode())
                 .name(userGroup.getName())
                 .parentUserGroupCode(parentUserGroupCode)

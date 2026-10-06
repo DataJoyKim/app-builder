@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(name="USER_UQ",columnNames={"applicationId","code"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name="USER_UQ",columnNames={"applicationId","companyCode","code"})})
 @Entity
 public class UserGroup {
     @Id
@@ -20,6 +20,9 @@ public class UserGroup {
 
     @Column(nullable = false, length = 100)
     private String applicationId;
+
+    @Column(nullable = false, length = 100)
+    private String companyCode;
 
     @Column(nullable = false, length = 100)
     private String code;

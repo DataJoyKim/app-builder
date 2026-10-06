@@ -35,6 +35,7 @@ class UserGroupPermissionRepositoryTest {
 
         UserGroup group = UserGroup.builder()
                 .applicationId("ehr")
+                .companyCode("C001")
                 .code("test_user_group")
                 .name("test_user_group")
                 .build();

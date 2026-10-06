@@ -24,9 +24,21 @@ public class AppUser {
     private Long userId;
 
     @Column(length = 100)
+    private String companyCode;
+
+    @Column(length = 100)
     private String authority;
 
     public void changeAuthority(String authority) {
         this.authority = authority;
+    }
+
+    // 소속 회사 (Company.companyCode). 비어 있으면 회사 미지정
+    public void changeCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
+    }
+
+    public boolean hasCompany() {
+        return companyCode != null && !companyCode.isBlank();
     }
 }

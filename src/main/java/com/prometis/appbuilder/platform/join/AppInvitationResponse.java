@@ -18,6 +18,7 @@ public class AppInvitationResponse {
     private Long id;
     private String email;
     private String authority;
+    private String companyCode;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
@@ -34,6 +35,7 @@ public class AppInvitationResponse {
                 .id(invitation.getId())
                 .email(invitation.getEmail())
                 .authority(invitation.getAuthority())
+                .companyCode(invitation.getCompanyCode())
                 .status(status)
                 .createdAt(invitation.getCreatedAt())
                 .expiresAt(invitation.getExpiresAt())

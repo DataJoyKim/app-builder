@@ -291,43 +291,6 @@
         padding: 16px;
     }
 
-    #permission-app .rel-add-form {
-        display: flex;
-        align-items: flex-end;
-        gap: 10px;
-        flex-wrap: wrap;
-        padding: 12px;
-        background: #fbfbfc;
-        border: 1px solid #eef0f2;
-        border-radius: 8px;
-        margin-bottom: 12px;
-    }
-
-    #permission-app .rel-add-form .form-group {
-        margin-bottom: 0;
-    }
-
-    #permission-app .rel-add-form label {
-        font-size: 11px;
-        font-weight: 600;
-        color: #6b7280;
-        margin-bottom: 4px;
-        display: block;
-    }
-
-    #permission-app .rel-add-form .form-control {
-        border: 1px solid #d7dbe0;
-        border-radius: 7px;
-        font-size: 13px;
-        padding: 6px 10px;
-    }
-
-    #permission-app .rel-add-actions {
-        display: flex;
-        gap: 6px;
-        margin-left: auto;
-    }
-
     #permission-app .rel-list {
         border: 1px solid #eef0f2;
         border-radius: 8px;
@@ -415,50 +378,59 @@
         font-size: 12.5px;
     }
 
-    /* ---- 사용자그룹 바인딩 ---- */
-    #permission-app .gp-picker {
-        background: #fbfbfc;
+    /* ---- ROOT 메뉴 선택 (메뉴접근권한): 좌측 추가된 대상 / 우측 추가할 대상 ---- */
+    #permission-app .ma-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        align-items: start;
+    }
+
+    @media (max-width: 900px) {
+        #permission-app .ma-columns {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    #permission-app .ma-column {
+        min-width: 0;
         border: 1px solid #eef0f2;
         border-radius: 8px;
-        margin-bottom: 12px;
         overflow: hidden;
+        background: #fff;
     }
 
-    #permission-app .gp-picker-head {
+    #permission-app .ma-column-head {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
+        gap: 8px;
+        min-height: 50px;
+        padding: 8px 12px;
+        background: #fbfbfc;
         border-bottom: 1px solid #eef0f2;
-        flex-wrap: wrap;
     }
 
-    #permission-app .gp-picker-head .ds-list-search {
-        flex: 1 1 240px;
+    #permission-app .ma-column-title {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    #permission-app .ma-column-head .ds-list-search {
+        flex: 1 1 auto;
         padding: 0;
         border-bottom: none;
     }
 
-    #permission-app .gp-picker-head .ds-list-search i {
+    #permission-app .ma-column-head .ds-list-search i {
         left: 10px;
     }
 
-    #permission-app .gp-check {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin: 0;
-        font-size: 12px;
-        font-weight: 600;
-        color: #374151;
-        cursor: pointer;
-        white-space: nowrap;
-    }
-
-    #permission-app .gp-candidates {
-        max-height: 240px;
+    /* 목록이 길어져도 화면이 늘어나지 않도록 각 칸 안에서 스크롤한다 */
+    #permission-app .ma-column-body {
+        height: calc(100vh - 340px);
+        min-height: 240px;
         overflow-y: auto;
-        background: #fff;
     }
 
     #permission-app .gp-row {
@@ -511,39 +483,19 @@
         color: #047857;
         white-space: nowrap;
     }
-
-    #permission-app .gp-toggle {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin: 0;
-        font-size: 11.5px;
-        font-weight: 600;
-        color: #6b7280;
-        cursor: pointer;
-        white-space: nowrap;
-    }
-
-    #permission-app .gp-toggle.on {
-        color: #1d4ed8;
-    }
-
-    #permission-app .gp-hint {
-        padding: 0 2px 10px;
-        font-size: 11.5px;
-        color: #9199a3;
-        line-height: 1.5;
-    }
 </style>
 <script th:fragment="script">
         let PERMISSION_LIST = [];
         let SELECTED_PERMISSION_ID = null;
         let MENU_PERMISSION_LIST = [];
-        let MENU_PERMISSION_EDIT_ID = null;
-        // 이 애플리케이션의 사용자 그룹 (트리를 펼친 목록: 경로, 깊이, 하위 그룹 수 포함)
-        let USER_GROUP_LIST = [];
-        // 선택한 권한을 받은 사용자 그룹 연결 (UserGroupPermission)
-        let GROUP_PERMISSION_LIST = [];
+        // 이 애플리케이션의 ROOT 메뉴 (메뉴 트리의 최상위)
+        let ROOT_MENU_LIST = [];
+        // 선택한 권한으로 실행할 수 있는 워크플로우 (WorkflowPermission)
+        let WORKFLOW_PERMISSION_LIST = [];
+        // 이 애플리케이션의 워크플로우
+        let WORKFLOW_LIST = [];
+        // 저장된 권한 코드. WorkflowPermission 은 권한 코드로 연결되므로 입력 중인 코드가 아니라 저장된 코드를 쓴다
+        let SAVED_PERMISSION_CODE = '';
 
         $( document ).ready(function() {
             console.log('version.0.0.5');
@@ -552,7 +504,8 @@
 
         function init() {
             getList();
-            getUserGroupList();
+            getRootMenuList();
+            getWorkflowList();
         }
 
         function getList() {
@@ -631,7 +584,7 @@
                 function(response){
                     setContentData(response);
                     getMenuPermission(response.code);
-                    getGroupPermission();
+                    getWorkflowPermission();
                 },
                 function(error){
                     alert('error');
@@ -656,11 +609,12 @@
             httpClient.post(`/${APPLICATION_ID}/console/api/permission`,{},getContent(),
                 function(response){
                     alert("저장완료되었습니다.");
-                    // 저장한 권한을 선택해 두어야 바로 메뉴접근권한/사용자그룹을 연결할 수 있다
+                    // 저장한 권한을 선택해 두어야 바로 메뉴접근권한을 추가할 수 있다
                     if(response && response.id) {
                         SELECTED_PERMISSION_ID = response.id;
                         setContentData(response);
-                        getGroupPermission();
+                        getMenuPermission(response.code);
+                        getWorkflowPermission();
                     }
                     getList();
                 },
@@ -689,8 +643,11 @@
               function(response){
                   alert("삭제 처리 완료되었습니다.");
                   SELECTED_PERMISSION_ID = null;
-                  GROUP_PERMISSION_LIST = [];
-                  renderGroupPermission();
+                  MENU_PERMISSION_LIST = [];
+                  renderMenuPermissionList();
+                  SAVED_PERMISSION_CODE = '';
+                  WORKFLOW_PERMISSION_LIST = [];
+                  renderWorkflowPermissionList();
                   getList();
               },
               function(error){
@@ -700,6 +657,7 @@
         }
 
         function setContentData(response) {
+            SAVED_PERMISSION_CODE = response.code || '';
             setContent({
                 id:response.id,
                 code:response.code,
@@ -726,8 +684,9 @@
             $("#permissionListBody .ds-list-item").removeClass('selected');
             MENU_PERMISSION_LIST = [];
             renderMenuPermissionList();
-            GROUP_PERMISSION_LIST = [];
-            renderGroupPermission();
+            SAVED_PERMISSION_CODE = '';
+            WORKFLOW_PERMISSION_LIST = [];
+            renderWorkflowPermissionList();
 
             setContent({
                 id:'',
@@ -740,142 +699,20 @@
         function getMenuPermission(permissionCode) {
             httpClient.get(`/${APPLICATION_ID}/console/api/menu-permission`, {permissionCode:permissionCode},
                 function(response){
-                    let menuData = new Array();
-                    for (i = 0; i < response.length; i++) {
-                        menuData.push({
-                            id:response[i].id,
-                            menuCd:response[i].menu.menuCd
-                        });
-                    };
-
-                    MENU_PERMISSION_LIST = menuData;
+                    MENU_PERMISSION_LIST = (response || []).map(item => ({
+                        id: item.id,
+                        menuCd: item.menu && item.menu.menuCd,
+                        menuNm: item.menu && item.menu.menuNm
+                    }));
                     renderMenuPermissionList();
                 },
                 function(error){
-                    alert('error');
+                    alertError(error);
                 }
             );
         }
 
-        function renderMenuPermissionList() {
-            const $body = $("#menuPermissionList");
-            $body.empty();
-
-            if(MENU_PERMISSION_LIST.length === 0) {
-                $body.append('<div class="rel-empty">등록된 메뉴접근권한이 없습니다.</div>');
-                return;
-            }
-
-            for(const item of MENU_PERMISSION_LIST) {
-                const $row = $(`
-                    <div class="rel-row" data-id="${item.id}">
-                        <div class="rel-row-main">
-                            <div class="rel-row-field"><span class="rel-field-label">Root 메뉴</span><span class="rel-field-value ma-menu-cd"></span></div>
-                        </div>
-                        <div class="rel-row-actions">
-                            <button type="button" class="rel-icon-btn" title="수정"><i class="fas fa-pen"></i></button>
-                            <button type="button" class="rel-icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>
-                `);
-
-                $row.find('.ma-menu-cd').text(item.menuCd);
-
-                $row.find('.rel-icon-btn:not(.danger)').on('click', function() {
-                    editMenuPermission(item.id);
-                });
-                $row.find('.rel-icon-btn.danger').on('click', function() {
-                    if(confirm('삭제하시겠습니까?')) {
-                        deleteMenuPermission($("#code").val(), item);
-                    }
-                });
-
-                $body.append($row);
-            }
-        }
-
-        function editMenuPermission(id) {
-            const item = MENU_PERMISSION_LIST.find(a => String(a.id) === String(id));
-            if(!item) return;
-
-            MENU_PERMISSION_EDIT_ID = id;
-            $("#maMenuCdInput").val(item.menuCd);
-            $("#maSubmitBtn").html('<i class="fas fa-check"></i>수정');
-            $("#maCancelBtn").removeClass('d-none');
-        }
-
-        function cancelMenuPermissionEdit() {
-            MENU_PERMISSION_EDIT_ID = null;
-            $("#maMenuCdInput").val('');
-            $("#maSubmitBtn").html('<i class="fas fa-plus"></i>추가');
-            $("#maCancelBtn").addClass('d-none');
-        }
-
-        function submitMenuPermission() {
-            const permissionCode = $("#code").val();
-            if(!permissionCode) {
-                alert('먼저 권한을 저장해주세요.');
-                return;
-            }
-
-            const menuCd = $("#maMenuCdInput").val();
-            if(!menuCd) {
-                alert('Root 메뉴 코드를 입력해주세요.');
-                return;
-            }
-
-            if(MENU_PERMISSION_EDIT_ID) {
-                updateMenuPermission(permissionCode, {id:MENU_PERMISSION_EDIT_ID, menuCd});
-            }
-            else {
-                insertMenuPermission(permissionCode, {menuCd});
-            }
-
-            cancelMenuPermissionEdit();
-        }
-
-        function insertMenuPermission(permissionCode, item) {
-            httpClient.post(`/${APPLICATION_ID}/console/api/menu-permission`,{},
-                {
-                   menuCd:item.menuCd,
-                   permissionCode:permissionCode
-                },
-                function(response){
-                    getMenuPermission(permissionCode);
-                },
-                function(error){
-                    alert('error');
-                }
-            );
-        }
-
-        function updateMenuPermission(permissionCode, item) {
-          httpClient.put(`/${APPLICATION_ID}/console/api/menu-permission/${item.id}`, {},
-              {
-                   menuCd:item.menuCd,
-                   permissionCode:permissionCode
-              },
-              function(response){
-                  getMenuPermission(permissionCode);
-              },
-              function(error){
-                  alert('error');
-              }
-          );
-        }
-
-        function deleteMenuPermission(permissionCode, item) {
-          httpClient.delete(`/${APPLICATION_ID}/console/api/menu-permission/${item.id}`, {},
-              function(response){
-                  getMenuPermission(permissionCode);
-              },
-              function(error){
-                  alert('error');
-              }
-          );
-        }
-
-        // ---- 사용자그룹 바인딩 ----
+        // ---- 메뉴접근권한: ROOT 메뉴 목록에서 골라 추가 ----
         function alertError(error) {
             const message = error && error.responseJSON && error.responseJSON.message;
             alert(message || 'error');
@@ -887,11 +724,16 @@
             return isEmpty(id) ? null : id;
         }
 
-        function getUserGroupList() {
-            httpClient.get(`/${APPLICATION_ID}/console/api/user-group/tree`, {},
+        // 메뉴 트리의 최상위 메뉴가 ROOT 메뉴다
+        function getRootMenuList() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/menu/tree`, {},
                 function(response){
-                    USER_GROUP_LIST = flattenUserGroups(response || [], [], 0);
-                    renderGroupPermission();
+                    ROOT_MENU_LIST = (response || []).map(menu => ({
+                        menuCd: menu.menuCd,
+                        menuNm: menu.menuNm,
+                        childCount: (menu.children || []).length
+                    }));
+                    renderMenuPermissionList();
                 },
                 function(error){
                     alertError(error);
@@ -899,130 +741,80 @@
             );
         }
 
-        // 트리를 화면에 쓰기 좋은 목록으로 편다: 경로(상위 > 하위)와 하위 그룹 수를 함께 둔다
-        function flattenUserGroups(nodes, parents, depth) {
-            let result = [];
-            for(const node of nodes) {
-                const path = parents.concat(node.name || node.code);
-                const children = flattenUserGroups(node.children || [], path, depth + 1);
-                result.push({
-                    id: node.id,
-                    code: node.code,
-                    name: node.name,
-                    path: path.join(' > '),
-                    depth: depth,
-                    descendantCount: children.length
-                });
-                result = result.concat(children);
-            }
-            return result;
+        function renderMenuPermissionList() {
+            renderBoundMenus();
+            renderRootMenuCandidates();
         }
 
-        function getGroupPermission() {
-            const permissionId = currentPermissionId();
-            if(!permissionId) {
-                GROUP_PERMISSION_LIST = [];
-                renderGroupPermission();
-                return;
-            }
-
-            httpClient.get(`/${APPLICATION_ID}/console/api/user-group/permission/by-permission/${permissionId}`, {},
-                function(response){
-                    GROUP_PERMISSION_LIST = response || [];
-                    renderGroupPermission();
-                },
-                function(error){
-                    alertError(error);
-                }
-            );
+        function rootMenuOf(menuCd) {
+            return ROOT_MENU_LIST.find(menu => menu.menuCd === menuCd);
         }
 
-        function renderGroupPermission() {
-            renderBoundGroups();
-            renderGroupCandidates();
-        }
-
-        function userGroupOf(id) {
-            return USER_GROUP_LIST.find(group => String(group.id) === String(id));
-        }
-
-        // 연결된 그룹
-        function renderBoundGroups() {
-            const $body = $("#groupPermissionList");
+        // 이 권한에 추가된 ROOT 메뉴
+        function renderBoundMenus() {
+            const $body = $("#menuPermissionList");
             $body.empty();
-            $("#groupPermissionCount").text(GROUP_PERMISSION_LIST.length);
+            $("#menuPermissionCount").text(MENU_PERMISSION_LIST.length);
 
             if(!currentPermissionId()) {
                 $body.append('<div class="rel-empty">권한을 선택하거나 먼저 저장해주세요.</div>');
                 return;
             }
-            if(GROUP_PERMISSION_LIST.length === 0) {
-                $body.append('<div class="rel-empty">이 권한을 받은 사용자 그룹이 없습니다.</div>');
+            if(MENU_PERMISSION_LIST.length === 0) {
+                $body.append('<div class="rel-empty">등록된 메뉴접근권한이 없습니다.</div>');
                 return;
             }
 
-            for(const item of GROUP_PERMISSION_LIST) {
-                const userGroup = item.userGroup || {};
-                const group = userGroupOf(userGroup.id) || {path: userGroup.name, descendantCount: 0};
-                const lowerGrant = item.lowerPermissionGrant === true;
-
+            for(const item of MENU_PERMISSION_LIST) {
+                const menu = rootMenuOf(item.menuCd);
                 const $row = $(`
                     <div class="gp-row">
                         <div class="gp-row-main">
                             <span class="gp-name"></span>
                             <span class="gp-path"></span>
                         </div>
-                        <label class="gp-toggle">
-                            <input type="checkbox">
-                            <span>하위 그룹 전파</span>
-                        </label>
-                        <button type="button" class="rel-icon-btn danger" title="연결 해제"><i class="fas fa-times"></i></button>
+                        <div class="rel-row-actions">
+                            <button type="button" class="rel-icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>
+                        </div>
                     </div>
                 `);
-
-                $row.find('.gp-name').text(userGroup.name || userGroup.code).append($('<em></em>').text(userGroup.code));
-                $row.find('.gp-path').text(group.descendantCount > 0
-                    ? `${group.path} · 하위 그룹 ${group.descendantCount}개`
-                    : group.path);
-
-                const $toggle = $row.find('.gp-toggle').toggleClass('on', lowerGrant)
-                    .attr('title', group.descendantCount > 0 ? '하위 그룹 사용자에게도 이 권한을 줍니다.' : '하위 그룹이 없어 지금은 영향이 없습니다.');
-                $toggle.find('input').prop('checked', lowerGrant).on('change', function() {
-                    updateLowerPermissionGrant(item, $(this).prop('checked'));
-                });
+                $row.find('.gp-name').text(item.menuNm || item.menuCd).append($('<em></em>').text(item.menuCd));
+                $row.find('.gp-path').text(menu ? `하위 메뉴 ${menu.childCount}개` : 'ROOT 메뉴가 아닙니다.');
 
                 $row.find('.rel-icon-btn.danger').on('click', function() {
-                    unbindUserGroup(item);
+                    if(confirm(`[${item.menuNm || item.menuCd}] 메뉴접근권한을 삭제하시겠습니까?`)) {
+                        deleteMenuPermission(item);
+                    }
                 });
 
                 $body.append($row);
             }
         }
 
-        // 검색해서 연결할 그룹
-        function renderGroupCandidates() {
-            const $body = $("#gpCandidateList");
+        // 추가할 수 있는 ROOT 메뉴 목록
+        function renderRootMenuCandidates() {
+            const $body = $("#rootMenuCandidateList");
             $body.empty();
 
             const enabled = !!currentPermissionId();
-            $("#gpSearch, #gpLowerGrant").prop('disabled', !enabled);
+            $("#rootMenuSearch").prop('disabled', !enabled);
             if(!enabled) {
+                $body.append('<div class="rel-empty">권한을 선택하거나 먼저 저장해주세요.</div>');
                 return;
             }
 
-            const kw = ($("#gpSearch").val() || '').trim().toLowerCase();
-            const boundIds = new Set(GROUP_PERMISSION_LIST.map(item => String(item.userGroup && item.userGroup.id)));
-            const filtered = USER_GROUP_LIST.filter(group => !kw
-                || (group.code || '').toLowerCase().includes(kw)
-                || (group.name || '').toLowerCase().includes(kw)
-                || (group.path || '').toLowerCase().includes(kw));
+            const kw = ($("#rootMenuSearch").val() || '').trim().toLowerCase();
+            const boundCodes = new Set(MENU_PERMISSION_LIST.map(item => item.menuCd));
+            const filtered = ROOT_MENU_LIST.filter(menu => !kw
+                || (menu.menuCd || '').toLowerCase().includes(kw)
+                || (menu.menuNm || '').toLowerCase().includes(kw));
 
             if(filtered.length === 0) {
-                $body.append(`<div class="rel-empty">${USER_GROUP_LIST.length === 0 ? '등록된 사용자 그룹이 없습니다.' : '검색 결과가 없습니다.'}</div>`);
+                $body.append(`<div class="rel-empty">${ROOT_MENU_LIST.length === 0 ? '등록된 ROOT 메뉴가 없습니다.' : '검색 결과가 없습니다.'}</div>`);
                 return;
             }
 
-            for(const group of filtered) {
+            for(const menu of filtered) {
                 const $row = $(`
                     <div class="gp-row">
                         <div class="gp-row-main">
@@ -1031,15 +823,15 @@
                         </div>
                     </div>
                 `);
-                $row.find('.gp-name').text(group.name || group.code).append($('<em></em>').text(group.code));
-                $row.find('.gp-path').text(group.descendantCount > 0 ? `${group.path} · 하위 그룹 ${group.descendantCount}개` : group.path);
+                $row.find('.gp-name').text(menu.menuNm || menu.menuCd).append($('<em></em>').text(menu.menuCd));
+                $row.find('.gp-path').text(`하위 메뉴 ${menu.childCount}개`);
 
-                if(boundIds.has(String(group.id))) {
-                    $row.append('<span class="gp-bound"><i class="fas fa-check"></i> 연결됨</span>');
+                if(boundCodes.has(menu.menuCd)) {
+                    $row.append('<span class="gp-bound"><i class="fas fa-check"></i> 추가됨</span>');
                 }
                 else {
-                    const $add = $('<button type="button" class="ds-btn"><i class="fas fa-plus"></i>연결</button>');
-                    $add.on('click', () => bindUserGroup(group));
+                    const $add = $('<button type="button" class="ds-btn"><i class="fas fa-plus"></i>추가</button>');
+                    $add.on('click', () => insertMenuPermission(menu));
                     $row.append($add);
                 }
 
@@ -1047,52 +839,188 @@
             }
         }
 
-        function bindUserGroup(group) {
-            const permissionId = currentPermissionId();
-            if(!permissionId) {
-                alert('먼저 권한을 저장해주세요.');
+        function insertMenuPermission(menu) {
+            const permissionCode = $("#code").val();
+
+            httpClient.post(`/${APPLICATION_ID}/console/api/menu-permission`,{},
+                {
+                   menuCd:menu.menuCd,
+                   permissionCode:permissionCode
+                },
+                function(response){
+                    getMenuPermission(permissionCode);
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function deleteMenuPermission(item) {
+            const permissionCode = $("#code").val();
+
+            httpClient.delete(`/${APPLICATION_ID}/console/api/menu-permission/${item.id}`, {},
+                function(response){
+                    getMenuPermission(permissionCode);
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        // ---- 워크플로우실행권한: 워크플로우 목록에서 골라 추가 ----
+        // 워크플로우 빌더의 워크플로우별 권한 설정과 같은 데이터(WorkflowPermission)를 권한 기준으로 본다
+        function getWorkflowList() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/workflow`, {},
+                function(response){
+                    WORKFLOW_LIST = (response || []).slice().sort((a, b) =>
+                        (a.workflowCode || '').localeCompare(b.workflowCode || ''));
+                    renderWorkflowPermissionList();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function getWorkflowPermission() {
+            if(!SAVED_PERMISSION_CODE) {
+                WORKFLOW_PERMISSION_LIST = [];
+                renderWorkflowPermissionList();
                 return;
             }
 
-            httpClient.post(`/${APPLICATION_ID}/console/api/user-group/permission`, {}, {
-                    userGroupId: String(group.id),
-                    permissionId: String(permissionId),
-                    lowerPermissionGrant: $("#gpLowerGrant").prop('checked')
-                },
+            httpClient.get(`/${APPLICATION_ID}/console/api/workflow-permission/by-permission`, {permissionCode: SAVED_PERMISSION_CODE},
                 function(response){
-                    getGroupPermission();
+                    WORKFLOW_PERMISSION_LIST = response || [];
+                    renderWorkflowPermissionList();
                 },
                 function(error){
                     alertError(error);
-                    getGroupPermission();
                 }
             );
         }
 
-        function updateLowerPermissionGrant(item, lowerPermissionGrant) {
-            httpClient.put(`/${APPLICATION_ID}/console/api/user-group/permission/${item.id}`, {}, {
-                    userGroupId: String(item.userGroup.id),
-                    permissionId: String(currentPermissionId()),
-                    lowerPermissionGrant: lowerPermissionGrant
+        function renderWorkflowPermissionList() {
+            renderBoundWorkflows();
+            renderWorkflowCandidates();
+        }
+
+        function workflowLabelOf(workflow) {
+            return (workflow && (workflow.displayName || workflow.workflowCode)) || '';
+        }
+
+        // 이 권한으로 실행할 수 있는 워크플로우
+        function renderBoundWorkflows() {
+            const $body = $("#workflowPermissionList");
+            $body.empty();
+            $("#workflowPermissionCount").text(WORKFLOW_PERMISSION_LIST.length);
+
+            if(!currentPermissionId()) {
+                $body.append('<div class="rel-empty">권한을 선택하거나 먼저 저장해주세요.</div>');
+                return;
+            }
+            if(WORKFLOW_PERMISSION_LIST.length === 0) {
+                $body.append('<div class="rel-empty">이 권한으로 실행할 수 있는 워크플로우가 없습니다.</div>');
+                return;
+            }
+
+            for(const item of WORKFLOW_PERMISSION_LIST) {
+                const workflow = item.workflow || {};
+                const $row = $(`
+                    <div class="gp-row">
+                        <div class="gp-row-main">
+                            <span class="gp-name"></span>
+                            <span class="gp-path"></span>
+                        </div>
+                        <div class="rel-row-actions">
+                            <button type="button" class="rel-icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `);
+                $row.find('.gp-name').text(workflowLabelOf(workflow)).append($('<em></em>').text(workflow.workflowCode || ''));
+                $row.find('.gp-path').text(workflow.useAuthValidation === false
+                    ? '인증을 사용하지 않는 워크플로우라 권한 검사를 하지 않습니다.'
+                    : (workflow.note || ''));
+
+                $row.find('.rel-icon-btn.danger').on('click', function() {
+                    if(confirm(`[${workflowLabelOf(workflow)}] 워크플로우실행권한을 삭제하시겠습니까?`)) {
+                        deleteWorkflowPermission(item);
+                    }
+                });
+
+                $body.append($row);
+            }
+        }
+
+        // 추가할 수 있는 워크플로우
+        function renderWorkflowCandidates() {
+            const $body = $("#workflowCandidateList");
+            $body.empty();
+
+            const enabled = !!currentPermissionId();
+            $("#workflowSearch").prop('disabled', !enabled);
+            if(!enabled) {
+                $body.append('<div class="rel-empty">권한을 선택하거나 먼저 저장해주세요.</div>');
+                return;
+            }
+
+            const kw = ($("#workflowSearch").val() || '').trim().toLowerCase();
+            const boundIds = new Set(WORKFLOW_PERMISSION_LIST.map(item => String(item.workflow && item.workflow.id)));
+            const filtered = WORKFLOW_LIST.filter(workflow => !kw
+                || (workflow.workflowCode || '').toLowerCase().includes(kw)
+                || (workflow.displayName || '').toLowerCase().includes(kw));
+
+            if(filtered.length === 0) {
+                $body.append(`<div class="rel-empty">${WORKFLOW_LIST.length === 0 ? '등록된 워크플로우가 없습니다.' : '검색 결과가 없습니다.'}</div>`);
+                return;
+            }
+
+            for(const workflow of filtered) {
+                const $row = $(`
+                    <div class="gp-row">
+                        <div class="gp-row-main">
+                            <span class="gp-name"></span>
+                            <span class="gp-path"></span>
+                        </div>
+                    </div>
+                `);
+                $row.find('.gp-name').text(workflowLabelOf(workflow)).append($('<em></em>').text(workflow.workflowCode || ''));
+                $row.find('.gp-path').text(workflow.useAuthValidation === false ? '인증 미사용' : (workflow.note || ''));
+
+                if(boundIds.has(String(workflow.id))) {
+                    $row.append('<span class="gp-bound"><i class="fas fa-check"></i> 추가됨</span>');
+                }
+                else {
+                    const $add = $('<button type="button" class="ds-btn"><i class="fas fa-plus"></i>추가</button>');
+                    $add.on('click', () => insertWorkflowPermission(workflow));
+                    $row.append($add);
+                }
+
+                $body.append($row);
+            }
+        }
+
+        function insertWorkflowPermission(workflow) {
+            httpClient.post(`/${APPLICATION_ID}/console/api/workflow-permission`, {},
+                {
+                    workflowId: String(workflow.id),
+                    permissionCode: SAVED_PERMISSION_CODE
                 },
                 function(response){
-                    item.lowerPermissionGrant = lowerPermissionGrant;
-                    renderBoundGroups();
+                    getWorkflowPermission();
                 },
                 function(error){
                     alertError(error);
-                    getGroupPermission();
                 }
             );
         }
 
-        function unbindUserGroup(item) {
-            const name = (item.userGroup && (item.userGroup.name || item.userGroup.code)) || '';
-            if(!confirm(`${name} 그룹의 이 권한 연결을 해제하시겠습니까?`)) return;
-
-            httpClient.delete(`/${APPLICATION_ID}/console/api/user-group/permission/${item.id}`, {},
+        function deleteWorkflowPermission(item) {
+            httpClient.delete(`/${APPLICATION_ID}/console/api/workflow-permission/${item.id}`, {},
                 function(response){
-                    getGroupPermission();
+                    getWorkflowPermission();
                 },
                 function(error){
                     alertError(error);
@@ -1125,7 +1053,7 @@
                     <a class="nav-link" id="menu-permission-tab" data-toggle="pill" href="#menu-permission" role="tab" aria-controls="menu-permission" aria-selected="false">메뉴접근권한</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="group-permission-tab" data-toggle="pill" href="#group-permission" role="tab" aria-controls="group-permission" aria-selected="false">사용자그룹</a>
+                    <a class="nav-link" id="workflow-permission-tab" data-toggle="pill" href="#workflow-permission" role="tab" aria-controls="workflow-permission" aria-selected="false">워크플로우실행권한</a>
                 </li>
             </ul>
             <div class="tab-content" id="permission-tabContent">
@@ -1156,46 +1084,50 @@
                     <div class="ds-tab-toolbar">
                         <h4>메뉴접근권한</h4>
                     </div>
-                    <div class="rel-body">
-                        <div class="rel-add-form">
-                            <div class="form-group">
-                                <label for="maMenuCdInput">Root 메뉴 코드</label>
-                                <input type="text" class="form-control" id="maMenuCdInput" style="width:220px;">
+                    <div class="rel-body ma-columns">
+                        <!-- 좌측: 이 권한에 추가된 ROOT 메뉴 -->
+                        <div class="ma-column">
+                            <div class="ma-column-head">
+                                <span class="ma-column-title">추가된 ROOT 메뉴 <b id="menuPermissionCount">0</b>개</span>
                             </div>
-                            <div class="rel-add-actions">
-                                <button type="button" class="ds-btn ds-btn-primary" id="maSubmitBtn" onclick="submitMenuPermission()"><i class="fas fa-plus"></i>추가</button>
-                                <button type="button" class="ds-btn d-none" id="maCancelBtn" onclick="cancelMenuPermissionEdit()">취소</button>
-                            </div>
+                            <div class="ma-column-body" id="menuPermissionList"></div>
                         </div>
-                        <div class="rel-list" id="menuPermissionList"></div>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="group-permission" role="tabpanel" aria-labelledby="group-permission-tab">
-                    <div class="ds-tab-toolbar">
-                        <h4>사용자그룹 <span id="groupPermissionCount">0</span></h4>
-                        <div class="ds-panel-tools">
-                            <button type="button" class="ds-btn" onclick="getUserGroupList(); getGroupPermission();"><i class="fas fa-sync-alt"></i>새로고침</button>
-                        </div>
-                    </div>
-                    <div class="rel-body">
-                        <div class="gp-hint">
-                            이 권한을 받을 사용자 그룹을 연결합니다. 그룹에 속한 사용자가 이 권한을 받습니다.
-                            <b>하위 그룹 전파</b>를 켜면 그 그룹의 하위 그룹(모든 깊이)에 속한 사용자도 이 권한을 받습니다.
-                        </div>
-                        <div class="gp-picker">
-                            <div class="gp-picker-head">
+                        <!-- 우측: 추가할 수 있는 ROOT 메뉴 -->
+                        <div class="ma-column">
+                            <div class="ma-column-head">
                                 <div class="ds-list-search">
                                     <i class="fas fa-search"></i>
-                                    <input type="text" id="gpSearch" placeholder="그룹 코드, 이름, 경로로 검색" autocomplete="off" oninput="renderGroupCandidates()" disabled>
+                                    <input type="text" id="rootMenuSearch" placeholder="ROOT 메뉴 코드, 명칭으로 검색" autocomplete="off" oninput="renderRootMenuCandidates()">
                                 </div>
-                                <label class="gp-check" title="연결할 때 하위 그룹 전파를 켠 상태로 연결합니다">
-                                    <input type="checkbox" id="gpLowerGrant" disabled>
-                                    하위 그룹에도 전파하며 연결
-                                </label>
+                                <button type="button" class="ds-btn" onclick="getRootMenuList()" title="ROOT 메뉴 새로고침"><i class="fas fa-sync-alt"></i></button>
                             </div>
-                            <div class="gp-candidates" id="gpCandidateList"></div>
+                            <div class="ma-column-body" id="rootMenuCandidateList"></div>
                         </div>
-                        <div class="rel-list" id="groupPermissionList"></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="workflow-permission" role="tabpanel" aria-labelledby="workflow-permission-tab">
+                    <div class="ds-tab-toolbar">
+                        <h4>워크플로우실행권한</h4>
+                    </div>
+                    <div class="rel-body ma-columns">
+                        <!-- 좌측: 이 권한으로 실행할 수 있는 워크플로우 -->
+                        <div class="ma-column">
+                            <div class="ma-column-head">
+                                <span class="ma-column-title">추가된 워크플로우 <b id="workflowPermissionCount">0</b>개</span>
+                            </div>
+                            <div class="ma-column-body" id="workflowPermissionList"></div>
+                        </div>
+                        <!-- 우측: 추가할 수 있는 워크플로우 -->
+                        <div class="ma-column">
+                            <div class="ma-column-head">
+                                <div class="ds-list-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="workflowSearch" placeholder="워크플로우 코드, 명칭으로 검색" autocomplete="off" oninput="renderWorkflowCandidates()">
+                                </div>
+                                <button type="button" class="ds-btn" onclick="getWorkflowList()" title="워크플로우 새로고침"><i class="fas fa-sync-alt"></i></button>
+                            </div>
+                            <div class="ma-column-body" id="workflowCandidateList"></div>
+                        </div>
                     </div>
                 </div>
             </div>

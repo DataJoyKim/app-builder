@@ -276,10 +276,10 @@
                 <i class="fas fa-chevron-right app-arrow"></i>
             </a>
         </li>
-        <li class="app-item">
+        <li class="app-item" th:if="${canManageApplications}">
             <a class="app-link" href="/applications/manage">
-                <span class="app-other-icon"><i class="fas fa-plus"></i></span>
-                <span class="app-other-text">새 애플리케이션 만들기</span>
+                <span class="app-other-icon"><i class="fas fa-cog"></i></span>
+                <span class="app-other-text">애플리케이션 관리</span>
             </a>
         </li>
         <li class="app-item">
@@ -293,8 +293,9 @@
     <div class="empty" th:if="${applications.isEmpty()}">
         <i class="fas fa-th-large"></i>
         가입된 애플리케이션이 없습니다.<br>
-        애플리케이션 관리자에게 사용자 등록을 요청하거나, 직접 애플리케이션을 만들어보세요.
-        <a class="empty-logout" href="/applications/manage">새 애플리케이션 만들기</a>
+        <th:block th:if="${!canManageApplications}">애플리케이션 관리자에게 사용자 등록을 요청하세요.</th:block>
+        <th:block th:if="${canManageApplications}">애플리케이션 관리에서 새 애플리케이션을 만들어보세요.</th:block>
+        <a class="empty-logout" th:if="${canManageApplications}" href="/applications/manage">애플리케이션 관리</a>
         <button type="button" class="empty-logout" onclick="logout()">다른 계정으로 로그인</button>
     </div>
 </main>

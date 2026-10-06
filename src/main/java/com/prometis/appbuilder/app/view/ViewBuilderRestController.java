@@ -4,7 +4,11 @@ import com.prometis.appbuilder.app.code.CodeRequest;
 import com.prometis.appbuilder.app.code.CodeResponse;
 import com.prometis.appbuilder.app.code.CodeService;
 import com.prometis.appbuilder.app.code.CodeType;
+import com.prometis.appbuilder.app.security.company.Company;
+import com.prometis.appbuilder.app.security.company.CompanyService;
+import com.prometis.appbuilder.app.security.session.AppSessionService;
 import com.prometis.appbuilder.app.view.domain.*;
+import com.prometis.appbuilder.app.view.dto.CompanyDto;
 import com.prometis.appbuilder.app.view.dto.MenuDto;
 import com.prometis.appbuilder.app.view.dto.ProfileDto;
 import com.prometis.appbuilder.app.view.dto.ViewDto;
@@ -39,6 +43,10 @@ public class ViewBuilderRestController {
     ApplicationGuard applicationGuard;
     @Autowired
     ViewGuard viewGuard;
+    @Autowired
+    CompanyService companyService;
+    @Autowired
+    AppSessionService sessionService;
 
     @GetMapping("/api/menu/tree")
     public ResponseEntity<?> getMenu(
@@ -66,6 +74,46 @@ public class ViewBuilderRestController {
 
         return new ResponseEntity<>(menuList, HttpStatus.OK);
     }
+    @GetMapping("/api/company")
+    public ResponseEntity<?> getCompanyList(
+            HttpServletRequest request,
+            @PathVariable("applicationId") String applicationId
+    ) {
+        AuthenticatedUser user;
+        try {
+            user = viewGuard.check(request, applicationId);
+        }
+        catch (SecurityBusinessException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        // 사용자가 속한 사용자 그룹의 회사만
+        List<Company> companyList = companyService.getUserCompanies(applicationId, user.getUserId());
+
+        CompanyDto.CompanyListResponse response = CompanyDto.CompanyListResponse.builder()
+                .companyCode(sessionService.getCompanyCode(applicationId, user.getUserId()))
+                .companyList(companyList)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/api/company/change")
+    public ResponseEntity<?> changeCompany(
+            HttpServletRequest request,
+            @PathVariable("applicationId") String applicationId,
+            @RequestParam("companyCode") String companyCode
+    ) {
+        try {
+            AuthenticatedUser user = viewGuard.check(request, applicationId);
+
+            return new ResponseEntity<>(sessionService.changeCompany(applicationId, user, companyCode), HttpStatus.OK);
+        }
+        catch (SecurityBusinessException | BusinessException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     @GetMapping("/api/layout")
     public ResponseEntity<?> getLayout(@PathVariable("applicationId") String applicationId) {
         Layout response = layoutService.getLayout(applicationId);

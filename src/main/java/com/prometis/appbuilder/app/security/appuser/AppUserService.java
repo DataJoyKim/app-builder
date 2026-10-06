@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.app.security.appuser;
 
+import com.prometis.appbuilder.app.security.company.CompanyRepository;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class AppUserService {
     private final AppUserRepository appUserRepository;
     private final UserGroupUserRepository userGroupUserRepository;
+    private final CompanyRepository companyRepository;
 
     @Transactional(readOnly = true)
     public List<AppUser> getAppUsers(String applicationId) {
@@ -52,16 +54,56 @@ public class AppUserService {
      */
     @Transactional
     public AppUser joinApplication(String applicationId, Long userId, String authority) {
+        return joinApplication(applicationId, userId, authority, null);
+    }
+
+    /**
+     * 회사를 정해 들어온다 (회사를 지정한 초대). 새로 등록되면 그 회사로 등록하고,
+     * 이미 등록되어 있으면 회사가 아직 없을 때만 채운다. 이미 다른 회사에 속해 있으면 바꾸지 않는다 (사용자 화면에서 바꾼다).
+     * @param companyCode 비어 있으면 회사 미지정
+     */
+    @Transactional
+    public AppUser joinApplication(String applicationId, Long userId, String authority, String companyCode) {
+        AppUser appUser;
         if(AppUser.AUTHORITY_APPLICATION_ADMIN.equals(authority)) {
-            return grantApplicationAdmin(applicationId, userId);
+            appUser = grantApplicationAdmin(applicationId, userId);
+        }
+        else {
+            appUser = appUserRepository.findByApplicationIdAndUserId(applicationId, userId)
+                    .orElseGet(() -> appUserRepository.save(AppUser.builder()
+                            .applicationId(applicationId)
+                            .userId(userId)
+                            .authority(AppUser.AUTHORITY_APPLICATION_USER)
+                            .build()));
         }
 
-        return appUserRepository.findByApplicationIdAndUserId(applicationId, userId)
-                .orElseGet(() -> appUserRepository.save(AppUser.builder()
-                        .applicationId(applicationId)
-                        .userId(userId)
-                        .authority(AppUser.AUTHORITY_APPLICATION_USER)
-                        .build()));
+        String company = blankToNull(companyCode);
+        if(company != null && !appUser.hasCompany()) {
+            appUser.changeCompanyCode(company);
+        }
+
+        return appUser;
+    }
+
+    /**
+     * 애플리케이션 사용자의 소속 회사를 바꾼다. 이 애플리케이션에 등록된 회사만 지정할 수 있고, 비우면 회사 미지정이 된다.
+     * 권한과 달리 본인의 회사도 바꿀 수 있다 (콘솔 접근에는 영향이 없다).
+     */
+    @Transactional
+    public AppUser changeCompany(String applicationId, Long appUserId, String companyCode) throws AppUserManageException {
+        AppUser appUser = findAppUser(applicationId, appUserId);
+
+        String company = blankToNull(companyCode);
+        if(company != null && companyRepository.findByApplicationIdAndCompanyCode(applicationId, company).isEmpty()) {
+            throw new AppUserManageException("등록되지 않은 회사입니다. [" + company + "]");
+        }
+
+        appUser.changeCompanyCode(company);
+        return appUser;
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     /**

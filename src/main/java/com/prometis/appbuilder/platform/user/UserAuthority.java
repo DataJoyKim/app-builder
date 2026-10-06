@@ -2,6 +2,7 @@ package com.prometis.appbuilder.platform.user;
 
 public enum UserAuthority {
     PLATFORM_ADMIN,
+    APPLICATION_ADMIN,
     USER,
     ;
 

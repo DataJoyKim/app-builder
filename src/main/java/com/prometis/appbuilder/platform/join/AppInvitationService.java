@@ -1,6 +1,7 @@
 package com.prometis.appbuilder.platform.join;
 
 import com.prometis.appbuilder.app.security.appuser.AppUser;
+import com.prometis.appbuilder.app.security.company.CompanyRepository;
 import com.prometis.appbuilder.platform.application.Application;
 import com.prometis.appbuilder.platform.application.ApplicationRepository;
 import com.prometis.appbuilder.platform.user.User;
@@ -27,6 +28,7 @@ public class AppInvitationService {
     private final JoinVerificationRepository joinVerificationRepository;
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
     private final JoinMailSender joinMailSender;
     private final JoinProperties properties;
 
@@ -34,16 +36,22 @@ public class AppInvitationService {
 
     /**
      * @param authority 합류하면 받는 권한 (APPLICATION_ADMIN / APPLICATION_USER, 비어 있으면 관리자)
+     * @param companyCode 합류하면 소속될 회사. 이 애플리케이션에 등록된 회사여야 하고, 비어 있으면 회사 미지정
      * @param baseUrl   링크 앞부분. platform.join.public-base-url 이 있으면 그 값을 쓴다
      */
     @Transactional(rollbackFor = JoinException.class)
-    public AppInvitationResponse create(String applicationId, String email, String authority, Long inviterUserId, String baseUrl) throws JoinException {
+    public AppInvitationResponse create(String applicationId, String email, String authority, String companyCode, Long inviterUserId, String baseUrl) throws JoinException {
         Application application = applicationRepository.findByApplicationId(applicationId)
                 .orElseThrow(() -> new JoinException("존재하지 않는 애플리케이션입니다."));
 
         String invitedAuthority = authority == null || authority.isBlank() ? AppUser.AUTHORITY_APPLICATION_ADMIN : authority.trim();
         if(!AppUser.AUTHORITY_APPLICATION_ADMIN.equals(invitedAuthority) && !AppUser.AUTHORITY_APPLICATION_USER.equals(invitedAuthority)) {
             throw new JoinException("초대할 수 없는 권한입니다.");
+        }
+
+        String invitedCompanyCode = companyCode == null || companyCode.isBlank() ? null : companyCode.trim();
+        if(invitedCompanyCode != null && companyRepository.findByApplicationIdAndCompanyCode(applicationId, invitedCompanyCode).isEmpty()) {
+            throw new JoinException("등록되지 않은 회사입니다. [" + invitedCompanyCode + "]");
         }
 
         String normalizedEmail = email == null ? "" : email.trim();
@@ -65,6 +73,7 @@ public class AppInvitationService {
                 .applicationId(applicationId)
                 .email(normalizedEmail)
                 .authority(invitedAuthority)
+                .companyCode(invitedCompanyCode)
                 .invitedBy(inviterUserId)
                 .createdAt(now)
                 .expiresAt(now.plus(properties.invitationTtl()))

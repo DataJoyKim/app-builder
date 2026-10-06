@@ -93,9 +93,15 @@ public class AppMembershipService {
      */
     @Transactional
     public AppUser join(String applicationId, Long userId, String authority) {
+        return join(applicationId, userId, authority, null);
+    }
+
+    /** 회사를 지정한 초대로 들어온다. companyCode 가 비어 있으면 회사 미지정 */
+    @Transactional
+    public AppUser join(String applicationId, Long userId, String authority, String companyCode) {
         boolean wasMember = appUserRepository.findByApplicationIdAndUserId(applicationId, userId).isPresent();
 
-        AppUser appUser = appUserService.joinApplication(applicationId, userId, authority);
+        AppUser appUser = appUserService.joinApplication(applicationId, userId, authority, companyCode);
 
         if(!wasMember && AppUser.AUTHORITY_APPLICATION_USER.equals(appUser.getAuthority())) {
             addToDefaultUserGroup(applicationId, userId);

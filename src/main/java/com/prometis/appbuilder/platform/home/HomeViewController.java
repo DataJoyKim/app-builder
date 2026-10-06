@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.platform.home;
 
+import com.prometis.appbuilder.console.app.ApplicationManageService;
 import com.prometis.appbuilder.platform.user.User;
 import com.prometis.appbuilder.platform.user.UserService;
 import com.prometis.appbuilder.security.domain.AuthenticatedUser;
@@ -28,6 +29,8 @@ public class HomeViewController {
     UserService userService;
     @Autowired
     HomeService homeService;
+    @Autowired
+    ApplicationManageService applicationManageService;
 
     @GetMapping("/")
     public String home(HttpServletRequest request) {
@@ -53,19 +56,24 @@ public class HomeViewController {
         model.addAttribute("loginId", loginUser.getLoginId());
         model.addAttribute("email", loginUser.getEmail());
         model.addAttribute("applications", homeService.getJoinedApplications(user.getUserId()));
+        // 애플리케이션 관리자(users.authority = APPLICATION_ADMIN)에게만 애플리케이션 관리 화면으로 가는 버튼을 보여준다
+        model.addAttribute("canManageApplications", applicationManageService.canCreateApplication(user.getUserId()));
 
         return "home/application-select";
     }
 
     /**
      * 소유한 애플리케이션에 접속하거나 새로 만든다 (애플리케이션 콘솔의 application-manage 화면을 그대로 쓴다).
-     * 공개 가입으로 누구나 계정을 만들 수 있으므로 로그인한 사용자면 누구나 들어올 수 있다.
+     * 애플리케이션 관리자(users.authority = APPLICATION_ADMIN)만 들어올 수 있고, 그 밖의 사용자는 애플리케이션 선택 화면으로 돌려보낸다.
      */
     @GetMapping("/applications/manage")
     public String applicationManage(HttpServletRequest request, Model model) {
         AuthenticatedUser user = authenticatedUserOf(request);
         if(user == null) {
             return redirectLogin(HomeLanding.APPLICATION_MANAGE);
+        }
+        if(!applicationManageService.canCreateApplication(user.getUserId())) {
+            return "redirect:" + HomeLanding.APPLICATION_SELECT.getPath();
         }
 
         model.addAttribute("userName", user.getUserName());

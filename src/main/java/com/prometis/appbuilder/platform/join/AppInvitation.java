@@ -35,6 +35,10 @@ public class AppInvitation {
     @Column(length = 100)
     private String authority;
 
+    // 합류하면 소속될 회사 (Company.companyCode). 회사 없이 만든 초대는 비어 있다
+    @Column(length = 100)
+    private String companyCode;
+
     @Column
     private Long invitedBy;
 

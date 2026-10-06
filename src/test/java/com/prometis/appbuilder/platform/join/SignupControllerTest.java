@@ -124,13 +124,13 @@ class SignupControllerTest {
         User user = userRepository.findByLoginId("newbie").orElseThrow();
         assertEquals("newbie@test.com", user.getEmail());
         assertTrue(passwordEncoder.matches("pw1234!", user.getPassword()));
-        assertNull(user.getAuthority());
+        assertEquals(User.AUTHORITY_APPLICATION_ADMIN, user.getAuthority());
         assertTrue(appUserRepository.findByUserId(user.getId()).isEmpty());
         assertTrue(joinVerificationRepository.findAll().isEmpty());
 
         Cookie accessToken = result.getResponse().getCookie("accessToken");
         mockMvc.perform(get("/").cookie(accessToken))
-                .andExpect(redirectedUrl("/applications/manage"));
+                .andExpect(redirectedUrl("/applications"));
     }
 
     @Test

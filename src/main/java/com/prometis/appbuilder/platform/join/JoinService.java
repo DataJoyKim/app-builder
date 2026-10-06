@@ -89,7 +89,7 @@ public class JoinService {
             throw new JoinException("초대받은 이메일(" + invitation.getEmail() + ")의 계정으로 로그인해야 수락할 수 있습니다.");
         }
 
-        appMembershipService.join(applicationId, user.getId(), invitation.getAuthority());
+        appMembershipService.join(applicationId, user.getId(), invitation.getAuthority(), invitation.getCompanyCode());
         invitation.accept(user.getId(), LocalDateTime.now());
         joinVerificationRepository.deleteAll(joinVerificationRepository.findByInvitationId(invitation.getId()));
     }
@@ -266,10 +266,12 @@ public class JoinService {
                 .userName(verification.getUserName())
                 .email(verification.getEmail())
                 .password(verification.getEncodedPassword())
+                // 공개 가입(/signup)으로 만든 계정은 애플리케이션을 만들 수 있는 애플리케이션 관리자가 된다 (초대/앱 가입은 권한 없음)
+                .authority(JoinVerification.TYPE_SIGNUP.equals(joinType) ? User.AUTHORITY_APPLICATION_ADMIN : null)
                 .build());
 
         if(invitation != null) {
-            appMembershipService.join(invitation.getApplicationId(), user.getId(), invitation.getAuthority());
+            appMembershipService.join(invitation.getApplicationId(), user.getId(), invitation.getAuthority(), invitation.getCompanyCode());
             invitation.accept(user.getId(), LocalDateTime.now());
         }
 

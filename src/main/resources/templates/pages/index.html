@@ -37,6 +37,13 @@
                     <div id="profile"></div>
 
                     <div>
+                        <div class="form-group ">
+                            <select class="form-control col-12" id="companyList">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
                         <div class="form-group">
                             <select class="form-control col-12" id="rootMenu">
                             </select>
@@ -118,6 +125,10 @@
                         setMenuTree(selectedValue);
                     }
                 });
+
+                $('#companyList').on('change', function() {
+                    changeCompany($(this).val());
+                });
             });
 
             function setLayout() {
@@ -137,6 +148,8 @@
                     if(data.useProfile) {
                         setProfile();
                     }
+
+                    setCompanyList();
 
                     setRootMenu();
 
@@ -166,7 +179,7 @@
                   url: `/${APPLICATION_ID}/api/profile`,
                   data: {},
                   success: function(response) {
-                  console.log('profile',response);
+                    console.log('profile',response);
                     let data = {
                         profileImg:"../../dist/img/blank_profile.png"
                     }
@@ -183,6 +196,45 @@
                   },
                   error: function(error) {
                     alert('에러가 발생하였습니다.');
+                  },
+                });
+            }
+
+            function setCompanyList() {
+                $.ajax({
+                  type: 'GET',
+                  url: `/${APPLICATION_ID}/api/company`,
+                  success: function(response) {
+                    const $companyList = $("#companyList");
+                    $companyList.empty();
+
+                    const companyList = response.companyList || [];
+                    for(let i=0; i<companyList.length; i++) {
+                        $companyList.append($('<option></option>').val(companyList[i].companyCode).text(companyList[i].companyName));
+                    }
+
+                    // 현재 세션의 회사 선택 (목록에 없으면 선택 없음)
+                    $companyList.val(response.companyCode);
+                    if($companyList.val() == null) {
+                        $companyList.prop('selectedIndex', -1);
+                    }
+                  },
+                  error: function(error) {
+                    alert('에러가 발생하였습니다.');
+                  },
+                });
+            }
+
+            function changeCompany(companyCode) {
+                $.ajax({
+                  type: 'GET',
+                  url: `/${APPLICATION_ID}/api/company/change`,
+                  data: {"companyCode":companyCode},
+                  success: function(response) {
+                    location.href = `/${APPLICATION_ID}`;
+                  },
+                  error: function(error) {
+                    alert('회사 변경 중 에러가 발생하였습니다.');
                   },
                 });
             }

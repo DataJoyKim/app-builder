@@ -285,6 +285,41 @@
         color: #1d4ed8;
     }
 
+    /* 소속 회사 선택. 회사가 없는 사용자는 눈에 띄게 */
+    #app-user-app .ds-company-select {
+        max-width: 140px;
+    }
+
+    #app-user-app .ds-company-select.unassigned {
+        border-color: #fcd34d;
+        background: #fffbeb;
+        color: #b45309;
+    }
+
+    #app-user-app .ds-unassigned-filter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 14px;
+        border-bottom: 1px solid #eef0f2;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    #app-user-app .ds-unassigned-filter label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    #app-user-app .ds-unassigned-filter strong {
+        color: #b45309;
+    }
+
     #app-user-app .ds-role-select:focus {
         border-color: #4A90E2;
         box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
@@ -817,6 +852,9 @@
     // 선택한 userId. 검색어가 바뀌어도 선택은 유지한다
     const SELECTED_USER_IDS = new Set();
 
+    // 이 애플리케이션의 회사 (Company). 사용자 소속 회사 지정과 초대에 쓴다
+    let COMPANY_LIST = [];
+
     const AUTHORITY_LABEL = {
         APPLICATION_ADMIN: '관리자',
         APPLICATION_USER: '사용자'
@@ -832,9 +870,9 @@
     }
 
     function reload() {
-        getAppUserList();
+        // 사용자 목록과 보낸 초대는 회사 목록을 받은 뒤 그린다 (회사명 표시)
+        getCompanyList();
         getCandidateList();
-        getInvitationList();
         getJoinSetting();
         getJoinRequestList();
     }
@@ -884,6 +922,33 @@
         $body.append($empty);
     }
 
+    // ---- 회사 ----
+    // 회사 목록을 먼저 받아야 사용자 행과 초대 폼에서 회사를 고를 수 있다
+    function getCompanyList() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/company`, {},
+            function(response){
+                COMPANY_LIST = response || [];
+                renderInviteCompanyOptions();
+                getAppUserList();
+                getInvitationList();
+            },
+            function(error){
+                alertError(error);
+                getAppUserList();
+                getInvitationList();
+            }
+        );
+    }
+
+    function companyNameOf(companyCode) {
+        const company = COMPANY_LIST.find(c => c.companyCode === companyCode);
+        return company ? company.companyName : companyCode;
+    }
+
+    function hasCompany(item) {
+        return !!(item.companyCode && item.companyCode.trim());
+    }
+
     // ---- 등록된 사용자 ----
     function getAppUserList() {
         httpClient.get(`/${APPLICATION_ID}/console/api/app-user`, {},
@@ -899,15 +964,18 @@
 
     function renderAppUserList() {
         const keyword = $("#appUserSearch").val();
-        const filtered = APP_USER_LIST.filter(item => matches(item, keyword));
+        const unassignedOnly = $("#appUserUnassignedOnly").prop('checked');
+        const filtered = APP_USER_LIST.filter(item => matches(item, keyword) && (!unassignedOnly || !hasCompany(item)));
 
         $("#appUserCount").text(APP_USER_LIST.length);
+        $("#appUserUnassignedCount").text(APP_USER_LIST.filter(item => !hasCompany(item)).length);
 
         const $body = $("#appUserListBody");
         $body.empty();
 
         if(filtered.length === 0) {
-            renderEmpty($body, 'fa-users', APP_USER_LIST.length === 0 ? '등록된 사용자가 없습니다.' : '검색 결과가 없습니다.');
+            renderEmpty($body, 'fa-users', APP_USER_LIST.length === 0 ? '등록된 사용자가 없습니다.'
+                : unassignedOnly && !(keyword || '').trim() ? '회사가 지정되지 않은 사용자가 없습니다.' : '검색 결과가 없습니다.');
             return;
         }
 
@@ -927,6 +995,8 @@
                 changeAuthority(item, $(this).val(), $(this));
             });
 
+            const $company = createCompanySelect(item);
+
             const $delete = $('<button type="button" class="ds-icon-btn danger" title="애플리케이션 사용자에서 삭제"><i class="fas fa-trash-alt"></i></button>');
             $delete.on('click', function() {
                 deleteAppUser(item);
@@ -939,13 +1009,61 @@
                 $delete.prop('disabled', true).attr('title', '본인은 삭제할 수 없습니다.');
             }
 
-            $item.append($authority, $delete);
+            $item.append($company, $authority, $delete);
             $body.append($item);
         }
     }
 
     function displayNameOf(item) {
         return item.userName || item.loginId || `(삭제된 사용자 #${item.userId})`;
+    }
+
+    // 사용자 행의 소속 회사 선택 (권한 선택과 같은 방식)
+    function createCompanySelect(item) {
+        const $select = $('<select class="ds-role-select ds-company-select" title="소속 회사 변경"></select>');
+        $select.append($('<option></option>').val('').text('회사 미지정'));
+        for(const company of COMPANY_LIST) {
+            $select.append($('<option></option>').val(company.companyCode).text(company.companyName));
+        }
+        // 지금은 없는 회사코드면 그대로 보여주되 고를 수는 없게 한다
+        if(hasCompany(item) && !COMPANY_LIST.some(c => c.companyCode === item.companyCode)) {
+            $select.append($('<option disabled></option>').val(item.companyCode).text(`${item.companyCode} (삭제된 회사)`));
+        }
+
+        applyCompanyValue($select, item);
+        if(COMPANY_LIST.length === 0) {
+            $select.prop('disabled', true).attr('title', '등록된 회사가 없습니다. 회사 관리에서 먼저 등록하세요.');
+        }
+
+        $select.on('change', function() {
+            changeCompany(item, $(this).val(), $(this));
+        });
+
+        return $select;
+    }
+
+    function applyCompanyValue($select, item) {
+        $select.val(item.companyCode || '').toggleClass('unassigned', !hasCompany(item));
+    }
+
+    function changeCompany(item, companyCode, $select) {
+        const label = companyCode ? companyNameOf(companyCode) : '회사 미지정';
+        if(!confirm(`${displayNameOf(item)}의 소속 회사를 '${label}'(으)로 변경하시겠습니까?`)) {
+            applyCompanyValue($select, item);
+            return;
+        }
+
+        httpClient.put(`/${APPLICATION_ID}/console/api/app-user/${item.id}/company`, {}, {companyCode: companyCode},
+            function(response){
+                item.companyCode = response ? response.companyCode : companyCode;
+                // '회사 미지정만 보기' 필터와 건수를 다시 맞춘다
+                renderAppUserList();
+            },
+            function(error){
+                applyCompanyValue($select, item);
+                alertError(error);
+            }
+        );
     }
 
     function changeAuthority(item, authority, $select) {
@@ -1235,12 +1353,20 @@
 
         const authority = $("#inviteAuthority").val();
         const roleLabel = AUTHORITY_LABEL[authority] || authority;
+        const companyCode = $("#inviteCompany").val() || '';
+        // 회사가 등록되어 있으면 초대받은 사람이 소속될 회사를 반드시 고른다
+        if(COMPANY_LIST.length > 0 && !companyCode) {
+            alert('초대받은 사람이 소속될 회사를 선택해주세요.');
+            $("#inviteCompany").focus();
+            return;
+        }
+        const companyLabel = companyCode ? `'${companyNameOf(companyCode)}' 회사의 ` : '';
         const adminWarning = authority === 'APPLICATION_ADMIN' ? '\n관리자는 이 애플리케이션 콘솔 전체를 관리할 수 있습니다.' : '';
-        if(!confirm(`${INVITE_EMAILS.length}명을 ${roleLabel}(으)로 초대하시겠습니까?${adminWarning}`)) {
+        if(!confirm(`${INVITE_EMAILS.length}명을 ${companyLabel}${roleLabel}(으)로 초대하시겠습니까?${adminWarning}`)) {
             return;
         }
 
-        httpClient.post(`/${APPLICATION_ID}/console/api/app-invitation/batch`, {}, {emails: INVITE_EMAILS, authority: authority},
+        httpClient.post(`/${APPLICATION_ID}/console/api/app-invitation/batch`, {}, {emails: INVITE_EMAILS, authority: authority, companyCode: companyCode},
             function(response){
                 const results = (response && response.results) || [];
                 LAST_INVITE_RESULTS = results;
@@ -1255,6 +1381,27 @@
                 alertError(error);
             }
         );
+    }
+
+    function renderInviteCompanyOptions() {
+        const $select = $("#inviteCompany");
+        const selected = $select.val();
+        $select.empty();
+
+        if(COMPANY_LIST.length === 0) {
+            $select.append($('<option></option>').val('').text('회사 없음'));
+            $select.prop('disabled', true).attr('title', '등록된 회사가 없어 회사 없이 초대합니다.');
+            return;
+        }
+
+        $select.append($('<option></option>').val('').text('회사 선택'));
+        for(const company of COMPANY_LIST) {
+            $select.append($('<option></option>').val(company.companyCode).text(company.companyName));
+        }
+        $select.prop('disabled', false).attr('title', '초대받은 사람이 소속될 회사');
+        if(selected && COMPANY_LIST.some(c => c.companyCode === selected)) {
+            $select.val(selected);
+        }
     }
 
     function renderInviteResult(response) {
@@ -1342,9 +1489,10 @@
             `);
 
             $item.find('.ds-list-item-name').text(item.email);
-            $item.find('.ds-invite-meta').text(item.status === 'ACCEPTED'
+            const companyMeta = item.companyCode ? `${companyNameOf(item.companyCode)} · ` : '';
+            $item.find('.ds-invite-meta').text(companyMeta + (item.status === 'ACCEPTED'
                 ? `초대 ${formatDateTime(item.createdAt)} · 수락 ${formatDateTime(item.acceptedAt)}`
-                : `초대 ${formatDateTime(item.createdAt)} · 만료 ${formatDateTime(item.expiresAt)}`);
+                : `초대 ${formatDateTime(item.createdAt)} · 만료 ${formatDateTime(item.expiresAt)}`));
             $item.find('.ds-role')
                 .toggleClass('admin', item.authority === 'APPLICATION_ADMIN')
                 .text(AUTHORITY_LABEL[item.authority] || item.authority);
@@ -1407,7 +1555,7 @@
                 const $select = $("#defaultUserGroupId");
                 $select.find('option:not(:first)').remove();
                 for(const group of (groups || [])) {
-                    $select.append($('<option></option>').val(group.id).text(`${group.name} (${group.code})`));
+                    $select.append($('<option></option>').val(group.id).text(`[${group.companyCode}] ${group.name} (${group.code})`));
                 }
 
                 httpClient.get(`/${APPLICATION_ID}/console/api/app-join/setting`, {},
@@ -1605,6 +1753,10 @@
                         <i class="fas fa-search"></i>
                         <input type="text" id="appUserSearch" placeholder="로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderAppUserList()">
                     </div>
+                    <div class="ds-unassigned-filter">
+                        <label><input type="checkbox" id="appUserUnassignedOnly" onchange="renderAppUserList()">회사 미지정만 보기</label>
+                        <span>회사 미지정 <strong id="appUserUnassignedCount">0</strong>명</span>
+                    </div>
                     <div class="ds-list-body" id="appUserListBody"></div>
                 </section>
 
@@ -1694,6 +1846,7 @@
                         <div class="ds-invite-actions">
                             <span class="ds-hint" id="inviteEmailHint">한 번에 50명까지 초대할 수 있습니다.</span>
                             <div class="ds-invite-actions-right">
+                                <select class="ds-role-select ds-company-select" id="inviteCompany" title="초대받은 사람이 소속될 회사"></select>
                                 <select class="ds-role-select" id="inviteAuthority" title="초대받은 사람이 받을 권한">
                                     <option value="APPLICATION_USER">사용자로 초대</option>
                                     <option value="APPLICATION_ADMIN">관리자로 초대</option>

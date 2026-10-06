@@ -295,6 +295,10 @@
         );
     }
 
+    function notCreatableMessage() {
+        return OWNED.notCreatableReason || `애플리케이션은 최대 ${OWNED.maxOwnedCount}개까지 소유할 수 있습니다.`;
+    }
+
     function renderList() {
         const applications = OWNED.applications || [];
 
@@ -303,7 +307,7 @@
             .toggleClass('full', !OWNED.creatable);
         $("#openCreateModalBtn")
             .prop('disabled', !OWNED.creatable)
-            .attr('title', OWNED.creatable ? '' : `애플리케이션은 최대 ${OWNED.maxOwnedCount}개까지 소유할 수 있습니다.`);
+            .attr('title', OWNED.creatable ? '' : notCreatableMessage());
 
         const $body = $("#ownedListBody");
         $body.empty();
@@ -370,7 +374,7 @@
     // ---- 생성 ----
     function openCreateModal() {
         if(!OWNED.creatable) {
-            alert(`애플리케이션은 최대 ${OWNED.maxOwnedCount}개까지 소유할 수 있습니다.`);
+            alert(notCreatableMessage());
             return;
         }
 

@@ -94,7 +94,7 @@ class AppSignupTest {
         existing = user("as-existing", "기존사용자", "existing@test.com");
         appUserRepository.save(AppUser.builder().applicationId("shop").userId(owner.getId()).authority(AppUser.AUTHORITY_APPLICATION_ADMIN).build());
 
-        defaultGroup = userGroupRepository.save(UserGroup.builder().applicationId("shop").code("MEMBER").name("회원").build());
+        defaultGroup = userGroupRepository.save(UserGroup.builder().applicationId("shop").companyCode("C001").code("MEMBER").name("회원").build());
     }
 
     private void application(String applicationId, String name) {
@@ -368,7 +368,7 @@ class AppSignupTest {
 
     @Test
     void 잘못된_가입_방식이나_다른_애플리케이션의_그룹은_저장하지_않는다() throws Exception {
-        UserGroup otherGroup = userGroupRepository.save(UserGroup.builder().applicationId("crm").code("CRM-G").name("고객팀").build());
+        UserGroup otherGroup = userGroupRepository.save(UserGroup.builder().applicationId("crm").companyCode("C001").code("CRM-G").name("고객팀").build());
 
         mockMvc.perform(put("/shop/console/api/app-join/setting").cookie(tokenOf(owner))
                         .contentType(MediaType.APPLICATION_JSON)

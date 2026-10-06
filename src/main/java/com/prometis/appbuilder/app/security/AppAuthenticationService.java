@@ -1,5 +1,7 @@
 package com.prometis.appbuilder.app.security;
 
+import com.prometis.appbuilder.app.security.session.AppSession;
+import com.prometis.appbuilder.app.security.session.AppSessionService;
 import com.prometis.appbuilder.app.security.usergroup.*;
 import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import com.prometis.appbuilder.security.exception.SecurityBusinessException;
@@ -16,7 +18,7 @@ public class AppAuthenticationService {
     private final UserGroupService userGroupService;
     private final UserGroupPermissionRepository userGroupPermissionRepository;
     private final AuthenticationService authenticationService;
-
+    private final AppSessionService appSessionService;
 
     /**
      * 토큰으로 사용자를 확인하고, applicationId 애플리케이션의 사용자 그룹에서만 권한을 모아 부여한다.
@@ -26,12 +28,18 @@ public class AppAuthenticationService {
     public AuthenticatedUser authentication(String applicationId, String accessToken) throws SecurityBusinessException {
         AuthenticatedUser authenticatedUser = authenticationService.authentication(accessToken);
 
+        AppSession session = appSessionService.registerSession(applicationId, authenticatedUser);
+
         // 사용자 권한 부여
         List<UserGroupUser> userGroupUsers = userGroupService.getUserGroupUser(authenticatedUser.getUserId());
 
         for(UserGroupUser userGroupUser : userGroupUsers) {
             UserGroup userGroup = userGroupUser.getUserGroup();
-            if(userGroup == null || !applicationId.equals(userGroup.getApplicationId())) {
+            if(
+                userGroup == null ||
+                !applicationId.equals(userGroup.getApplicationId()) ||
+                !session.getCompanyCode().equals(userGroup.getCompanyCode())
+            ) {
                 continue;
             }
 

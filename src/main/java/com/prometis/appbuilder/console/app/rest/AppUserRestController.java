@@ -5,6 +5,7 @@ import com.prometis.appbuilder.app.security.appuser.AppUserManageException;
 import com.prometis.appbuilder.app.security.appuser.AppUserService;
 import com.prometis.appbuilder.console.app.dto.AppUserAuthorityRequest;
 import com.prometis.appbuilder.console.app.dto.AppUserCandidateResponse;
+import com.prometis.appbuilder.console.app.dto.AppUserCompanyRequest;
 import com.prometis.appbuilder.console.app.dto.AppUserRegisterRequest;
 import com.prometis.appbuilder.console.app.dto.AppUserResponse;
 import com.prometis.appbuilder.platform.user.User;
@@ -108,6 +109,29 @@ public class AppUserRestController {
 
         try {
             AppUser appUser = appUserService.changeAuthority(applicationId, id, request.getAuthority(), requesterUserId);
+            User user = userRepository.findById(appUser.getUserId()).orElse(null);
+
+            return new ResponseEntity<>(AppUserResponse.of(appUser, user, requesterUserId), HttpStatus.OK);
+        }
+        catch (AppUserManageException e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/company")
+    public ResponseEntity<?> changeCompany(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("id") Long id,
+            @RequestBody AppUserCompanyRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long requesterUserId = loginUserIdOf(httpRequest);
+        if(requesterUserId == null) {
+            return unauthorized();
+        }
+
+        try {
+            AppUser appUser = appUserService.changeCompany(applicationId, id, request.getCompanyCode());
             User user = userRepository.findById(appUser.getUserId()).orElse(null);
 
             return new ResponseEntity<>(AppUserResponse.of(appUser, user, requesterUserId), HttpStatus.OK);

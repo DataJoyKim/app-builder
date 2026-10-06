@@ -20,7 +20,7 @@ import java.util.Map;
  * 애플리케이션 콘솔 밖(/applications/manage)에서 쓰는 소유 애플리케이션 조회/생성 API.
  * 애플리케이션 콘솔의 /{applicationId}/console/api/application-manage 와 같은 동작이지만,
  * 아직 들어갈 콘솔이 정해지지 않은 상태라 applicationId 없이 로그인한 사용자 기준으로만 동작한다.
- * 공개 가입(/signup)으로 누구나 계정을 만들 수 있으므로 로그인한 사용자면 누구나 쓸 수 있다 (소유 개수는 max-owned-count 로 제한).
+ * 애플리케이션 관리자(users.authority = APPLICATION_ADMIN)만 쓸 수 있다 (소유 개수는 max-owned-count 로 제한).
  */
 @RestController
 @RequestMapping("/api/my-applications")
@@ -39,6 +39,9 @@ public class MyApplicationRestController {
         catch (SecurityBusinessException e) {
             return message(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
+        if(!applicationManageService.canCreateApplication(user.getUserId())) {
+            return message(HttpStatus.FORBIDDEN, ApplicationManageService.NOT_APPLICATION_ADMIN_MESSAGE);
+        }
 
         return new ResponseEntity<>(applicationManageService.getOwnedApplications(user.getUserId()), HttpStatus.OK);
     }
@@ -51,6 +54,9 @@ public class MyApplicationRestController {
         }
         catch (SecurityBusinessException e) {
             return message(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        if(!applicationManageService.canCreateApplication(user.getUserId())) {
+            return message(HttpStatus.FORBIDDEN, ApplicationManageService.NOT_APPLICATION_ADMIN_MESSAGE);
         }
 
         try {

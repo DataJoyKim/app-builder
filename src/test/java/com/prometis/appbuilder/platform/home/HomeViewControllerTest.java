@@ -17,7 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -58,7 +61,7 @@ class HomeViewControllerTest {
         application("old", "구시스템", ApplicationStatus.INACTIVE);
 
         platformAdmin = user("home-platform", "플랫폼", User.AUTHORITY_PLATFORM_ADMIN);
-        appAdmin = user("home-admin", "관리자", null);
+        appAdmin = user("home-admin", "관리자", User.AUTHORITY_APPLICATION_ADMIN);
         member = user("home-member", "일반", null);
         newcomer = user("home-newcomer", "신규", null);
 
@@ -114,9 +117,11 @@ class HomeViewControllerTest {
     }
 
     @Test
-    void 애플리케이션_관리자는_소유_애플리케이션_관리_화면으로_보낸다() throws Exception {
+    void 애플리케이션_관리자도_애플리케이션_선택_화면으로_보낸다() throws Exception {
         mockMvc.perform(get("/").cookie(tokenOf(appAdmin)))
-                .andExpect(redirectedUrl("/applications/manage"));
+                .andExpect(redirectedUrl("/applications"));
+
+        // 생성 화면은 첫 화면이 아닐 뿐, 주소로 직접 들어갈 수 있다
 
         mockMvc.perform(get("/applications/manage").cookie(tokenOf(appAdmin)))
                 .andExpect(status().isOk())
@@ -140,7 +145,9 @@ class HomeViewControllerTest {
                         hasProperty("applicationId", is("ehr"))
                 )))
                 .andExpect(content().string(containsString("href=\"/ehr\"")))
-                .andExpect(content().string(not(containsString("href=\"/old\""))));
+                .andExpect(content().string(not(containsString("href=\"/old\""))))
+                // 선택 화면에서는 애플리케이션을 만들지 않는다
+                .andExpect(content().string(not(containsString("/applications/manage"))));
     }
 
     @Test
@@ -160,29 +167,63 @@ class HomeViewControllerTest {
     }
 
     @Test
-    void 어느_애플리케이션에도_없는_사용자는_애플리케이션_만들기_화면으로_보낸다() throws Exception {
+    void 어느_애플리케이션에도_없는_사용자도_애플리케이션_선택_화면으로_보낸다() throws Exception {
         mockMvc.perform(get("/").cookie(tokenOf(newcomer)))
-                .andExpect(redirectedUrl("/applications/manage"));
+                .andExpect(redirectedUrl("/applications"));
     }
 
-    // 공개 가입으로 누구나 계정을 만들 수 있으므로 애플리케이션 생성은 로그인한 사용자 누구나 할 수 있다
+    // 애플리케이션 생성은 users.authority 가 APPLICATION_ADMIN 인 사용자만 할 수 있다
     @Test
-    void 일반_사용자도_자기_애플리케이션을_만들_수_있다() throws Exception {
-        mockMvc.perform(get("/applications/manage").cookie(tokenOf(member)))
+    void 애플리케이션_관리자만_애플리케이션_관리_화면에서_애플리케이션을_만든다() throws Exception {
+        mockMvc.perform(get("/applications/manage").cookie(tokenOf(appAdmin)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("home/application-manage"));
 
-        mockMvc.perform(get("/api/my-applications").cookie(tokenOf(member)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.applications", empty()));
-
-        mockMvc.perform(post("/api/my-applications").cookie(tokenOf(member))
+        mockMvc.perform(post("/api/my-applications").cookie(tokenOf(appAdmin))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"applicationId\":\"member-app\",\"name\":\"내 앱\"}"))
+                        .content("{\"applicationId\":\"admin-app\",\"name\":\"관리자 앱\"}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/my-applications").cookie(tokenOf(member)))
-                .andExpect(jsonPath("$.applications[*].applicationId", contains("member-app")));
+        mockMvc.perform(get("/api/my-applications").cookie(tokenOf(appAdmin)))
+                .andExpect(jsonPath("$.applications[*].applicationId", hasItem("admin-app")));
+    }
+
+    @Test
+    void 애플리케이션_관리자가_아니면_관리_화면과_생성_API를_쓸_수_없다() throws Exception {
+        // AppUser 로는 관리자여도 users.authority 가 APPLICATION_ADMIN 이 아니면 안 된다
+        User consoleOnlyAdmin = user("home-console-admin", "앱관리자", null);
+        appUser("ehr", consoleOnlyAdmin, AppUser.AUTHORITY_APPLICATION_ADMIN);
+
+        for(User user : List.of(member, newcomer, consoleOnlyAdmin)) {
+            mockMvc.perform(get("/applications/manage").cookie(tokenOf(user)))
+                    .andExpect(redirectedUrl("/applications"));
+
+            mockMvc.perform(get("/api/my-applications").cookie(tokenOf(user)))
+                    .andExpect(status().isForbidden());
+
+            mockMvc.perform(post("/api/my-applications").cookie(tokenOf(user))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"applicationId\":\"denied-app\",\"name\":\"안 됨\"}"))
+                    .andExpect(status().isForbidden());
+        }
+
+        assertTrue(applicationRepository.findByApplicationId("denied-app").isEmpty());
+    }
+
+    @Test
+    void 선택_화면의_애플리케이션_관리_버튼은_애플리케이션_관리자에게만_보인다() throws Exception {
+        mockMvc.perform(get("/applications").cookie(tokenOf(appAdmin)))
+                .andExpect(model().attribute("canManageApplications", true))
+                .andExpect(content().string(containsString("href=\"/applications/manage\"")));
+
+        mockMvc.perform(get("/applications").cookie(tokenOf(member)))
+                .andExpect(model().attribute("canManageApplications", false))
+                .andExpect(content().string(not(containsString("/applications/manage"))));
+
+        // 아직 애플리케이션이 없는 관리자(공개 가입 직후)에게도 보인다
+        User freshAdmin = user("home-fresh-admin", "신규관리자", User.AUTHORITY_APPLICATION_ADMIN);
+        mockMvc.perform(get("/applications").cookie(tokenOf(freshAdmin)))
+                .andExpect(content().string(containsString("href=\"/applications/manage\"")));
     }
 
     @Test

@@ -55,8 +55,8 @@ class UserGroupPermissionRestControllerTest {
         permissionRepository.deleteAll();
 
         permission = permissionRepository.save(Permission.builder().applicationId("ehr").code("ORDER_READ").name("주문 조회").build());
-        sales = userGroupRepository.save(UserGroup.builder().applicationId("ehr").code("SALES").name("영업본부").build());
-        salesTeam = userGroupRepository.save(UserGroup.builder().applicationId("ehr").code("SALES_1").name("영업1팀").parentUserGroup(sales).build());
+        sales = userGroupRepository.save(UserGroup.builder().applicationId("ehr").companyCode("C001").code("SALES").name("영업본부").build());
+        salesTeam = userGroupRepository.save(UserGroup.builder().applicationId("ehr").companyCode("C001").code("SALES_1").name("영업1팀").parentUserGroup(sales).build());
     }
 
     private ResultActions bind(String applicationId, Object userGroupId, Object permissionId, boolean lowerPermissionGrant) throws Exception {

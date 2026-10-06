@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prometis.appbuilder.app.security.appuser.AppUser;
 import com.prometis.appbuilder.app.security.appuser.AppUserRepository;
+import com.prometis.appbuilder.app.security.company.Company;
+import com.prometis.appbuilder.app.security.company.CompanyRepository;
 import com.prometis.appbuilder.app.security.usergroup.UserGroup;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupRepository;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupUserRepository;
@@ -76,6 +78,8 @@ class InvitationJoinTest {
     AppMembershipService appMembershipService;
     @Autowired
     AppJoinSettingRepository appJoinSettingRepository;
+    @Autowired
+    CompanyRepository companyRepository;
     @MockBean
     JoinMailSender joinMailSender;
 
@@ -90,6 +94,9 @@ class InvitationJoinTest {
         userGroupUserRepository.deleteAll();
         userGroupRepository.deleteAll();
         userRepository.findByLoginId("invitee").ifPresent(userRepository::delete);
+
+        companyRepository.deleteAll();
+        companyRepository.save(Company.builder().applicationId("ehr").companyCode("C001").companyName("본사").build());
 
         application("ehr", "인사관리");
         application("crm", "고객관리");
@@ -382,7 +389,7 @@ class InvitationJoinTest {
 
     @Test
     void 사용자로_초대하면_사용자가_되고_기본_사용자_그룹에_들어간다() throws Exception {
-        UserGroup group = userGroupRepository.save(UserGroup.builder().applicationId("ehr").code("INV-DEFAULT").name("기본").build());
+        UserGroup group = userGroupRepository.save(UserGroup.builder().applicationId("ehr").companyCode("C001").code("INV-DEFAULT").name("기본").build());
         appMembershipService.saveSetting("ehr", "INVITE_ONLY", group.getId());
 
         JsonNode invitation = invite("ehr", "invitee@test.com", AppUser.AUTHORITY_APPLICATION_USER);
@@ -478,5 +485,72 @@ class InvitationJoinTest {
 
         accept("ehr", token, null)
                 .andExpect(status().isUnauthorized());
+    }
+
+    // ---- 회사를 지정한 초대 ----
+
+    @Test
+    void 회사를_지정해_초대하면_가입한_계정이_그_회사로_등록된다() throws Exception {
+        inviteAll("{\"emails\":[\"invitee@test.com\"],\"authority\":\"APPLICATION_ADMIN\",\"companyCode\":\"C001\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.invited").value(1));
+
+        AppInvitation invitation = appInvitationRepository.findAll().get(0);
+        assertEquals("C001", invitation.getCompanyCode());
+
+        mockMvc.perform(get("/ehr/console/api/app-invitation").cookie(tokenOf(owner)))
+                .andExpect(jsonPath("$[0].companyCode").value("C001"));
+
+        String[] requested = requestAndCaptureCode(invitation.getToken(), "invitee@test.com", "invitee@test.com");
+        verifyCode("ehr", requested[0], requested[1])
+                .andExpect(status().isOk());
+
+        User invitee = userRepository.findByLoginId("invitee").orElseThrow();
+        AppUser appUser = appUserRepository.findByApplicationIdAndUserId("ehr", invitee.getId()).orElseThrow();
+        assertEquals("C001", appUser.getCompanyCode());
+        assertEquals(AppUser.AUTHORITY_APPLICATION_ADMIN, appUser.getAuthority());
+    }
+
+    @Test
+    void 기존_계정이_회사_초대를_수락하면_그_회사로_등록된다() throws Exception {
+        User existing = user("inv-company", "회사초대", "company@test.com");
+        Map<String, String> request = Map.of("email", "company@test.com", "authority", AppUser.AUTHORITY_APPLICATION_USER, "companyCode", "C001");
+        String body = mockMvc.perform(post("/ehr/console/api/app-invitation").cookie(tokenOf(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String token = tokenOfLink(objectMapper.readTree(body).get("link").asText());
+
+        accept("ehr", token, existing)
+                .andExpect(status().isOk());
+
+        assertEquals("C001", appUserRepository.findByApplicationIdAndUserId("ehr", existing.getId()).orElseThrow().getCompanyCode());
+    }
+
+    @Test
+    void 이미_다른_회사에_속한_사용자는_초대로_회사가_바뀌지_않는다() throws Exception {
+        companyRepository.save(Company.builder().applicationId("ehr").companyCode("C002").companyName("자회사").build());
+        User existing = user("inv-company2", "다른회사", "company2@test.com");
+        appUserRepository.save(AppUser.builder().applicationId("ehr").userId(existing.getId())
+                .authority(AppUser.AUTHORITY_APPLICATION_USER).companyCode("C002").build());
+
+        inviteAll("{\"emails\":[\"company2@test.com\"],\"authority\":\"APPLICATION_ADMIN\",\"companyCode\":\"C001\"}")
+                .andExpect(jsonPath("$.invited").value(1));
+        accept("ehr", appInvitationRepository.findAll().get(0).getToken(), existing)
+                .andExpect(status().isOk());
+
+        AppUser appUser = appUserRepository.findByApplicationIdAndUserId("ehr", existing.getId()).orElseThrow();
+        assertEquals("C002", appUser.getCompanyCode());
+        assertEquals(AppUser.AUTHORITY_APPLICATION_ADMIN, appUser.getAuthority());
+    }
+
+    @Test
+    void 등록되지_않은_회사로는_초대하지_않는다() throws Exception {
+        inviteAll("{\"emails\":[\"invitee@test.com\"],\"authority\":\"APPLICATION_USER\",\"companyCode\":\"C999\"}")
+                .andExpect(jsonPath("$.invited").value(0))
+                .andExpect(jsonPath("$.results[0].message", containsString("등록되지 않은 회사")));
+
+        assertTrue(appInvitationRepository.findAll().isEmpty());
     }
 }

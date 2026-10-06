@@ -2,6 +2,8 @@ package com.prometis.appbuilder.console.app.rest;
 
 import com.prometis.appbuilder.app.security.appuser.AppUser;
 import com.prometis.appbuilder.app.security.appuser.AppUserRepository;
+import com.prometis.appbuilder.app.security.company.Company;
+import com.prometis.appbuilder.app.security.company.CompanyRepository;
 import com.prometis.appbuilder.app.security.usergroup.UserGroup;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupRepository;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupUser;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -52,6 +55,8 @@ class AppUserRestControllerTest {
     UserGroupUserRepository userGroupUserRepository;
     @Autowired
     JwtProvider jwtProvider;
+    @Autowired
+    CompanyRepository companyRepository;
 
     private User kim;
     private User lee;
@@ -61,6 +66,7 @@ class AppUserRestControllerTest {
     @BeforeEach
     void setUp() {
         appUserRepository.deleteAll();
+        companyRepository.deleteAll();
         userGroupUserRepository.deleteAll();
         userGroupRepository.deleteAll();
 
@@ -277,8 +283,8 @@ class AppUserRestControllerTest {
 
     @Test
     void 삭제하면_그_애플리케이션의_사용자_그룹_소속도_지운다() throws Exception {
-        UserGroup ehrGroup = userGroupRepository.save(UserGroup.builder().applicationId("ehr").code("EHR-DEL-G").name("인사팀").build());
-        UserGroup erpGroup = userGroupRepository.save(UserGroup.builder().applicationId("erp").code("ERP-DEL-G").name("재무팀").build());
+        UserGroup ehrGroup = userGroupRepository.save(UserGroup.builder().applicationId("ehr").companyCode("C001").code("EHR-DEL-G").name("인사팀").build());
+        UserGroup erpGroup = userGroupRepository.save(UserGroup.builder().applicationId("erp").companyCode("C001").code("ERP-DEL-G").name("재무팀").build());
         UserGroupUser ehrMembership = userGroupUserRepository.save(UserGroupUser.builder().userGroup(ehrGroup).user(lee).build());
         UserGroupUser erpMembership = userGroupUserRepository.save(UserGroupUser.builder().userGroup(erpGroup).user(lee).build());
         // 같은 그룹의 다른 사람 소속은 남는다
@@ -296,7 +302,7 @@ class AppUserRestControllerTest {
 
     @Test
     void 마지막_관리자를_삭제하지_못하면_그룹_소속도_남는다() throws Exception {
-        UserGroup ehrGroup = userGroupRepository.save(UserGroup.builder().applicationId("ehr").code("EHR-KEEP-G").name("관리팀").build());
+        UserGroup ehrGroup = userGroupRepository.save(UserGroup.builder().applicationId("ehr").companyCode("C001").code("EHR-KEEP-G").name("관리팀").build());
         UserGroupUser membership = userGroupUserRepository.save(UserGroupUser.builder().userGroup(ehrGroup).user(kim).build());
         AppUser admin = appUser("ehr", kim, AppUser.AUTHORITY_APPLICATION_ADMIN);
 
@@ -330,5 +336,55 @@ class AppUserRestControllerTest {
                 .andExpect(jsonPath("$[0].userId").value(kim.getId()))
                 .andExpect(jsonPath("$[0].userName").value("김사용"))
                 .andExpect(jsonPath("$[0].authority").value(AppUser.AUTHORITY_APPLICATION_USER));
+    }
+
+    // ---- 소속 회사 ----
+
+    private ResultActions changeCompany(String applicationId, Long id, String companyCode, User requester) throws Exception {
+        String body = companyCode == null ? "{}" : "{\"companyCode\":\"" + companyCode + "\"}";
+        return mockMvc.perform(put("/" + applicationId + "/console/api/app-user/" + id + "/company")
+                .cookie(tokenOf(requester))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    @Test
+    void 회사_미지정_사용자의_회사를_지정하고_다시_비운다() throws Exception {
+        companyRepository.save(Company.builder().applicationId("ehr").companyCode("C001").companyName("본사").build());
+        AppUser target = appUser("ehr", kim, AppUser.AUTHORITY_APPLICATION_USER);
+
+        mockMvc.perform(get("/ehr/console/api/app-user").cookie(tokenOf(boss)))
+                .andExpect(jsonPath("$[0].companyCode").doesNotExist());
+
+        changeCompany("ehr", target.getId(), "C001", boss)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.companyCode").value("C001"));
+        assertEquals("C001", appUserRepository.findById(target.getId()).orElseThrow().getCompanyCode());
+
+        // 비우면 회사 미지정
+        changeCompany("ehr", target.getId(), "", boss)
+                .andExpect(status().isOk());
+        assertNull(appUserRepository.findById(target.getId()).orElseThrow().getCompanyCode());
+    }
+
+    @Test
+    void 등록되지_않은_회사나_다른_애플리케이션의_회사로는_바꾸지_않는다() throws Exception {
+        companyRepository.save(Company.builder().applicationId("crm").companyCode("C001").companyName("CRM 회사").build());
+        AppUser target = appUser("ehr", kim, AppUser.AUTHORITY_APPLICATION_USER);
+
+        changeCompany("ehr", target.getId(), "C001", boss)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("등록되지 않은 회사")));
+
+        assertNull(appUserRepository.findById(target.getId()).orElseThrow().getCompanyCode());
+    }
+
+    @Test
+    void 다른_애플리케이션의_사용자_회사는_바꾸지_않는다() throws Exception {
+        companyRepository.save(Company.builder().applicationId("ehr").companyCode("C001").companyName("본사").build());
+        AppUser other = appUser("crm", kim, AppUser.AUTHORITY_APPLICATION_USER);
+
+        changeCompany("ehr", other.getId(), "C001", boss)
+                .andExpect(status().isBadRequest());
     }
 }

@@ -14,6 +14,8 @@ public class AppUserResponse {
     private String userName;
     private String email;
     private String authority;
+    // 소속 회사. 비어 있으면 회사 미지정
+    private String companyCode;
     // 로그인한 본인 행인지. 본인은 권한 변경/삭제할 수 없다
     private boolean me;
 
@@ -26,6 +28,7 @@ public class AppUserResponse {
                 .userName(user == null ? null : user.getUserName())
                 .email(user == null ? null : user.getEmail())
                 .authority(appUser.getAuthority())
+                .companyCode(appUser.getCompanyCode())
                 .me(loginUserId != null && loginUserId.equals(appUser.getUserId()))
                 .build();
     }

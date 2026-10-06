@@ -16,11 +16,9 @@ import java.util.List;
 
 /**
  * 루트(/) 진입 시 사용자 유형을 가린다.
- * - 플랫폼관리자 : users.authority 가 PLATFORM_ADMIN
- * - 애플리케이션 관리자 : 하나 이상의 애플리케이션에서 APPLICATION_ADMIN 인 사용자
- * - 일반 사용자 : 애플리케이션 사용자(APPLICATION_USER)로만 등록된 사용자
- * - 그 밖에 어느 애플리케이션에도 없는 사용자(공개 가입 직후 등)는 자기 애플리케이션을 만드는 화면으로 보낸다
- * 공개 가입(/signup)으로 누구나 계정을 만들 수 있으므로, 애플리케이션 생성(/applications/manage)은 로그인한 사용자면 누구나 할 수 있다.
+ * - 플랫폼관리자 : users.authority 가 PLATFORM_ADMIN → 플랫폼 콘솔
+ * - 그 밖의 모든 사용자 : 가입된 애플리케이션 선택 화면(/applications)
+ * 애플리케이션 생성 화면(/applications/manage)은 첫 화면으로 보내지 않지만, 로그인한 사용자면 주소로 직접 들어갈 수 있다.
  * (소유 개수는 platform.application.max-owned-count 로 제한된다)
  */
 @Service
@@ -34,12 +32,6 @@ public class HomeService {
     public HomeLanding landingOf(Long userId) {
         if(isPlatformAdmin(userId)) {
             return HomeLanding.PLATFORM_CONSOLE;
-        }
-        if(isApplicationAdmin(userId)) {
-            return HomeLanding.APPLICATION_MANAGE;
-        }
-        if(appUserRepository.findByUserId(userId).isEmpty()) {
-            return HomeLanding.APPLICATION_MANAGE;
         }
         return HomeLanding.APPLICATION_SELECT;
     }
@@ -66,9 +58,5 @@ public class HomeService {
 
     private boolean isPlatformAdmin(Long userId) {
         return userRepository.findByIdAndAuthority(userId, User.AUTHORITY_PLATFORM_ADMIN).isPresent();
-    }
-
-    private boolean isApplicationAdmin(Long userId) {
-        return !appUserRepository.findByUserIdAndAuthority(userId, AppUser.AUTHORITY_APPLICATION_ADMIN).isEmpty();
     }
 }
