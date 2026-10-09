@@ -9,6 +9,20 @@
         <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
         <link rel="stylesheet" href="/dist/css/adminlte.min.css">
         <link rel="stylesheet" href="/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+        <style>
+            /* 레이아웃의 프로필 이미지 크기(--profile-img-size). 정사각형으로 맞춰 원형이 찌그러지지 않게 한다 */
+            #profile .user-panel img.profile-img-sized {
+                width: var(--profile-img-size);
+                height: var(--profile-img-size);
+                object-fit: cover;
+                transition: width .3s ease-in-out, height .3s ease-in-out;
+            }
+            /* 사이드바를 접으면 폭(약 58px)보다 큰 이미지가 잘리므로 AdminLTE 기본 크기로 줄인다. 마우스를 올려 펼치면 다시 커진다 */
+            .sidebar-mini.sidebar-collapse .main-sidebar:not(:hover):not(.sidebar-focused) #profile .user-panel img.profile-img-sized {
+                width: 2.1rem;
+                height: 2.1rem;
+            }
+        </style>
     </head>
     <body class="hold-transition sidebar-mini layout-fixed" data-panel-auto-height-mode="height">
 
@@ -146,7 +160,7 @@
                     }
 
                     if(data.useProfile) {
-                        setProfile();
+                        setProfile(data);
                     }
 
                     setCompanyList();
@@ -173,26 +187,43 @@
                 $("#logo").html(logoHtml);
             }
 
-            function setProfile() {
+            function setProfile(layout) {
                 $.ajax({
                   type: 'GET',
                   url: `/${APPLICATION_ID}/api/profile`,
                   data: {},
                   success: function(response) {
                     console.log('profile',response);
+                    // 레이아웃(Layout 설정)의 프로필 이미지 링크. 사용자의 프로필 이미지가 없으면 기본 이미지
+                    const blankProfileImg = "../../dist/img/blank_profile.png";
                     let data = {
-                        profileImg:"../../dist/img/blank_profile.png"
+                        profileImg: response.profileImg || blankProfileImg
                     }
 
                     let profileHtml = ``;
                     profileHtml += `<div class="user-panel mt-3 pb-3 mb-3 d-flex">`;
                     profileHtml += `    <div class="image">`;
-                    profileHtml += `        <img src="${data.profileImg}" class="img-circle elevation-2" alt="Profile Image">`;
+                    profileHtml += `        <img class="img-circle elevation-2" alt="Profile Image">`;
                     profileHtml += `    </div>`;
-                    profileHtml += `    <div class="info">${response.userName}</div>`;
+                    profileHtml += `    <div class="info"></div>`;
                     profileHtml += `</div>`;
 
-                    $("#profile").html(profileHtml);
+                    const $profile = $(profileHtml);
+                    // 링크가 열리지 않으면 (이미지가 그 사이 삭제되는 등) 기본 이미지로 바꾼다
+                    $profile.find('img').one('error', function() { this.src = blankProfileImg; }).attr('src', data.profileImg);
+                    $profile.find('.info').text(response.userName || '');
+
+                    // 레이아웃(Layout 설정)의 프로필 이미지 크기(px). 비어 있으면 AdminLTE 기본 크기
+                    const profileImgSize = Number(layout && layout.profileImgSize);
+                    if(profileImgSize > 0) {
+                        // 정사각형으로 맞춰 원형이 찌그러지지 않게 하고, 이름은 이미지 세로 가운데에 둔다
+                        $profile.addClass('align-items-center');
+                        // 크기는 CSS(head 의 #profile 스타일)가 적용한다. 인라인 width 로 박으면 사이드바를 접었을 때 줄일 수 없다
+                        $profile.find('img').addClass('profile-img-sized');
+                        $profile[0].style.setProperty('--profile-img-size', profileImgSize + 'px');
+                    }
+
+                    $("#profile").html($profile);
                   },
                   error: function(error) {
                     alert('에러가 발생하였습니다.');

@@ -40,6 +40,12 @@ public class Layout {
     // pages/index 의 <link rel="icon"> 경로
     @Column(length = 500)
     private String faviconPath;
+    // 프로필 이미지 링크 /{applicationId}/image/{storageType}/#{userId}. #{userId} 는 로그인한 사용자ID로 바뀐다 (ImageService.resolveUserImageLink)
+    @Column(length = 500)
+    private String profileImg;
+    // pages/index 의 프로필 이미지 크기(px, 가로세로 같음). 비어 있으면 AdminLTE 기본 크기
+    @Column
+    private Integer profileImgSize;
 
     public void update(
             Boolean useAuthValidation,
@@ -52,7 +58,9 @@ public class Layout {
             String logoImg,
             String layoutTitle,
             String homeObjectCode,
-            String faviconPath
+            String faviconPath,
+            String profileImg,
+            Integer profileImgSize
     ) {
         this.useAuthValidation = useAuthValidation;
         this.useProfile = useProfile;
@@ -65,5 +73,7 @@ public class Layout {
         this.layoutTitle = layoutTitle;
         this.homeObjectCode = homeObjectCode;
         this.faviconPath = faviconPath;
+        this.profileImg = profileImg;
+        this.profileImgSize = profileImgSize;
     }
 }

@@ -1,0 +1,1182 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #image-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #image-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #image-app .ds-list-panel,
+    #image-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #image-app .ds-list-panel {
+        flex: 0 0 300px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #image-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #image-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #image-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    #image-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #image-app .ds-panel-header h3 .ds-sub {
+        font-size: 12px;
+        font-weight: 500;
+        color: #9199a3;
+    }
+
+    #image-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #image-app .ds-btn,
+    #image-modal-area .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color .12s ease;
+    }
+
+    #image-app .ds-btn:hover,
+    #image-modal-area .ds-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #image-app .ds-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    #image-app .ds-btn-primary,
+    #image-modal-area .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #image-app .ds-btn-primary:hover,
+    #image-modal-area .ds-btn-primary:hover {
+        background: #3d7fce;
+    }
+
+    #image-app .ds-btn-danger,
+    #image-modal-area .ds-btn-danger {
+        color: #dc2626;
+    }
+
+    #image-app .ds-btn-danger:hover,
+    #image-modal-area .ds-btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    #image-app .ds-list-body {
+        max-height: 620px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #image-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #image-app .ds-list-item:hover {
+        background: #fafbfc;
+    }
+
+    #image-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #image-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #image-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #image-app .ds-list-item.selected .ds-list-item-name {
+        color: #1d4ed8;
+    }
+
+    #image-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #image-app .ds-list-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #image-app .ds-list-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    #image-app .ds-detail-body {
+        padding: 16px;
+    }
+
+    /* 업로드 영역 */
+    #image-app .img-dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 26px 16px;
+        border: 2px dashed #c9d3df;
+        border-radius: 10px;
+        background: #fbfcfe;
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color .12s ease, background-color .12s ease;
+    }
+
+    #image-app .img-dropzone i {
+        font-size: 26px;
+        color: #4A90E2;
+    }
+
+    #image-app .img-dropzone .img-dropzone-hint {
+        font-size: 11.5px;
+        color: #9199a3;
+    }
+
+    #image-app .img-dropzone.dragover {
+        border-color: #4A90E2;
+        background: #eef5ff;
+    }
+
+    #image-app .img-dropzone.disabled {
+        cursor: not-allowed;
+        opacity: .55;
+    }
+
+    /* 업로드 대기 목록 */
+    #image-app .img-pending {
+        margin-top: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    #image-app .img-pending-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 12px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-size: 12px;
+        color: #374151;
+    }
+
+    #image-app .img-overwrite {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin: 0 6px 0 0;
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+        cursor: pointer;
+    }
+
+    #image-app .img-pending-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 12px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    #image-app .img-pending-row:last-child {
+        border-bottom: none;
+    }
+
+    #image-app .img-pending-file {
+        flex: 0 0 220px;
+        min-width: 0;
+        padding-top: 4px;
+    }
+
+    #image-app .img-pending-original {
+        font-size: 12.5px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #image-app .img-pending-size {
+        font-size: 11px;
+        color: #9199a3;
+    }
+
+    #image-app .img-pending-name {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #image-app .img-pending-name .form-control {
+        font-size: 13px;
+        border-radius: 7px;
+        height: auto;
+        padding: 5px 10px;
+    }
+
+    #image-app .img-pending-hint {
+        margin-top: 3px;
+        font-size: 11px;
+        color: #9199a3;
+        word-break: break-all;
+    }
+
+    #image-app .img-pending-hint.warn {
+        color: #b45309;
+    }
+
+    #image-app .img-pending-hint.error {
+        color: #dc2626;
+    }
+
+    #image-app .img-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 16px 0 12px;
+    }
+
+    #image-app .img-count {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    #image-app .img-search {
+        position: relative;
+        width: 260px;
+    }
+
+    #image-app .img-search i {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    #image-app .img-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px 10px 6px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #image-app .img-search input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    /* 이미지 목록 */
+    #image-app .img-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    #image-app .img-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #image-app .img-thumb {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-in;
+        /* 투명 이미지가 보이도록 체크무늬 배경 */
+        background-color: #f3f4f6;
+        background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+        background-size: 14px 14px;
+        background-position: 0 0, 0 7px, 7px -7px, -7px 0;
+    }
+
+    #image-app .img-thumb img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    #image-app .img-meta {
+        padding: 8px 10px 4px;
+        min-width: 0;
+    }
+
+    #image-app .img-name {
+        font-size: 12.5px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #image-app .img-size {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #image-app .img-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 2px;
+        padding: 4px 6px 8px;
+    }
+
+    #image-app .img-actions button,
+    #image-app .img-actions a {
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-size: 12px;
+        padding: 4px 7px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    #image-app .img-actions button:hover,
+    #image-app .img-actions a:hover {
+        background: #f1f3f5;
+        color: #1f2937;
+    }
+
+    #image-app .img-actions .img-delete:hover {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    /* 모달 */
+    #image-modal-area .modal-title {
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    #image-modal-area label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+
+    #image-modal-area .form-control {
+        font-size: 13px;
+        border-radius: 7px;
+    }
+
+    #image-modal-area .form-hint {
+        font-size: 11px;
+        color: #9199a3;
+        margin-top: 4px;
+    }
+
+    #image-modal-area .img-preview {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        max-height: 60vh;
+        border-radius: 8px;
+        overflow: auto;
+        background-color: #f3f4f6;
+        background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+        background-size: 16px 16px;
+        background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    }
+
+    #image-modal-area .img-preview img {
+        max-width: 100%;
+        max-height: 60vh;
+        object-fit: contain;
+    }
+
+    #image-modal-area .img-preview-info {
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 6px 10px;
+        margin-top: 14px;
+        font-size: 12.5px;
+    }
+
+    #image-modal-area .img-preview-info dt {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    #image-modal-area .img-preview-info dd {
+        margin: 0;
+        word-break: break-all;
+    }
+
+    #image-modal-area .img-link-group {
+        display: flex;
+        gap: 6px;
+        margin-top: 12px;
+    }
+</style>
+<script th:fragment="script">
+        let IMAGE_POLICY = { allowedExtensions: [], maxFileSize: 0 };
+        let STORAGE_TYPE_LIST = [];
+        let SELECTED_STORAGE_TYPE = null;   // 선택한 저장소 유형 (StorageType)
+        let IMAGE_LIST = [];
+        let PREVIEW_IMAGE = null;
+
+        $( document ).ready(function() {
+            console.log('version.0.0.1');
+            bindDropzone();
+            getPolicy();
+            getStorageTypeList();
+        });
+
+        function apiUrl(path) {
+            return `/${APPLICATION_ID}/console/api/image${path || ''}`;
+        }
+
+        function alertError(error) {
+            const message = error && error.responseJSON && error.responseJSON.message;
+            alert(message || 'error');
+        }
+
+        function isEmpty(v) {
+            return (v == undefined || v == null || v == '');
+        }
+
+        function formatSize(bytes) {
+            if(bytes == null) return '-';
+            if(bytes < 1024) return bytes + ' B';
+            if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+        }
+
+        function absoluteUrl(url) {
+            return window.location.origin + url;
+        }
+
+        /* ---------- 업로드 제한 ---------- */
+
+        function getPolicy() {
+            httpClient.get(apiUrl('/policy'), {},
+                function(response){
+                    IMAGE_POLICY = response;
+                    const extensions = IMAGE_POLICY.allowedExtensions || [];
+                    $("#imageFileInput").attr('accept', extensions.map(e => '.' + e).join(','));
+                    $("#dropzoneHint").text(`허용 확장자: ${extensions.join(', ')} · 파일당 최대 ${formatSize(IMAGE_POLICY.maxFileSize)} · 여러 개 선택 가능`);
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        /* ---------- 저장소 유형 ---------- */
+
+        function getStorageTypeList() {
+            httpClient.get(apiUrl('/storage-type'), {},
+                function(response){
+                    STORAGE_TYPE_LIST = response || [];
+
+                    // 선택했던 유형이 지워졌으면 선택을 푼다
+                    if(SELECTED_STORAGE_TYPE) {
+                        SELECTED_STORAGE_TYPE = STORAGE_TYPE_LIST.find(s => String(s.id) === String(SELECTED_STORAGE_TYPE.id)) || null;
+                    }
+                    if(!SELECTED_STORAGE_TYPE && STORAGE_TYPE_LIST.length > 0) {
+                        SELECTED_STORAGE_TYPE = STORAGE_TYPE_LIST[0];
+                    }
+
+                    renderStorageTypeList();
+                    renderSelectedStorageType();
+                    getImageList();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function renderStorageTypeList() {
+            const $body = $("#storageTypeListBody");
+            $body.empty();
+
+            if(STORAGE_TYPE_LIST.length === 0) {
+                $body.append(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-inbox"></i>
+                        <span>등록된 저장소 유형이 없습니다.<br>'추가'로 먼저 만들어주세요.</span>
+                    </div>
+                `);
+                return;
+            }
+
+            for(const item of STORAGE_TYPE_LIST) {
+                const $item = $(`
+                    <div class="ds-list-item">
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                    </div>
+                `);
+
+                $item.find('.ds-list-item-name').text(item.displayName || item.storageType);
+                $item.find('.ds-list-item-code').text(item.storageType);
+
+                if(SELECTED_STORAGE_TYPE && String(item.id) === String(SELECTED_STORAGE_TYPE.id)) {
+                    $item.addClass('selected');
+                }
+
+                $item.on('click', function() {
+                    selectStorageType(item);
+                });
+
+                $body.append($item);
+            }
+        }
+
+        function selectStorageType(item) {
+            SELECTED_STORAGE_TYPE = item;
+            $("#imageSearch").val('');
+            renderStorageTypeList();
+            renderSelectedStorageType();
+            getImageList();
+        }
+
+        function renderSelectedStorageType() {
+            const selected = SELECTED_STORAGE_TYPE;
+
+            $("#selectedStorageTypeName").text(selected ? (selected.displayName || selected.storageType) : '저장소 유형을 선택해주세요');
+            $("#selectedStorageTypeCode").text(selected ? selected.storageType : '');
+            $("#editStorageTypeButton, #deleteStorageTypeButton, #imageSearch").prop('disabled', !selected);
+            $("#imageDropzone").toggleClass('disabled', !selected);
+        }
+
+        function openStorageTypeModal(isNew) {
+            if(!isNew && !SELECTED_STORAGE_TYPE) return;
+
+            const item = isNew ? { id: '', storageType: '', displayName: '' } : SELECTED_STORAGE_TYPE;
+
+            $("#storageTypeModalTitle").text(isNew ? '저장소 유형 추가' : '저장소 유형 수정');
+            $("#storageTypeId").val(item.id);
+            $("#storageTypeCode").val(item.storageType).prop('readonly', !isNew);
+            $("#storageTypeCodeHint").text(isNew
+                ? '이미지 링크 경로에 쓰입니다. 영문, 숫자, _, - 만 쓸 수 있고 저장 후에는 바꿀 수 없습니다.'
+                : '이미지 링크 경로에 쓰이므로 바꿀 수 없습니다.');
+            $("#storageTypeDisplayName").val(item.displayName);
+            $("#storageTypeModal").modal('show');
+        }
+
+        function saveStorageType() {
+            const id = $("#storageTypeId").val();
+            const params = {
+                storageType: ($("#storageTypeCode").val() || '').trim(),
+                displayName: ($("#storageTypeDisplayName").val() || '').trim()
+            };
+
+            if(isEmpty(params.storageType) || isEmpty(params.displayName)) {
+                alert('저장소 유형과 표시명을 입력해주세요.');
+                return;
+            }
+            if(isEmpty(id) && !/^[A-Za-z0-9_-]+$/.test(params.storageType)) {
+                alert('저장소 유형은 영문, 숫자, _, - 만 입력할 수 있습니다.');
+                return;
+            }
+
+            const success = function(response){
+                $("#storageTypeModal").modal('hide');
+                SELECTED_STORAGE_TYPE = response;
+                getStorageTypeList();
+            };
+
+            if(isEmpty(id))
+                httpClient.post(apiUrl('/storage-type'), {}, params, success, alertError);
+            else
+                httpClient.put(apiUrl(`/storage-type/${id}`), {}, params, success, alertError);
+        }
+
+        function deleteStorageType() {
+            if(!SELECTED_STORAGE_TYPE) return;
+            if(!confirm(`저장소 유형 [${SELECTED_STORAGE_TYPE.storageType}] 을(를) 삭제하시겠습니까?`)) return;
+
+            httpClient.delete(apiUrl(`/storage-type/${SELECTED_STORAGE_TYPE.id}`), {},
+                function(response){
+                    alert("삭제 처리 완료되었습니다.");
+                    SELECTED_STORAGE_TYPE = null;
+                    getStorageTypeList();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        /* ---------- 이미지 목록 ---------- */
+
+        function getImageList() {
+            if(!SELECTED_STORAGE_TYPE) {
+                IMAGE_LIST = [];
+                renderImageList();
+                return;
+            }
+
+            const storageType = SELECTED_STORAGE_TYPE.storageType;
+            httpClient.get(apiUrl(), { storageType: storageType },
+                function(response){
+                    // 응답이 오기 전에 다른 유형을 골랐으면 버린다
+                    if(!SELECTED_STORAGE_TYPE || SELECTED_STORAGE_TYPE.storageType !== storageType) return;
+
+                    IMAGE_LIST = response || [];
+                    renderImageList();
+                    // 대기 중인 파일의 "이미 있는 파일명" 표시를 새 목록으로 다시 맞춘다
+                    renderPendingFiles();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function renderImageList() {
+            const kw = ($("#imageSearch").val() || '').trim().toLowerCase();
+            const filtered = IMAGE_LIST.filter(function(item) {
+                if(!kw) return true;
+                return (item.filename || '').toLowerCase().includes(kw)
+                    || (item.originalFilename || '').toLowerCase().includes(kw);
+            });
+
+            $("#imageCount").text(kw ? `${filtered.length} / ${IMAGE_LIST.length}개` : `${IMAGE_LIST.length}개`);
+
+            const $grid = $("#imageGrid");
+            $grid.empty();
+
+            if(filtered.length === 0) {
+                const $empty = $(`
+                    <div class="ds-list-empty" style="grid-column: 1 / -1;">
+                        <i class="fas fa-images"></i>
+                        <span></span>
+                    </div>
+                `);
+                $empty.find('span').text(!SELECTED_STORAGE_TYPE ? '저장소 유형을 선택해주세요.'
+                    : IMAGE_LIST.length === 0 ? '업로드된 이미지가 없습니다.' : '검색 결과가 없습니다.');
+                $grid.append($empty);
+                return;
+            }
+
+            for(const item of filtered) {
+                const $card = $(`
+                    <div class="img-card">
+                        <div class="img-thumb"><img loading="lazy" alt=""></div>
+                        <div class="img-meta">
+                            <div class="img-name"></div>
+                            <div class="img-size"></div>
+                        </div>
+                        <div class="img-actions">
+                            <button type="button" class="img-copy" title="링크 복사"><i class="fas fa-link"></i></button>
+                            <a class="img-open" target="_blank" rel="noopener" title="새 탭에서 열기"><i class="fas fa-external-link-alt"></i></a>
+                            <button type="button" class="img-delete" title="삭제"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `);
+
+                $card.find('img').attr('src', item.url);
+                $card.find('.img-name').text(item.filename).attr('title', item.filename);
+                $card.find('.img-size').text(`${item.originalFilename || ''} · ${formatSize(item.fileSize)}`).attr('title', item.originalFilename || '');
+                $card.find('.img-open').attr('href', item.url);
+
+                $card.find('.img-thumb').on('click', function() { openPreview(item); });
+                $card.find('.img-copy').on('click', function() { copyLink(item.url); });
+                $card.find('.img-delete').on('click', function() { deleteImage(item); });
+
+                $grid.append($card);
+            }
+        }
+
+        function deleteImage(item) {
+            if(!confirm(`[${item.filename}] 이미지를 삭제하시겠습니까?\n이 링크를 쓰는 화면에서는 이미지가 보이지 않게 됩니다.`)) return;
+
+            httpClient.delete(apiUrl(`/${item.id}`), {},
+                function(response){
+                    $("#imagePreviewModal").modal('hide');
+                    getImageList();
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        /* ---------- 미리보기 ---------- */
+
+        function openPreview(item) {
+            PREVIEW_IMAGE = item;
+
+            $("#previewTitle").text(item.filename);
+            $("#previewImage").attr('src', item.url);
+            $("#previewOriginalFilename").text(item.originalFilename || '-');
+            $("#previewStorageType").text(item.storageType);
+            $("#previewSize").text(`${formatSize(item.fileSize)} (${(item.fileSize || 0).toLocaleString()} bytes)`);
+            $("#previewDimension").text('-');
+            $("#previewLink").val(absoluteUrl(item.url));
+            $("#previewOpen").attr('href', item.url);
+            $("#imagePreviewModal").modal('show');
+        }
+
+        function copyLink(url) {
+            const text = absoluteUrl(url);
+
+            // clipboard API 는 https 나 localhost 에서만 쓸 수 있다
+            if(navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(
+                    function() { alert('링크를 복사했습니다.\n' + text); },
+                    function() { fallbackCopy(text); }
+                );
+            }
+            else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const $input = $('<textarea style="position:fixed;top:-1000px;"></textarea>').val(text);
+            $('body').append($input);
+            $input[0].select();
+
+            let copied = false;
+            try { copied = document.execCommand('copy'); } catch(e) {}
+            $input.remove();
+
+            if(copied) alert('링크를 복사했습니다.\n' + text);
+            else prompt('아래 링크를 복사해주세요.', text);
+        }
+
+        /* ---------- 업로드 ---------- */
+
+        function bindDropzone() {
+            const $zone = $("#imageDropzone");
+
+            $zone.on('click', function() {
+                if(!SELECTED_STORAGE_TYPE) return;
+                $("#imageFileInput").val('').trigger('click');
+            });
+
+            $("#imageFileInput").on('click', function(e) { e.stopPropagation(); });
+            $("#imageFileInput").on('change', function() {
+                uploadFiles(Array.from(this.files || []));
+            });
+
+            $zone.on('dragenter dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if(SELECTED_STORAGE_TYPE) $zone.addClass('dragover');
+            });
+            $zone.on('dragleave dragend', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $zone.removeClass('dragover');
+            });
+            $zone.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $zone.removeClass('dragover');
+
+                if(!SELECTED_STORAGE_TYPE) {
+                    alert('저장소 유형을 먼저 선택해주세요.');
+                    return;
+                }
+
+                const dataTransfer = e.originalEvent.dataTransfer;
+                uploadFiles(Array.from((dataTransfer && dataTransfer.files) || []));
+            });
+
+            // 업로드 영역 밖에 떨어뜨려 브라우저가 이미지를 열어버리지 않게 한다
+            $(document).on('dragover drop', function(e) {
+                if(!$(e.target).closest('#imageDropzone').length) e.preventDefault();
+            });
+        }
+
+        function extensionOf(filename) {
+            const dot = (filename || '').lastIndexOf('.');
+            return dot < 0 ? '' : filename.substring(dot + 1).toLowerCase();
+        }
+
+        // 업로드 대기 목록. 파일마다 링크에 쓸 파일명(확장자 없음)을 정한 뒤 한 번에 올린다
+        let PENDING_FILES = [];   // { file, filename }
+        // 서버(ImageService)와 같은 규칙: 링크 경로에서 문제가 되는 문자
+        const UNSAFE_FILENAME_CHARS = /[\\/:*?"<>|;#%\u0000-\u001f\u007f]/g;
+        const MAX_FILENAME_LENGTH = 100;
+
+        // 원본 파일명에서 확장자를 뺀 이름 (서버의 기본 파일명과 같다)
+        function defaultFilenameOf(originalFilename) {
+            const dot = originalFilename.lastIndexOf('.');
+            let name = (dot < 0 ? originalFilename : originalFilename.substring(0, dot)).replace(UNSAFE_FILENAME_CHARS, '_').trim();
+            if(name === '' || /^\.+$/.test(name)) name = 'image';
+            return name.substring(0, MAX_FILENAME_LENGTH);
+        }
+
+        function filenameErrorOf(filename) {
+            if(filename.length > MAX_FILENAME_LENGTH) return `파일명은 ${MAX_FILENAME_LENGTH}자 이내로 입력해주세요.`;
+            if(new RegExp(UNSAFE_FILENAME_CHARS.source).test(filename)) return '쓸 수 없는 문자가 있습니다. (\\ / : * ? " < > | ; # % 제외)';
+            if(/^\.+$/.test(filename)) return '. 으로만 지을 수 없습니다.';
+            return null;
+        }
+
+        // 서버에서도 검사하지만(하나라도 걸리면 전부 거절) 미리 걸러서 올릴 수 있는 것만 대기 목록에 넣는다
+        function uploadFiles(files) {
+            if(!SELECTED_STORAGE_TYPE || files.length === 0) return;
+
+            const extensions = IMAGE_POLICY.allowedExtensions || [];
+            const rejected = [];
+            const accepted = files.filter(function(file) {
+                const extension = extensionOf(file.name);
+                if(!extensions.includes(extension)) {
+                    rejected.push(`[${file.name}] 허용되지 않는 확장자`);
+                    return false;
+                }
+                if(file.size === 0) {
+                    rejected.push(`[${file.name}] 빈 파일`);
+                    return false;
+                }
+                if(IMAGE_POLICY.maxFileSize && file.size > IMAGE_POLICY.maxFileSize) {
+                    rejected.push(`[${file.name}] ${formatSize(file.size)} - 최대 ${formatSize(IMAGE_POLICY.maxFileSize)} 초과`);
+                    return false;
+                }
+                return true;
+            });
+
+            if(rejected.length > 0) {
+                alert('다음 파일은 업로드할 수 없어 제외했습니다.\n' + rejected.join('\n'));
+            }
+
+            for(const file of accepted) {
+                PENDING_FILES.push({ file: file, filename: defaultFilenameOf(file.name) });
+            }
+            renderPendingFiles();
+        }
+
+        function renderPendingFiles() {
+            const $panel = $("#pendingPanel");
+            const $body = $("#pendingBody");
+            $body.empty();
+
+            $panel.toggle(PENDING_FILES.length > 0);
+            $("#pendingCount").text(`${PENDING_FILES.length}개`);
+
+            const existing = new Set(IMAGE_LIST.map(item => item.filename));
+
+            PENDING_FILES.forEach(function(pending, index) {
+                const $row = $(`
+                    <div class="img-pending-row">
+                        <div class="img-pending-file">
+                            <div class="img-pending-original"></div>
+                            <div class="img-pending-size"></div>
+                        </div>
+                        <div class="img-pending-name">
+                            <input type="text" class="form-control" maxlength="100" placeholder="비우면 원본 파일명">
+                            <div class="img-pending-hint"></div>
+                        </div>
+                        <button type="button" class="ds-btn ds-btn-danger" title="목록에서 빼기"><i class="fas fa-times"></i></button>
+                    </div>
+                `);
+
+                $row.find('.img-pending-original').text(pending.file.name).attr('title', pending.file.name);
+                $row.find('.img-pending-size').text(formatSize(pending.file.size));
+
+                const $hint = $row.find('.img-pending-hint');
+                const updateHint = function() {
+                    const filename = pending.filename.trim() || defaultFilenameOf(pending.file.name);
+                    const error = filenameErrorOf(filename);
+                    $hint.toggleClass('error', !!error).toggleClass('warn', !error && existing.has(filename));
+
+                    if(error) $hint.text(error);
+                    else if(existing.has(filename)) $hint.text(`이미 있는 파일명입니다. 덮어쓰기를 선택해야 올라갑니다. · ${linkOf(filename)}`);
+                    else $hint.text(linkOf(filename));
+                };
+
+                $row.find('input').val(pending.filename).on('input', function() {
+                    pending.filename = this.value;
+                    updateHint();
+                });
+                $row.find('button').on('click', function() {
+                    PENDING_FILES.splice(index, 1);
+                    renderPendingFiles();
+                });
+
+                updateHint();
+                $body.append($row);
+            });
+        }
+
+        function linkOf(filename) {
+            return `/${encodeURIComponent(APPLICATION_ID)}/image/${encodeURIComponent(SELECTED_STORAGE_TYPE ? SELECTED_STORAGE_TYPE.storageType : '')}/${encodeURIComponent(filename)}`;
+        }
+
+        function clearPendingFiles() {
+            PENDING_FILES = [];
+            $("#overwrite").prop('checked', false);
+            renderPendingFiles();
+        }
+
+        function submitPendingFiles() {
+            if(!SELECTED_STORAGE_TYPE || PENDING_FILES.length === 0) return;
+
+            const filenames = PENDING_FILES.map(p => p.filename.trim() || defaultFilenameOf(p.file.name));
+            const errors = [];
+            filenames.forEach(function(filename, index) {
+                const error = filenameErrorOf(filename);
+                if(error) errors.push(`[${PENDING_FILES[index].file.name}] ${error}`);
+                else if(filenames.indexOf(filename) !== index) errors.push(`[${PENDING_FILES[index].file.name}] 파일명 '${filename}' 이(가) 다른 파일과 겹칩니다.`);
+            });
+            if(errors.length > 0) {
+                alert(errors.join('\n'));
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('storageType', SELECTED_STORAGE_TYPE.storageType);
+            formData.append('overwrite', String($("#overwrite").is(':checked')));
+            PENDING_FILES.forEach(function(pending, index) {
+                formData.append('files', pending.file);
+                formData.append('filenames', filenames[index]);
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: apiUrl('/upload'),
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() { httpClient.showLoadingBar(); },
+                success: function(response) {
+                    alert(`${(response || []).length}개 이미지를 업로드했습니다.`);
+                    clearPendingFiles();
+                    getImageList();
+                },
+                error: function(error) {
+                    // 요청 전체가 multipart 한도(spring.servlet.multipart)를 넘으면 메시지 없이 실패한다
+                    if(error && error.responseJSON && error.responseJSON.message) alertError(error);
+                    else alert('업로드에 실패했습니다. 한 번에 올리는 파일 크기 합계가 너무 크면 나눠서 올려주세요.');
+                },
+                complete: function() { httpClient.hideLoadingBar(); }
+            });
+        }
+    </script>
+<div th:fragment="view">
+<div id="image-app">
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-folder"></i> 저장소 유형</h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="getStorageTypeList()" title="새로고침"><i class="fas fa-sync-alt"></i></button>
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="openStorageTypeModal(true)"><i class="fas fa-plus"></i>추가</button>
+                </div>
+            </div>
+            <div class="ds-list-body" id="storageTypeListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-images"></i> <span id="selectedStorageTypeName"></span> <span class="ds-sub" id="selectedStorageTypeCode"></span></h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" id="editStorageTypeButton" onclick="openStorageTypeModal(false)"><i class="fas fa-pen"></i>유형 수정</button>
+                    <button type="button" class="ds-btn ds-btn-danger" id="deleteStorageTypeButton" onclick="deleteStorageType()"><i class="fas fa-trash"></i>유형 삭제</button>
+                </div>
+            </div>
+            <div class="ds-detail-body">
+                <div class="img-dropzone" id="imageDropzone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <div>이미지 파일을 여기에 끌어다 놓거나 클릭해서 선택하세요</div>
+                    <div class="img-dropzone-hint" id="dropzoneHint"></div>
+                    <input type="file" id="imageFileInput" multiple style="display:none;">
+                </div>
+
+                <div class="img-pending" id="pendingPanel" style="display:none;">
+                    <div class="img-pending-header">
+                        <span><i class="fas fa-list"></i> 업로드 대기 <b id="pendingCount"></b> · 파일명은 링크에 쓰이는 이름입니다 (확장자 없음, 비우면 원본 파일명)</span>
+                        <div class="ds-panel-tools">
+                            <label class="img-overwrite"><input type="checkbox" id="overwrite"> 같은 파일명이 있으면 덮어쓰기</label>
+                            <button type="button" class="ds-btn" onclick="clearPendingFiles()">취소</button>
+                            <button type="button" class="ds-btn ds-btn-primary" onclick="submitPendingFiles()"><i class="fas fa-upload"></i>업로드</button>
+                        </div>
+                    </div>
+                    <div id="pendingBody"></div>
+                </div>
+
+                <div class="img-toolbar">
+                    <span class="img-count" id="imageCount"></span>
+                    <div class="img-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="imageSearch" placeholder="파일명으로 검색" oninput="renderImageList()">
+                    </div>
+                </div>
+
+                <div class="img-grid" id="imageGrid"></div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="image-modal-area">
+    <div class="modal fade" id="storageTypeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="storageTypeModalTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="storageTypeId">
+                    <div class="form-group">
+                        <label for="storageTypeCode">저장소 유형</label>
+                        <input type="text" class="form-control" id="storageTypeCode" maxlength="100" placeholder="예) LOGO, PROFILE, ICON" autocomplete="off">
+                        <div class="form-hint" id="storageTypeCodeHint"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="storageTypeDisplayName">표시명</label>
+                        <input type="text" class="form-control" id="storageTypeDisplayName" maxlength="200" placeholder="예) 로고" autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="ds-btn" data-dismiss="modal">취소</button>
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="saveStorageType()"><i class="fas fa-save"></i>저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="img-preview">
+                        <img id="previewImage" alt="" onload="$('#previewDimension').text(this.naturalWidth + ' × ' + this.naturalHeight + ' px')">
+                    </div>
+                    <dl class="img-preview-info">
+                        <dt>원본 파일명</dt><dd id="previewOriginalFilename"></dd>
+                        <dt>저장소 유형</dt><dd id="previewStorageType"></dd>
+                        <dt>크기</dt><dd id="previewSize"></dd>
+                        <dt>해상도</dt><dd id="previewDimension"></dd>
+                    </dl>
+                    <label for="previewLink">이미지 링크</label>
+                    <div class="img-link-group" style="margin-top:0;">
+                        <input type="text" class="form-control" id="previewLink" readonly onclick="this.select()">
+                        <button type="button" class="ds-btn" onclick="copyLink(PREVIEW_IMAGE.url)"><i class="fas fa-copy"></i>복사</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="ds-btn ds-btn-danger" onclick="deleteImage(PREVIEW_IMAGE)"><i class="fas fa-trash"></i>삭제</button>
+                    <a class="ds-btn" id="previewOpen" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i>새 탭에서 열기</a>
+                    <button type="button" class="ds-btn ds-btn-primary" data-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</html>

@@ -171,8 +171,66 @@
             init();
         });
 
+        // 프로필 이미지 링크: /{applicationId}/image/{storageType}/#{userId} (filename 자리는 항상 로그인한 사용자ID)
+        const PROFILE_USER_ID_EXPRESSION = '#{userId}';
+        let PROFILE_IMG = '';
+
         function init() {
+            getStorageTypeList();
             getList();
+        }
+
+        function getStorageTypeList() {
+            httpClient.get(`/${APPLICATION_ID}/console/api/image/storage-type`, {},
+                function(response){
+                    const $select = $("#profileImageStorageType");
+                    $select.find('option:not([value=""])').remove();
+                    for(const item of (response || [])) {
+                        $select.append($('<option></option>').val(item.storageType).text(`${item.displayName} (${item.storageType})`));
+                    }
+                    setProfileImg(PROFILE_IMG);
+                },
+                function(error){
+                    alertError(error);
+                }
+            );
+        }
+
+        function profileImgPrefix() {
+            return `/${encodeURIComponent(APPLICATION_ID)}/image/`;
+        }
+
+        function profileImgOf(storageType) {
+            return isEmpty(storageType) ? '' : `${profileImgPrefix()}${storageType}/${PROFILE_USER_ID_EXPRESSION}`;
+        }
+
+        // 저장된 링크에서 저장소 유형을 꺼내 선택한다. 목록에 없는 유형(삭제됨)이면 그대로 보여주기만 한다
+        function setProfileImg(link) {
+            PROFILE_IMG = link || '';
+
+            const prefix = profileImgPrefix();
+            const suffix = '/' + PROFILE_USER_ID_EXPRESSION;
+            let storageType = '';
+            if(PROFILE_IMG.startsWith(prefix) && PROFILE_IMG.endsWith(suffix)) {
+                storageType = PROFILE_IMG.substring(prefix.length, PROFILE_IMG.length - suffix.length);
+            }
+
+            const $select = $("#profileImageStorageType");
+            if(storageType && $select.find('option').filter(function() { return this.value === storageType; }).length === 0) {
+                $select.append($('<option></option>').val(storageType).text(`${storageType} (없는 저장소 유형)`));
+            }
+            $select.val(storageType);
+            $("#profileImg").val(PROFILE_IMG);
+        }
+
+        function changeProfileImageStorageType(storageType) {
+            PROFILE_IMG = profileImgOf(storageType);
+            $("#profileImg").val(PROFILE_IMG);
+        }
+
+        function alertError(error) {
+            const message = error && error.responseJSON && error.responseJSON.message;
+            alert(message || 'error');
         }
 
         function getList() {
@@ -208,7 +266,7 @@
                     getList();
                 },
                 function(error){
-                    alert('error');
+                    alertError(error);
                 }
             );
         }
@@ -220,7 +278,7 @@
                   getList();
               },
               function(error){
-                  alert('error');
+                  alertError(error);
               }
           );
         }
@@ -257,7 +315,9 @@
                 logoImg: $("#logoImg").val(),
                 layoutTitle: $("#layoutTitle").val(),
                 homeObjectCode: $("#homeObjectCode").val(),
-                faviconPath: $("#faviconPath").val()
+                faviconPath: $("#faviconPath").val(),
+                profileImg: PROFILE_IMG,
+                profileImgSize: ($("#profileImgSize").val() || '').trim()
             }
         }
 
@@ -276,6 +336,8 @@
             $("#layoutTitle").val(params.layoutTitle);
             $("#homeObjectCode").val(params.homeObjectCode);
             $("#faviconPath").val(params.faviconPath);
+            setProfileImg(params.profileImg);
+            $("#profileImgSize").val(params.profileImgSize == null ? '' : params.profileImgSize);
           }
     </script>
 <div id="layout-app" th:fragment="view">
@@ -367,6 +429,27 @@
                     <div class="form-group col-6">
                         <label for="logoImg">로고 img</label>
                         <input type="text" class="form-control" id="logoImg" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-section">
+                <div class="ds-section-header"><i class="fas fa-user-circle"></i><span>프로필</span></div>
+                <div class="ds-section-grid">
+                    <div class="form-group col-3">
+                        <label for="profileImageStorageType">프로필 이미지 저장소 유형</label>
+                        <select class="form-control" id="profileImageStorageType" onchange="changeProfileImageStorageType(this.value)">
+                            <option value="">사용 안 함 (기본 이미지)</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="profileImg">프로필 이미지 링크</label>
+                        <input type="text" class="form-control" id="profileImg" readonly placeholder="저장소 유형을 선택하면 /{applicationId}/image/{storageType}/#{userId} 로 설정됩니다">
+                        <small class="text-muted">#{userId} 는 로그인한 사용자ID로 바뀝니다. Image Manage 에서 해당 저장소 유형에 파일명을 사용자ID로 지정해 올려주세요. 이미지가 없는 사용자는 기본 이미지가 보입니다.</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label for="profileImgSize">프로필 이미지 크기 (px)</label>
+                        <input type="number" class="form-control" id="profileImgSize" min="16" max="200" step="1" placeholder="비우면 기본 크기 (약 34px)" autocomplete="off">
                     </div>
                 </div>
             </div>

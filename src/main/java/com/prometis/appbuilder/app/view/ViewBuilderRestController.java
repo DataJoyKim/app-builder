@@ -4,6 +4,7 @@ import com.prometis.appbuilder.app.code.CodeRequest;
 import com.prometis.appbuilder.app.code.CodeResponse;
 import com.prometis.appbuilder.app.code.CodeService;
 import com.prometis.appbuilder.app.code.CodeType;
+import com.prometis.appbuilder.app.image.ImageService;
 import com.prometis.appbuilder.app.security.company.Company;
 import com.prometis.appbuilder.app.security.company.CompanyService;
 import com.prometis.appbuilder.app.security.session.AppSessionService;
@@ -47,6 +48,8 @@ public class ViewBuilderRestController {
     CompanyService companyService;
     @Autowired
     AppSessionService sessionService;
+    @Autowired
+    ImageService imageService;
 
     @GetMapping("/api/menu/tree")
     public ResponseEntity<?> getMenu(
@@ -136,7 +139,10 @@ public class ViewBuilderRestController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        ProfileDto.ProfileResponse response = ProfileDto.ProfileResponse.of(user);
+        // 레이아웃의 프로필 이미지 링크에 사용자ID를 넣는다. 그 사용자의 이미지가 없으면 null (화면이 기본 이미지를 쓴다)
+        String profileImg = imageService.resolveUserImageLink(applicationId, layoutService.getLayout(applicationId).getProfileImg(), user.getUserId());
+
+        ProfileDto.ProfileResponse response = ProfileDto.ProfileResponse.of(user, profileImg);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

@@ -886,7 +886,8 @@
         const kw = (keyword || '').trim().toLowerCase();
         if(!kw) return true;
 
-        return (item.loginId || '').toLowerCase().includes(kw)
+        return String(item.userId ?? '') === kw
+            || (item.loginId || '').toLowerCase().includes(kw)
             || (item.userName || '').toLowerCase().includes(kw)
             || (item.email || '').toLowerCase().includes(kw);
     }
@@ -905,7 +906,9 @@
         const name = displayNameOf(item);
         $item.find('.ds-list-item-avatar').text(name.trim().charAt(0).toUpperCase());
         $item.find('.ds-list-item-name').text(name);
-        $item.find('.ds-list-item-code').text([item.loginId, item.email].filter(v => v).join(' · '));
+        // 사용자ID(User.id)는 Layout 프로필 이미지 링크의 #{userId} 자리에 들어가는 값이다 (Image Manage 에서 파일명으로 지정)
+        const userIdText = (item.userId === undefined || item.userId === null) ? null : `ID ${item.userId}`;
+        $item.find('.ds-list-item-code').text([userIdText, item.loginId, item.email].filter(v => v).join(' · '));
 
         return $item;
     }
@@ -1751,7 +1754,7 @@
                     </div>
                     <div class="ds-list-search">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="appUserSearch" placeholder="로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderAppUserList()">
+                        <input type="text" id="appUserSearch" placeholder="사용자ID, 로그인ID, 성명, email로 검색" autocomplete="off" oninput="renderAppUserList()">
                     </div>
                     <div class="ds-unassigned-filter">
                         <label><input type="checkbox" id="appUserUnassignedOnly" onchange="renderAppUserList()">회사 미지정만 보기</label>

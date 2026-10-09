@@ -121,6 +121,15 @@ platform:
       - plugins
       - ui
 
+  # 애플리케이션 콘솔 > Setting > Image Manage 에서 올리는 이미지 (로고, 프로필사진, 아이콘 등).
+  # 앱에서는 /{applicationId}/image/{storageType}/{filename} 링크로 조회한다
+  image:
+    # 업로드할 수 있는 확장자 (svg 는 스크립트를 담을 수 있어 기본값에서 뺐다)
+    allowed-extensions: [png, jpg, jpeg, gif, webp, bmp, ico]
+    # 파일 한 개의 최대 크기. spring.servlet.multipart.max-file-size(파일 한 개)와
+    # max-request-size(한 번에 올리는 파일 합계)를 넘을 수 없다
+    max-file-size: 5MB
+
   # 가입: 공개 가입(/signup) + 애플리케이션 관리자 초대 합류(/{applicationId}/console/join?token=...)
   join:
     # 메일로 보낸 인증코드의 유효시간 (예: 5m, 300s)
