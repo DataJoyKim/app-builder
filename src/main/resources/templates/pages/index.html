@@ -194,7 +194,6 @@
                   data: {},
                   success: function(response) {
                     console.log('profile',response);
-                    // 레이아웃(Layout 설정)의 프로필 이미지 링크. 사용자의 프로필 이미지가 없으면 기본 이미지
                     const blankProfileImg = "../../dist/img/blank_profile.png";
                     let data = {
                         profileImg: response.profileImg || blankProfileImg
@@ -209,16 +208,12 @@
                     profileHtml += `</div>`;
 
                     const $profile = $(profileHtml);
-                    // 링크가 열리지 않으면 (이미지가 그 사이 삭제되는 등) 기본 이미지로 바꾼다
                     $profile.find('img').one('error', function() { this.src = blankProfileImg; }).attr('src', data.profileImg);
                     $profile.find('.info').text(response.userName || '');
 
-                    // 레이아웃(Layout 설정)의 프로필 이미지 크기(px). 비어 있으면 AdminLTE 기본 크기
                     const profileImgSize = Number(layout && layout.profileImgSize);
                     if(profileImgSize > 0) {
-                        // 정사각형으로 맞춰 원형이 찌그러지지 않게 하고, 이름은 이미지 세로 가운데에 둔다
                         $profile.addClass('align-items-center');
-                        // 크기는 CSS(head 의 #profile 스타일)가 적용한다. 인라인 width 로 박으면 사이드바를 접었을 때 줄일 수 없다
                         $profile.find('img').addClass('profile-img-sized');
                         $profile[0].style.setProperty('--profile-img-size', profileImgSize + 'px');
                     }

@@ -90,6 +90,23 @@
         color: #4A90E2;
     }
 
+    #layout-app .ds-section-header-switch {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: normal;
+        color: #6b7280;
+    }
+
+    #layout-app .ds-section-header-switch .custom-control-label {
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
     #layout-app .ds-section-grid {
         display: flex;
         flex-wrap: wrap;
@@ -176,8 +193,21 @@
         let PROFILE_IMG = '';
 
         function init() {
+            $("#useLogo").on('change', toggleLogoDetail);
+            $("#useProfile").on('change', toggleProfileDetail);
+            toggleLogoDetail();
+            toggleProfileDetail();
             getStorageTypeList();
             getList();
+        }
+
+        // 사용 스위치가 켜졌을 때만 섹션의 세부 설정을 보여준다
+        function toggleLogoDetail() {
+            $("#logoDetail").toggle(App.util.isCheck('useLogo'));
+        }
+
+        function toggleProfileDetail() {
+            $("#profileDetail").toggle(App.util.isCheck('useProfile'));
         }
 
         function getStorageTypeList() {
@@ -326,6 +356,8 @@
             App.util.check('useAuthValidation', params.useAuthValidation === true || params.useAuthValidation === 'true');
             App.util.check('useProfile', params.useProfile === true || params.useProfile === 'true');
             App.util.check('useLogo', params.useLogo === true || params.useLogo === 'true');
+            toggleLogoDetail();
+            toggleProfileDetail();
             $("#logoText").val(params.logoText);
             $("#logoBackgroundColor").val(params.logoBackgroundColor);
             $("#logoColorPicker").val(params.logoBackgroundColor || '#4A90E2');
@@ -369,7 +401,9 @@
             </div>
 
             <div class="ds-section">
-                <div class="ds-section-header"><i class="fas fa-shield-alt"></i><span>인증 / 화면 요소</span></div>
+                <div class="ds-section-header">
+                    <i class="fas fa-shield-alt"></i><span>인증</span>
+                </div>
                 <div class="ds-section-grid">
                     <div class="form-group col-4">
                         <div class="ds-switch-row">
@@ -380,30 +414,21 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group col-4">
-                        <div class="ds-switch-row">
-                            <span class="ds-switch-row-title">프로필사용</span>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="useProfile">
-                                <label for="useProfile" class="custom-control-label"></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group col-4">
-                        <div class="ds-switch-row">
-                            <span class="ds-switch-row-title">로고사용</span>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="useLogo">
-                                <label for="useLogo" class="custom-control-label"></label>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <div class="ds-section">
-                <div class="ds-section-header"><i class="fas fa-image"></i><span>로고</span></div>
-                <div class="ds-section-grid">
+                <div class="ds-section-header">
+                    <i class="fas fa-image"></i><span>로고</span>
+                    <div class="ds-section-header-switch">
+                        <span>사용</span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="useLogo">
+                            <label for="useLogo" class="custom-control-label"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ds-section-grid" id="logoDetail">
                     <div class="form-group col-4">
                         <label for="logoText">로고 텍스트</label>
                         <input type="text" class="form-control" id="logoText" autocomplete="off">
@@ -434,8 +459,17 @@
             </div>
 
             <div class="ds-section">
-                <div class="ds-section-header"><i class="fas fa-user-circle"></i><span>프로필</span></div>
-                <div class="ds-section-grid">
+                <div class="ds-section-header">
+                    <i class="fas fa-user-circle"></i><span>프로필</span>
+                    <div class="ds-section-header-switch">
+                        <span>사용</span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="useProfile">
+                            <label for="useProfile" class="custom-control-label"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ds-section-grid" id="profileDetail">
                     <div class="form-group col-3">
                         <label for="profileImageStorageType">프로필 이미지 저장소 유형</label>
                         <select class="form-control" id="profileImageStorageType" onchange="changeProfileImageStorageType(this.value)">
