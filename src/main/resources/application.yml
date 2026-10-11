@@ -30,7 +30,7 @@ spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://app-builder-metadatadb:3306/metadatadb
-    username: "prometiesadmin"
+    username: "prometisadmin"
     password: "Rlaskrdud1!"
 
   jpa:
