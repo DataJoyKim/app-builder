@@ -28,7 +28,7 @@ public class ConsoleViewController {
             @PathVariable(name = "path") String path
     ) {
         model.addAttribute("applicationId", applicationId);
-        model.addAttribute("contentPath","/console/app/contents/"+path);
+        model.addAttribute("contentPath","console/app/contents/"+path);
         return "console/app/contents/content";
     }
 }

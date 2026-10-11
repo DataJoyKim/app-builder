@@ -17,7 +17,7 @@ public class PlatformConsoleViewController {
 
     @GetMapping("/{path}")
     public String moveDataSource(Model model, @PathVariable(name = "path") String path) {
-        model.addAttribute("contentPath","/console/platform/contents/"+path);
+        model.addAttribute("contentPath","console/platform/contents/"+path);
         return "console/platform/contents/content";
     }
 }
