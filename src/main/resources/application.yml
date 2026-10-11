@@ -30,8 +30,8 @@ spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://app-builder-metadatadb:3306/metadatadb
-    username: "prometisadmin"
-    password: "Rlaskrdud1!"
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
@@ -64,17 +64,17 @@ spring:
 
   # 플랫폼 공통 메일 서버 (가입 인증코드, 관리자 초대 메일에 쓴다).
   # host 가 없으면 메일을 보내지 않고 인증코드를 서버 로그에 남긴다(개발용).
-  # mail:
-  #   host: smtp.gmail.com
-  #   port: 587
-  #   username: noreply@example.com
-  #   password: app-password
-  #   properties:
-  #     mail.smtp.auth: true
-  #     mail.smtp.starttls.enable: true
-  #     mail.smtp.connectiontimeout: 5000
-  #     mail.smtp.timeout: 5000
-  #     mail.smtp.writetimeout: 5000
+  mail:
+     host: smtp.gmail.com
+     port: 587
+     username: ${SMTP_USERNAME}
+     password: ${SMTP_PASSWORD}
+     properties:
+       mail.smtp.auth: true
+       mail.smtp.starttls.enable: true
+       mail.smtp.connectiontimeout: 5000
+       mail.smtp.timeout: 5000
+       mail.smtp.writetimeout: 5000
 
 server:
   port: 8080
@@ -85,7 +85,7 @@ platform:
     login-id: sysadmin
     initial-password: sysadmin1!
     user-name: sysadmin
-    email: ""
+    email: "ks25ny@gmail.com"
   application:
     # 한 사용자가 관리자로 소유할 수 있는 애플리케이션 최대 개수 (애플리케이션 콘솔 > Application 에서 생성할 때 적용)
     max-owned-count: 3
