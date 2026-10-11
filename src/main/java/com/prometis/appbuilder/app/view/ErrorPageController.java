@@ -11,6 +11,6 @@ public class ErrorPageController {
 
     @GetMapping("/{errorPage}")
     public String moveErrorPage(@PathVariable(name = "errorPage") String errorPage) {
-        return "/error/" + errorPage;
+        return "error/" + errorPage;
     }
 }

@@ -38,7 +38,7 @@ public class ViewBuilderController {
             applicationGuard.check(applicationId);
         }
         catch (ApplicationNotFoundException e) {
-            return "/error/error404";
+            return "error/error404";
         }
 
         Layout layout = layoutService.getLayout(applicationId);
@@ -51,7 +51,7 @@ public class ViewBuilderController {
                 return appLogin(model, applicationId);
             }
             else {
-                return "/error/error403";
+                return "error/error403";
             }
         }
 
@@ -60,7 +60,7 @@ public class ViewBuilderController {
             model.addAttribute("faviconPath", layout.getFaviconPath().trim());
         }
 
-        return "/pages/index";
+        return "pages/index";
     }
     @GetMapping("/pages/{objectCode}")
     public String moveAppPages(
@@ -73,12 +73,12 @@ public class ViewBuilderController {
             applicationGuard.check(applicationId);
         }
         catch (ApplicationNotFoundException e) {
-            return "/error/error404";
+            return "error/error404";
         }
 
         ViewObject viewObject = viewObjectService.getViewObject(applicationId, objectCode);
         if(viewObject == null) {
-            return "/error/error404";
+            return "error/error404";
         }
 
         try {
@@ -89,7 +89,7 @@ public class ViewBuilderController {
                 return appLogin(model, applicationId);
             }
             else {
-                return "/error/error403";
+                return "error/error403";
             }
         }
 
@@ -97,10 +97,10 @@ public class ViewBuilderController {
         model.addAttribute("objectCode",objectCode);
 
         if(ObjectType.FILE.equals(viewObject.getType())) {
-            return "/template/mf-template";
+            return "template/mf-template";
         }
         else if(ObjectType.VIEW_BUILDER.equals(viewObject.getType())) {
-            return "/template/view-builder-template";
+            return "template/view-builder-template";
         }
         else {
             return null;
@@ -111,6 +111,6 @@ public class ViewBuilderController {
     // 페이지가 iframe 안에서 열릴 수도 있어 redirect 대신 error401 화면이 최상위 창을 옮긴다
     private String appLogin(Model model, String applicationId) {
         model.addAttribute("loginUrl", "/" + applicationId + "/login");
-        return "/error/error401";
+        return "error/error401";
     }
 }

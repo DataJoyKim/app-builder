@@ -30,7 +30,7 @@ public class AppLoginViewController {
     public String login(Model model, @PathVariable("applicationId") String applicationId) {
         Optional<Application> application = applicationRepository.findByApplicationId(applicationId);
         if(application.isEmpty()) {
-            return "/error/error404";
+            return "error/error404";
         }
 
         Layout layout = layoutService.getLayout(applicationId);
