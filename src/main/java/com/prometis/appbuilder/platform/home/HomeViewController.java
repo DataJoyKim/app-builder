@@ -64,7 +64,8 @@ public class HomeViewController {
 
     /**
      * 소유한 애플리케이션에 접속하거나 새로 만든다 (애플리케이션 콘솔의 application-manage 화면을 그대로 쓴다).
-     * 애플리케이션 관리자(users.authority = APPLICATION_ADMIN)만 들어올 수 있고, 그 밖의 사용자는 애플리케이션 선택 화면으로 돌려보낸다.
+     * 애플리케이션 관리자(users.authority = APPLICATION_ADMIN)만 들어올 수 있고, 그 밖의 사용자는 각자의 첫 화면으로 돌려보낸다
+     * (플랫폼관리자 → 플랫폼 콘솔, 나머지 → 애플리케이션 선택 화면). 로그인 화면이 로그인 후 기본으로 이 화면에 보내기 때문이다.
      */
     @GetMapping("/applications/manage")
     public String applicationManage(HttpServletRequest request, Model model) {
@@ -73,7 +74,7 @@ public class HomeViewController {
             return redirectLogin(HomeLanding.APPLICATION_MANAGE);
         }
         if(!applicationManageService.canCreateApplication(user.getUserId())) {
-            return "redirect:" + HomeLanding.APPLICATION_SELECT.getPath();
+            return "redirect:" + homeService.landingOf(user.getUserId()).getPath();
         }
 
         model.addAttribute("userName", user.getUserName());

@@ -114,6 +114,10 @@ class HomeViewControllerTest {
     void 플랫폼관리자는_플랫폼_콘솔로_보낸다() throws Exception {
         mockMvc.perform(get("/").cookie(tokenOf(platformAdmin)))
                 .andExpect(redirectedUrl("/console"));
+
+        // 로그인 후 기본 이동 화면(/applications/manage)으로 와도 플랫폼 콘솔로 보낸다
+        mockMvc.perform(get("/applications/manage").cookie(tokenOf(platformAdmin)))
+                .andExpect(redirectedUrl("/console"));
     }
 
     @Test

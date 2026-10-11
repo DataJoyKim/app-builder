@@ -7,11 +7,18 @@
 <body>
     <script th:inline="javascript">
         alert("로그인이 필요합니다.");
-        let returnUrl = /*[[${param.returnUrl}]]*/ '/';
-        if(!returnUrl) {
-            returnUrl = '/';
+        // 앱 화면(ViewBuilderController)은 그 애플리케이션의 로그인 화면(/{applicationId}/login)을 loginUrl 로 넘긴다
+        const appLoginUrl = /*[[${loginUrl}]]*/ null;
+        if(appLoginUrl) {
+            window.top.location.href = appLoginUrl;
         }
-        window.top.location.href="/login?returnUrl="+returnUrl;
+        else {
+            let returnUrl = /*[[${param.returnUrl}]]*/ '/';
+            if(!returnUrl) {
+                returnUrl = '/';
+            }
+            window.top.location.href="/login?returnUrl="+returnUrl;
+        }
     </script>
 </body>
 </html>

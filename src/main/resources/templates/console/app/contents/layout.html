@@ -197,6 +197,8 @@
             $("#useProfile").on('change', toggleProfileDetail);
             toggleLogoDetail();
             toggleProfileDetail();
+            const appLoginPath = `/${encodeURIComponent(APPLICATION_ID)}/login`;
+            $("#appLoginLink").attr('href', appLoginPath).text(appLoginPath);
             getStorageTypeList();
             getList();
         }
@@ -335,7 +337,7 @@
             return {
                 id: $("#id").val(),
                 // 서버(LayoutRestController)가 문자열로 받아 Boolean.valueOf 하므로 문자열로 보낸다
-                useAuthValidation: String(App.util.isCheck('useAuthValidation')),
+                useCompanySelect: String(App.util.isCheck('useCompanySelect')),
                 useProfile: String(App.util.isCheck('useProfile')),
                 useLogo: String(App.util.isCheck('useLogo')),
                 logoText: $("#logoText").val(),
@@ -347,13 +349,14 @@
                 homeObjectCode: $("#homeObjectCode").val(),
                 faviconPath: $("#faviconPath").val(),
                 profileImg: PROFILE_IMG,
-                profileImgSize: ($("#profileImgSize").val() || '').trim()
+                profileImgSize: ($("#profileImgSize").val() || '').trim(),
+                loginImgLogoLink: ($("#loginImgLogoLink").val() || '').trim()
             }
         }
 
         function setContent(params) {
             $("#id").val(params.id);
-            App.util.check('useAuthValidation', params.useAuthValidation === true || params.useAuthValidation === 'true');
+            App.util.check('useCompanySelect', params.useCompanySelect === true || params.useCompanySelect === 'true');
             App.util.check('useProfile', params.useProfile === true || params.useProfile === 'true');
             App.util.check('useLogo', params.useLogo === true || params.useLogo === 'true');
             toggleLogoDetail();
@@ -370,12 +373,13 @@
             $("#faviconPath").val(params.faviconPath);
             setProfileImg(params.profileImg);
             $("#profileImgSize").val(params.profileImgSize == null ? '' : params.profileImgSize);
+            $("#loginImgLogoLink").val(params.loginImgLogoLink || '');
           }
     </script>
 <div id="layout-app" th:fragment="view">
     <div class="ds-detail-panel">
         <div class="ds-panel-header">
-            <h3><i class="fas fa-window-maximize"></i> Layout 설정</h3>
+            <h3><i class="fas fa-window-maximize"></i> Site 설정</h3>
             <button type="button" class="ds-btn" onclick="save()"><i class="fas fa-save"></i>저장</button>
         </div>
 
@@ -386,7 +390,7 @@
                 <div class="ds-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
                 <div class="ds-section-grid">
                     <div class="form-group col-6">
-                        <label for="layoutTitle">레이아웃 title</label>
+                        <label for="layoutTitle">브라우저 탭 title</label>
                         <input type="text" class="form-control" id="layoutTitle" autocomplete="off">
                     </div>
                     <div class="form-group col-6">
@@ -396,15 +400,6 @@
                     <div class="form-group col-12">
                         <label for="faviconPath">브라우저 탭 아이콘 경로</label>
                         <input type="text" class="form-control" id="faviconPath" autocomplete="off" maxlength="500" placeholder="예: /dist/img/favicon.ico 또는 https://.../favicon.png">
-                    </div>
-                    <div class="form-group col-4">
-                        <div class="ds-switch-row">
-                            <span class="ds-switch-row-title">인증사용</span>
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="useAuthValidation">
-                                <label for="useAuthValidation" class="custom-control-label"></label>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -476,6 +471,40 @@
                     <div class="form-group col-3">
                         <label for="profileImgSize">프로필 이미지 크기 (px)</label>
                         <input type="number" class="form-control" id="profileImgSize" min="16" max="200" step="1" placeholder="비우면 기본 크기 (약 34px)" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-section">
+                <div class="ds-section-header">
+                    <i class="fas fa-building"></i><span>회사 선택</span>
+                    <div class="ds-section-header-switch">
+                        <span>사용</span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="useCompanySelect">
+                            <label for="useCompanySelect" class="custom-control-label"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ds-section-grid">
+                    <div class="form-group col-12">
+                        <small class="text-muted">켜면 앱 사이드바에 회사 선택 목록이 보여, 사용자가 소속 회사 중 하나를 골라 그 회사 기준으로 화면을 쓸 수 있습니다.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-section">
+                <div class="ds-section-header">
+                    <i class="fas fa-sign-in-alt"></i><span>로그인 화면</span>
+                </div>
+                <div class="ds-section-grid">
+                    <div class="form-group col-12">
+                        <label for="loginImgLogoLink">로그인 이미지 로고 링크</label>
+                        <input type="text" class="form-control" id="loginImgLogoLink" autocomplete="off" maxlength="500" placeholder="예: /{applicationId}/image/{storageType}/logo 또는 https://.../logo.png">
+                        <small class="text-muted">
+                            로그인 화면(<a id="appLoginLink" href="#" target="_blank"></a>)에 보이는 로고 이미지입니다.
+                            비워 두거나 이미지를 불러오지 못하면 애플리케이션 이름이 글자로 보입니다.
+                        </small>
                     </div>
                 </div>
             </div>

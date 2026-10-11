@@ -44,4 +44,9 @@ public class User {
         this.email = email;
         this.authority = authority;
     }
+
+    /** 플랫폼 콘솔 사용자 화면에서 관리자가 비밀번호를 바꾼다. 해시된 값을 받는다 */
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

@@ -419,14 +419,50 @@
             );
         }
 
-        // 비밀번호는 신규 등록 때만 입력받는다 (수정 API는 비밀번호를 바꾸지 않음)
+        // 신규 등록은 저장할 때 비밀번호를 같이 받고, 등록된 사용자는 비밀번호 변경 영역에서 따로 바꾼다 (수정 API는 비밀번호를 바꾸지 않음)
         function togglePasswordSection() {
             const isNew = isEmpty($("#id").val());
             $("#passwordSection").toggle(isNew);
+            $("#changePasswordSection").toggle(!isNew);
             if(!isNew) {
                 $("#password").val('');
                 $("#checkPassword").val('');
             }
+            $("#newPassword").val('');
+            $("#checkNewPassword").val('');
+        }
+
+        function changePassword() {
+            const id = $("#id").val();
+            if(isEmpty(id)) return;
+
+            const password = $("#newPassword").val();
+            const checkPassword = $("#checkNewPassword").val();
+            if(isEmpty(password)) {
+                alert('새 비밀번호를 입력해주세요.');
+                $("#newPassword").focus();
+                return;
+            }
+            if(password !== checkPassword) {
+                alert('새 비밀번호 확인이 일치하지 않습니다.');
+                $("#checkNewPassword").focus();
+                return;
+            }
+            if(!confirm(`${$("#userName").val() || $("#loginId").val()} 사용자의 비밀번호를 변경하시겠습니까?`)) {
+                return;
+            }
+
+            httpClient.put(`/console/api/user/${id}/password`, {}, {password, checkPassword},
+                function(response){
+                    alert("비밀번호가 변경되었습니다.");
+                    $("#newPassword").val('');
+                    $("#checkNewPassword").val('');
+                },
+                function(error){
+                    const message = error && error.responseJSON && error.responseJSON.message;
+                    alert(message || 'error');
+                }
+            );
         }
 
         function updateContent(id) {
@@ -569,6 +605,25 @@
                         <div class="form-group col-4">
                             <label for="checkPassword">비밀번호 확인</label>
                             <input type="password" class="form-control" id="checkPassword" autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 등록된 사용자의 비밀번호 변경. 위 저장 버튼과 따로 "비밀번호 변경" 버튼으로만 바뀐다 -->
+                <div class="ds-section" id="changePasswordSection" style="margin-top: 14px; display: none;">
+                    <div class="ds-section-header"><i class="fas fa-key"></i><span>비밀번호 변경</span></div>
+                    <div class="ds-section-grid">
+                        <div class="form-group col-4">
+                            <label for="newPassword">새 비밀번호</label>
+                            <input type="password" class="form-control" id="newPassword" autocomplete="new-password">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="checkNewPassword">새 비밀번호 확인</label>
+                            <input type="password" class="form-control" id="checkNewPassword" autocomplete="new-password">
+                        </div>
+                        <div class="form-group col-4">
+                            <label>&nbsp;</label>
+                            <button type="button" class="ds-btn ds-btn-primary" onclick="changePassword()"><i class="fas fa-key"></i>비밀번호 변경</button>
                         </div>
                     </div>
                 </div>

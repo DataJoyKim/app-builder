@@ -1,0 +1,18 @@
+# 테스트 전용 설정. classpath:/config/application.yml 은 src/main/resources/application.yml 위에 덮어써지므로
+# 여기 적은 값만 바뀌고 나머지(platform.* 등)는 main 설정을 그대로 쓴다.
+# 앱 DB 는 MariaDB 지만 테스트는 외부 DB 없이 돌도록 H2 메모리 DB 를 쓴다.
+# (테스트 클래스가 @SpringBootTest(properties = "spring.datasource.url=...") 로 자기 DB 를 따로 줄 수 있다)
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect

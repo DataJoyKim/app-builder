@@ -48,7 +48,7 @@ public class ViewBuilderController {
         }
         catch (BusinessException e) {
             if(e.getStatus() == 401) {
-                return "/error/error401";
+                return appLogin(model, applicationId);
             }
             else {
                 return "/error/error403";
@@ -86,7 +86,7 @@ public class ViewBuilderController {
         }
         catch (BusinessException e) {
             if(e.getStatus() == 401) {
-                return "/error/error401";
+                return appLogin(model, applicationId);
             }
             else {
                 return "/error/error403";
@@ -105,5 +105,12 @@ public class ViewBuilderController {
         else {
             return null;
         }
+    }
+
+    // 로그인하지 않은 사용자는 플랫폼 로그인(/login)이 아니라 이 애플리케이션의 로그인 화면으로 보낸다.
+    // 페이지가 iframe 안에서 열릴 수도 있어 redirect 대신 error401 화면이 최상위 창을 옮긴다
+    private String appLogin(Model model, String applicationId) {
+        model.addAttribute("loginUrl", "/" + applicationId + "/login");
+        return "/error/error401";
     }
 }

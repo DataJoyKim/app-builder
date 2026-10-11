@@ -36,7 +36,7 @@
                 </ul>
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="logout(`/${APPLICATION_ID}`); return false;" role="button" title="로그아웃">
+                        <a class="nav-link" href="#" onclick="logout(null, `/${APPLICATION_ID}/login`); return false;" role="button" title="로그아웃">
                             <i class="fas fa-sign-out-alt"></i>
                         </a>
                     </li>
@@ -50,7 +50,8 @@
                 <div class="sidebar">
                     <div id="profile"></div>
 
-                    <div>
+                    <!-- 회사 선택 영역: Layout.useCompanySelect 가 켜져 있을 때만 보인다 (setLayout) -->
+                    <div id="companySelectArea" style="display: none;">
                         <div class="form-group ">
                             <select class="form-control col-12" id="companyList">
                             </select>
@@ -163,7 +164,10 @@
                         setProfile(data);
                     }
 
-                    setCompanyList();
+                    if(data.useCompanySelect) {
+                        $("#companySelectArea").show();
+                        setCompanyList();
+                    }
 
                     setRootMenu();
 

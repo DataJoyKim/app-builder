@@ -1,118 +1,358 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login</title>
-
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
-    <!-- icheck bootstrap -->
-    <link rel="stylesheet" href="../../plugins/icheck-bootstrap/icheck-bootstrap.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
-</head>
-<body class="hold-transition login-page">
-<div class="login-box">
-    <!-- /.login-logo -->
-    <div class="card card-outline card-primary">
-        <div class="card-header text-center">
-            <a href="#" class="h1"><b>Prometis</b></a>
-        </div>
-        <div class="card-body">
-            <p class="login-box-msg">Sign in to start your session</p>
-
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" id="loginId" placeholder="Login ID">
-                <div class="input-group-append">
-                    <div class="input-group-text">
-                        <span class="fas fa-user"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="input-group mb-3">
-                <input type="password" class="form-control move-sign-in" id="password" placeholder="Password">
-                <div class="input-group-append">
-                    <div class="input-group-text">
-                        <span class="fas fa-lock"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-8">
-                    <div class="icheck-primary">
-                    </div>
-                </div>
-                <!-- /.col -->
-                <div class="col-4">
-                    <button type="submit" class="btn btn-primary btn-block" onclick="login()">Sign In</button>
-                </div>
-                <!-- /.col -->
-            </div>
-            <!-- /.social-auth-links -->
-        </div>
-        <!-- /.card-body -->
-    </div>
-    <!-- /.card -->
-</div>
-<!-- /.login-box -->
-
-<script src="/plugins/jquery/jquery.min.js"></script>
-<script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
-<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/dist/js/adminlte.min.js"></script>
-<script src="/core/common.js"></script>
-<script src="/core/LoadingBar.js"></script>
-<script src="/core/HttpClient.js"></script>
-<script th:inline="javascript">
-    App.loadingBar.render();
-    const httpClient = new HttpClient();
-    let api;
-    let view;
-
-    $(document).ready(function () {
-      console.log('version.0.3.8');
-
-      loadJson("/asset/api.json", function(data){
-        api = data;
-      });
-
-      loadJson("/asset/view.json", function(data){
-        view = data;
-      });
-
-      $('.move-sign-in').on('keydown', function(event) {
-        if(event.keyCode === 13) {
-            login();
+    <title>로그인 - Prometis</title>
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- 가입 화면(console/app/join.html)과 같은 모양으로 맞춘다 -->
+    <style>
+        * {
+            box-sizing: border-box;
         }
-      });
-    });
 
-    function login() {
-        let loginId = $("#loginId").val();
-        let password = $("#password").val();
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background: #f0f4f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", Arial, sans-serif;
+            color: #1f1f1f;
+        }
 
-        httpClient.post(api.LOGIN,{},{
-                loginId:loginId,
-                password:password
-            },
-            function(response){
-                console.log('response',response);
-                let returnUrl = /*[[${returnUrl}]]*/ "";
-                if(returnUrl == null || returnUrl == "") {
-                    returnUrl = view.HOME;
-                }
+        .login {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            border-radius: 28px;
+            padding: 36px;
+        }
 
-                location.href = returnUrl;
-            },
-            function(error){
-                let errorObj = error.responseJSON;
-                alert(errorObj.message);
+        /* 회사 로고 영역: 이미지가 들어와도 카드 높이가 흔들리지 않도록 높이를 고정한다 */
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 64px;
+            margin-bottom: 20px;
+        }
+
+        .login-logo-img {
+            display: block;
+            max-height: 64px;
+            max-width: 240px;
+            object-fit: contain;
+        }
+
+        /* 로고 이미지가 없거나 못 불러오면 회사명을 글자로 보여준다 */
+        .login-logo-text {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1;
+            color: #c8461e;
+        }
+
+        .login-title {
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        .login-subtitle {
+            margin: 0 0 24px;
+            text-align: center;
+            font-size: 14px;
+            color: #444746;
+            line-height: 1.5;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #444746;
+        }
+
+        .field input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid #c4c7c5;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #1f1f1f;
+            background: #fff;
+        }
+
+        .field input:focus {
+            border-color: #0b57d0;
+            box-shadow: 0 0 0 1px #0b57d0;
+            outline: none;
+        }
+
+        .field input.invalid {
+            border-color: #d93025;
+            box-shadow: 0 0 0 1px #d93025;
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+        .password-wrap input {
+            padding-right: 44px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: none;
+            color: #5f6368;
+            cursor: pointer;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .password-toggle:hover {
+            color: #1f1f1f;
+        }
+
+        .hint {
+            display: none;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #b06000;
+        }
+
+        .hint.show {
+            display: block;
+        }
+
+        .message {
+            display: none;
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .message.error {
+            display: block;
+            background: #fce8e6;
+            color: #c5221f;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 40px;
+            padding: 0 22px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #0b57d0;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0842a0;
+        }
+
+        .btn-text {
+            background: none;
+            color: #0b57d0;
+            padding: 0 8px;
+        }
+
+        .btn-text:hover {
+            background: #f2f6fc;
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                justify-content: flex-start;
+                background: #fff;
+                padding: 16px 0;
             }
-        );
+
+            .login {
+                border-radius: 0;
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="login">
+    <!--
+      회사 로고. 로고 이미지를 쓰려면 img 의 src 만 채우면 된다 (예: /{applicationId}/image/{storageType}/logo).
+      이미지를 불러오면 이미지로 바꿔 보여주고, 못 불러오면 회사명 글자를 그대로 보여준다
+    -->
+    <div class="login-logo">
+        <span class="login-logo-text" id="logoText">Prometis</span>
+    </div>
+    <h1 class="login-title">로그인</h1>
+    <p class="login-subtitle">계정으로 로그인해서 계속하세요.</p>
+
+    <div class="message" id="message" role="alert"></div>
+
+    <form id="loginForm" novalidate>
+        <div class="field">
+            <label for="loginId">로그인ID</label>
+            <input type="text" id="loginId" maxlength="100" autocomplete="username" autofocus>
+        </div>
+        <div class="field">
+            <label for="password">비밀번호</label>
+            <div class="password-wrap">
+                <input type="password" id="password" autocomplete="current-password">
+                <button type="button" class="password-toggle" id="passwordToggle" title="비밀번호 보기" aria-label="비밀번호 보기">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+            <div class="hint" id="capsLockHint"><i class="fas fa-exclamation-triangle"></i> Caps Lock 이 켜져 있습니다.</div>
+        </div>
+
+        <div class="actions">
+            <a class="btn btn-text" href="/signup">계정 만들기</a>
+            <button type="submit" class="btn btn-primary" id="loginBtn">로그인</button>
+        </div>
+    </form>
+</main>
+
+<script th:inline="javascript">
+    const LOGIN_API = '/api/login';
+    // 로그인 후 기본 이동 화면. 애플리케이션 관리자(APPLICATION_ADMIN)가 아니면 서버가 각자의 첫 화면으로 보낸다 (플랫폼관리자 → /console, 나머지 → /applications)
+    const HOME_URL = '/applications/manage';
+    const RETURN_URL = /*[[${returnUrl}]]*/ '';
+
+    function $(id) {
+        return document.getElementById(id);
     }
+
+    function showError(text, fieldId) {
+        const box = $('message');
+        box.className = 'message' + (text ? ' error' : '');
+        box.textContent = text || '';
+
+        document.querySelectorAll('.field input').forEach(input => input.classList.remove('invalid'));
+        if(fieldId) {
+            $(fieldId).classList.add('invalid');
+            $(fieldId).focus();
+        }
+    }
+
+    // 같은 서버 안의 경로로만 돌아간다 (//other.com, https://... 같은 외부 주소는 기본 이동 화면으로)
+    function safeReturnUrl() {
+        // 루트(/)는 따로 돌아갈 화면이 없다는 뜻이라 기본 이동 화면으로 간다
+        if(RETURN_URL && RETURN_URL !== '/' && RETURN_URL.startsWith('/') && !RETURN_URL.startsWith('//') && !RETURN_URL.startsWith('/\\')) {
+            return RETURN_URL;
+        }
+        return HOME_URL;
+    }
+
+    async function login(event) {
+        event.preventDefault();
+
+        const loginId = $('loginId').value.trim();
+        const password = $('password').value;
+        if(!loginId) return showError('로그인ID를 입력해주세요.', 'loginId');
+        if(!password) return showError('비밀번호를 입력해주세요.', 'password');
+
+        const button = $('loginBtn');
+        button.disabled = true;
+        button.textContent = '로그인 중...';
+        try {
+            const response = await fetch(LOGIN_API, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({loginId, password})
+            });
+
+            if(!response.ok) {
+                let data = {};
+                try {
+                    data = await response.json();
+                }
+                catch (e) {
+                    // 본문이 JSON 이 아니면 아래 오류 메시지를 쓴다
+                }
+                showError(data.message || '로그인하지 못했습니다. 잠시 후 다시 시도해주세요.', 'password');
+                $('password').select();
+                return;
+            }
+
+            location.href = safeReturnUrl();
+        }
+        catch (e) {
+            showError('서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        }
+        finally {
+            button.disabled = false;
+            button.textContent = '로그인';
+        }
+    }
+
+    function togglePassword() {
+        const input = $('password');
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+
+        const toggle = $('passwordToggle');
+        const label = show ? '비밀번호 숨기기' : '비밀번호 보기';
+        toggle.title = label;
+        toggle.setAttribute('aria-label', label);
+        toggle.querySelector('i').className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+        input.focus();
+    }
+
+    function checkCapsLock(event) {
+        if(event.getModifierState) {
+            $('capsLockHint').classList.toggle('show', event.getModifierState('CapsLock'));
+        }
+    }
+
+    $('loginForm').addEventListener('submit', login);
+    $('passwordToggle').addEventListener('click', togglePassword);
+    $('password').addEventListener('keyup', checkCapsLock);
+    $('password').addEventListener('keydown', checkCapsLock);
+    $('password').addEventListener('blur', () => $('capsLockHint').classList.remove('show'));
+    document.querySelectorAll('.field input').forEach(input =>
+        input.addEventListener('input', () => input.classList.remove('invalid')));
 </script>
 </body>
 </html>

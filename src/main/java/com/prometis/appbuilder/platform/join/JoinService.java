@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 public class JoinService {
     static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
     private static final int MAX_LENGTH = 100;
-    private static final String SIGNUP_PURPOSE = "App Builder 가입";
+    private static final String SIGNUP_PURPOSE = "Prometis 가입";
 
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;

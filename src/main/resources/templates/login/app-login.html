@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'로그인 - ' + ${applicationName}">로그인</title>
+    <link rel="icon" th:if="${faviconPath != null}" th:href="${faviconPath}">
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- 애플리케이션 로그인 화면 (/{applicationId}/login). 플랫폼 로그인(login/login.html)과 같은 모양으로 맞춘다 -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background: #f0f4f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", Arial, sans-serif;
+            color: #1f1f1f;
+        }
+
+        .login {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            border-radius: 28px;
+            padding: 36px;
+        }
+
+        /* 회사 로고 영역: 이미지가 들어와도 카드 높이가 흔들리지 않도록 높이를 고정한다 */
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 64px;
+            margin-bottom: 20px;
+        }
+
+        .login-logo-img {
+            display: block;
+            max-height: 64px;
+            max-width: 240px;
+            object-fit: contain;
+        }
+
+        /* 로고 이미지가 없거나 못 불러오면 애플리케이션 이름을 글자로 보여준다 */
+        .login-logo-text {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.2;
+            color: #1f1f1f;
+        }
+
+        .login-title {
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        .login-subtitle {
+            margin: 0 0 24px;
+            text-align: center;
+            font-size: 14px;
+            color: #444746;
+            line-height: 1.5;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #444746;
+        }
+
+        .field input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid #c4c7c5;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #1f1f1f;
+            background: #fff;
+        }
+
+        .field input:focus {
+            border-color: #0b57d0;
+            box-shadow: 0 0 0 1px #0b57d0;
+            outline: none;
+        }
+
+        .field input.invalid {
+            border-color: #d93025;
+            box-shadow: 0 0 0 1px #d93025;
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+        .password-wrap input {
+            padding-right: 44px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: none;
+            color: #5f6368;
+            cursor: pointer;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .password-toggle:hover {
+            color: #1f1f1f;
+        }
+
+        .hint {
+            display: none;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #b06000;
+        }
+
+        .hint.show {
+            display: block;
+        }
+
+        .message {
+            display: none;
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .message.error {
+            display: block;
+            background: #fce8e6;
+            color: #c5221f;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 40px;
+            padding: 0 22px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #0b57d0;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0842a0;
+        }
+
+        .btn-text {
+            background: none;
+            color: #0b57d0;
+            padding: 0 8px;
+        }
+
+        .btn-text:hover {
+            background: #f2f6fc;
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                justify-content: flex-start;
+                background: #fff;
+                padding: 16px 0;
+            }
+
+            .login {
+                border-radius: 0;
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="login">
+    <!--
+      애플리케이션 로고. 콘솔 Layout 의 로그인 이미지 로고 링크(loginImgLogoLink)가 있으면 그 이미지를,
+      없거나 이미지를 못 불러오면 애플리케이션 이름을 글자로 보여준다
+    -->
+    <div class="login-logo">
+        <img class="login-logo-img" id="logoImg" th:if="${loginImgLogoLink != null}" th:src="${loginImgLogoLink}" th:alt="${applicationName}"
+             onerror="this.hidden = true; document.getElementById('logoText').hidden = false">
+        <span class="login-logo-text" id="logoText" th:text="${applicationName}" th:title="${applicationName}"
+              th:hidden="${loginImgLogoLink != null}">애플리케이션</span>
+    </div>
+    <h1 class="login-title">로그인</h1>
+    <p class="login-subtitle">계정으로 로그인해서 계속하세요.</p>
+
+    <div class="message" id="message" role="alert"></div>
+
+    <form id="loginForm" novalidate>
+        <div class="field">
+            <label for="loginId">로그인ID</label>
+            <input type="text" id="loginId" maxlength="100" autocomplete="username" autofocus>
+        </div>
+        <div class="field">
+            <label for="password">비밀번호</label>
+            <div class="password-wrap">
+                <input type="password" id="password" autocomplete="current-password">
+                <button type="button" class="password-toggle" id="passwordToggle" title="비밀번호 보기" aria-label="비밀번호 보기">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+            <div class="hint" id="capsLockHint"><i class="fas fa-exclamation-triangle"></i> Caps Lock 이 켜져 있습니다.</div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary" id="loginBtn">로그인</button>
+        </div>
+    </form>
+</main>
+
+<script th:inline="javascript">
+    const LOGIN_API = '/api/login';
+    const APPLICATION_ID = /*[[${applicationId}]]*/ '';
+    // 로그인하면 애플리케이션 첫 화면으로 간다
+    const APPLICATION_URL = '/' + encodeURIComponent(APPLICATION_ID);
+
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    function showError(text, fieldId) {
+        const box = $('message');
+        box.className = 'message' + (text ? ' error' : '');
+        box.textContent = text || '';
+
+        document.querySelectorAll('.field input').forEach(input => input.classList.remove('invalid'));
+        if(fieldId) {
+            $(fieldId).classList.add('invalid');
+            $(fieldId).focus();
+        }
+    }
+
+    async function login(event) {
+        event.preventDefault();
+
+        const loginId = $('loginId').value.trim();
+        const password = $('password').value;
+        if(!loginId) return showError('로그인ID를 입력해주세요.', 'loginId');
+        if(!password) return showError('비밀번호를 입력해주세요.', 'password');
+
+        const button = $('loginBtn');
+        button.disabled = true;
+        button.textContent = '로그인 중...';
+        try {
+            const response = await fetch(LOGIN_API, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({loginId, password})
+            });
+
+            if(!response.ok) {
+                let data = {};
+                try {
+                    data = await response.json();
+                }
+                catch (e) {
+                    // 본문이 JSON 이 아니면 아래 오류 메시지를 쓴다
+                }
+                showError(data.message || '로그인하지 못했습니다. 잠시 후 다시 시도해주세요.', 'password');
+                $('password').select();
+                return;
+            }
+
+            location.href = APPLICATION_URL;
+        }
+        catch (e) {
+            showError('서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        }
+        finally {
+            button.disabled = false;
+            button.textContent = '로그인';
+        }
+    }
+
+    function togglePassword() {
+        const input = $('password');
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+
+        const toggle = $('passwordToggle');
+        const label = show ? '비밀번호 숨기기' : '비밀번호 보기';
+        toggle.title = label;
+        toggle.setAttribute('aria-label', label);
+        toggle.querySelector('i').className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+        input.focus();
+    }
+
+    function checkCapsLock(event) {
+        if(event.getModifierState) {
+            $('capsLockHint').classList.toggle('show', event.getModifierState('CapsLock'));
+        }
+    }
+
+    $('loginForm').addEventListener('submit', login);
+    $('passwordToggle').addEventListener('click', togglePassword);
+    $('password').addEventListener('keyup', checkCapsLock);
+    $('password').addEventListener('keydown', checkCapsLock);
+    $('password').addEventListener('blur', () => $('capsLockHint').classList.remove('show'));
+    document.querySelectorAll('.field input').forEach(input =>
+        input.addEventListener('input', () => input.classList.remove('invalid')));
+</script>
+</body>
+</html>

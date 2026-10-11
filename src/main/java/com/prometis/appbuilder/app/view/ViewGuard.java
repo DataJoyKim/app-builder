@@ -77,9 +77,7 @@ public class ViewGuard {
      * @throws BusinessException
      */
     public AuthenticatedUser check(HttpServletRequest request, String applicationId, Layout layout) throws BusinessException {
-        AuthenticatedUser user = null;
-
-        if(Boolean.TRUE.equals(layout.getUseAuthValidation())) {
+        AuthenticatedUser user;
             try {
                 user = appAuthenticationService.authentication(applicationId, TokenCookie.resolveAccessToken(request));
             }
@@ -93,7 +91,6 @@ public class ViewGuard {
             catch (NotPermissionUserException e) {
                 throw new BusinessException(ViewErrorMessage.NOT_FOUND_APP);
             }
-        }
 
         return user;
     }

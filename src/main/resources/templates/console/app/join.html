@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${mode == 'SIGNUP' ? '가입 - App Builder' : applicationName + (mode == 'INVITE' ? ' 초대' : ' 가입') + ' - App Builder'}">가입 - App Builder</title>
+    <title th:text="${mode == 'SIGNUP' ? '가입 - Prometis' : applicationName + (mode == 'INVITE' ? ' 초대' : ' 가입') + ' - App Builder'}">가입 - Prometis</title>
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
     <style>
         * {
@@ -33,13 +33,16 @@
 
         .join-logo {
             text-align: center;
-            font-size: 20px;
-            color: #444746;
+            font-size: 34px;
+            font-weight: 800;
             margin-bottom: 16px;
+            letter-spacing: -.02em;
+            line-height: 1;
+            color: #c8461e;
         }
 
         .join-logo b {
-            color: #0b57d0;
+            color: #c8461e;
         }
 
         .join-title {
@@ -283,7 +286,8 @@
         or (mode == 'INVITE' and invitationError == null and loginUserName == null)
         or (mode == 'APP_SIGNUP' and joinPolicy != 'INVITE_ONLY' and loginUserName == null)}">
 <main class="join">
-    <div class="join-logo"><b>App</b> Builder</div>
+    <div class="join-logo">Prometis
+    </div>
 
     <th:block th:if="${mode == 'SIGNUP'}">
         <h1 class="join-title">가입</h1>

@@ -19,8 +19,9 @@ public class Layout {
 
     @Column(length = 100)
     private String logoText;
+    // pages/index 사이드바의 회사 선택 영역을 보여줄지
     @Column
-    private Boolean useAuthValidation;
+    private Boolean useCompanySelect;
     @Column
     private Boolean useProfile;
     @Column
@@ -46,9 +47,12 @@ public class Layout {
     // pages/index 의 프로필 이미지 크기(px, 가로세로 같음). 비어 있으면 AdminLTE 기본 크기
     @Column
     private Integer profileImgSize;
+    // 애플리케이션 로그인 화면(/{applicationId}/login)의 로고 이미지 링크. 비어 있으면 애플리케이션 이름을 글자로 보여준다
+    @Column(length = 500)
+    private String loginImgLogoLink;
 
     public void update(
-            Boolean useAuthValidation,
+            Boolean useCompanySelect,
             Boolean useProfile,
             Boolean useLogo,
             String logoText,
@@ -60,9 +64,10 @@ public class Layout {
             String homeObjectCode,
             String faviconPath,
             String profileImg,
-            Integer profileImgSize
+            Integer profileImgSize,
+            String loginImgLogoLink
     ) {
-        this.useAuthValidation = useAuthValidation;
+        this.useCompanySelect = useCompanySelect;
         this.useProfile = useProfile;
         this.useLogo = useLogo;
         this.logoText = logoText;
@@ -75,5 +80,6 @@ public class Layout {
         this.faviconPath = faviconPath;
         this.profileImg = profileImg;
         this.profileImgSize = profileImgSize;
+        this.loginImgLogoLink = loginImgLogoLink;
     }
 }

@@ -74,7 +74,7 @@ class PlatformConsoleRoutingTest {
 
         assertEquals("console/platform/index", controller.moveIndex());
         assertEquals("console/platform/contents/content", controller.moveDataSource(model, "application"));
-        assertEquals("/console/platform/contents/application", model.get("contentPath"));
+        assertEquals("console/platform/contents/application", model.get("contentPath"));
     }
 
     @Test
@@ -88,7 +88,7 @@ class PlatformConsoleRoutingTest {
 
         assertEquals("console/app/contents/content", controller.moveDataSource(contentModel, "ehr", "workflow"));
         assertEquals("ehr", contentModel.get("applicationId"));
-        assertEquals("/console/app/contents/workflow", contentModel.get("contentPath"));
+        assertEquals("console/app/contents/workflow", contentModel.get("contentPath"));
     }
 
     @Test

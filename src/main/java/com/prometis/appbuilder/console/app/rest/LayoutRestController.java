@@ -22,6 +22,8 @@ public class LayoutRestController {
     // pages/index 사이드바에 들어가는 크기라 너무 작거나 크지 않게 막는다
     private static final int MIN_PROFILE_IMG_SIZE = 16;
     private static final int MAX_PROFILE_IMG_SIZE = 200;
+    // Layout.loginImgLogoLink 컬럼 길이
+    private static final int MAX_LOGIN_IMG_LOGO_LINK_LENGTH = 500;
 
     @GetMapping("")
     public ResponseEntity<?> getList(@PathVariable("applicationId") String applicationId) {
@@ -47,8 +49,10 @@ public class LayoutRestController {
         }
 
         Integer profileImgSize;
+        String loginImgLogoLink;
         try {
             profileImgSize = profileImgSizeOf(params);
+            loginImgLogoLink = loginImgLogoLinkOf(params);
         }
         catch (IllegalArgumentException e) {
             return error(e.getMessage());
@@ -56,7 +60,7 @@ public class LayoutRestController {
 
         Layout createdData = Layout.builder()
                 .applicationId(applicationId)
-                .useAuthValidation(Boolean.valueOf((String) params.get("useAuthValidation")))
+                .useCompanySelect(Boolean.valueOf((String) params.get("useCompanySelect")))
                 .useProfile(Boolean.valueOf((String) params.get("useProfile")))
                 .useLogo(Boolean.valueOf((String) params.get("useLogo")))
                 .logoText((String) params.get("logoText"))
@@ -69,6 +73,7 @@ public class LayoutRestController {
                 .faviconPath((String) params.get("faviconPath"))
                 .profileImg(profileImg)
                 .profileImgSize(profileImgSize)
+                .loginImgLogoLink(loginImgLogoLink)
                 .build();
 
         return new ResponseEntity<>(repository.save(createdData), HttpStatus.OK);
@@ -86,15 +91,17 @@ public class LayoutRestController {
         }
 
         Integer profileImgSize;
+        String loginImgLogoLink;
         try {
             profileImgSize = profileImgSizeOf(params);
+            loginImgLogoLink = loginImgLogoLinkOf(params);
         }
         catch (IllegalArgumentException e) {
             return error(e.getMessage());
         }
 
         savedData.update(
-                Boolean.valueOf((String) params.get("useAuthValidation")),
+                Boolean.valueOf((String) params.get("useCompanySelect")),
                 Boolean.valueOf((String) params.get("useProfile")),
                 Boolean.valueOf((String) params.get("useLogo")),
                 (String) params.get("logoText"),
@@ -106,7 +113,8 @@ public class LayoutRestController {
                 (String) params.get("homeObjectCode"),
                 (String) params.get("faviconPath"),
                 profileImg,
-                profileImgSize
+                profileImgSize,
+                loginImgLogoLink
         );
 
         repository.save(savedData);
@@ -162,6 +170,21 @@ public class LayoutRestController {
         }
 
         return size;
+    }
+
+    // 로그인 화면 로고 이미지 링크. 비어 있으면 null (애플리케이션 이름을 글자로 보여준다)
+    private static String loginImgLogoLinkOf(Map<String,Object> params) {
+        Object value = params.get("loginImgLogoLink");
+        String text = value == null ? "" : String.valueOf(value).trim();
+        if(text.isEmpty()) {
+            return null;
+        }
+
+        if(text.length() > MAX_LOGIN_IMG_LOGO_LINK_LENGTH) {
+            throw new IllegalArgumentException("로그인 이미지 로고 링크는 " + MAX_LOGIN_IMG_LOGO_LINK_LENGTH + "자까지 입력할 수 있습니다.");
+        }
+
+        return text;
     }
 
     private static ResponseEntity<?> error(String message) {

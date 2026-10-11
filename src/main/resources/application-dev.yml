@@ -1,4 +1,11 @@
 spring:
+  thymeleaf:
+    prefix: file:src/main/resources/templates/
+
+  web:
+    resources:
+      static-locations: file:src/main/resources/static/
+
   datasource:
     driver-class-name: org.h2.Driver
     url: 'jdbc:h2:C:\admin-builder\data\admin-builder'
@@ -9,3 +16,11 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  # application.yml 의 MariaDB 방언을 H2 방언으로 바꾼다. 안 바꾸면 MariaDB 용 DDL(engine=InnoDB 등)이 H2 에서 실패해 테이블이 하나도 안 만들어진다
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update # DB 초기화 전략 (none, create, create-drop, update, validate)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
