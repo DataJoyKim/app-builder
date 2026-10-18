@@ -139,3 +139,12 @@ platform:
     mail-from: ""
     # 초대 메일 링크의 앞부분 (예: https://builder.example.com). 비어 있으면 초대한 요청의 주소를 쓴다 (프록시 뒤라면 설정)
     public-base-url: ""
+
+  # 애플리케이션 콘솔 > Deploy : 메타데이터를 DSL(JSON)로 만들어 GitHub 저장소에 커밋한다
+  deploy:
+    # GitHub API 주소 (GitHub Enterprise 면 https://{host}/api/v3)
+    github-api-url: https://api.github.com
+    # 저장소 토큰을 DB 에 암호화해 넣는 키. 운영에서는 반드시 환경변수로 바꾼다.
+    # 바꾸면 이미 저장된 토큰은 풀 수 없으므로 연동 설정에서 토큰을 다시 넣어야 한다
+    token-secret-key: ${DEPLOY_TOKEN_SECRET_KEY:app-builder-deploy-dev-secret}
+    connect-timeout: 10s

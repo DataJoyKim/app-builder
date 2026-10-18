@@ -168,6 +168,25 @@
                     </ul>
                 </li>
 
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-rocket"></i>
+                        <p>Deploy<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a th:href="|/${applicationId}/console/deploy-repository|" class="nav-link">
+                                <i class="fab fa-github nav-icon"></i><p>Repository</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a th:href="|/${applicationId}/console/deploy-commit|" class="nav-link">
+                                <i class="fas fa-code-branch nav-icon"></i><p>Commit</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

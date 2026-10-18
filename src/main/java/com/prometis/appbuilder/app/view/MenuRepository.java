@@ -18,6 +18,9 @@ public interface MenuRepository extends JpaRepository<Menu,Long> {
 
     Optional<Menu> findByParentMenu(Menu parentMenu);
 
+    // 배포 DSL 생성용: 애플리케이션의 메뉴 전체 (트리 구조와 상관없이)
+    List<Menu> findByApplicationId(String applicationId);
+
     @Query("select m from Menu m left join fetch m.children where m.parentMenu = :parentMenu and m.applicationId = :applicationId ORDER BY m.orderNum ASC")
     List<Menu> findAllTree(@Param("applicationId") String applicationId, @Param("parentMenu") Menu parentMenu);
 

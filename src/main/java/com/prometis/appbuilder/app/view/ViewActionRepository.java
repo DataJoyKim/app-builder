@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ViewActionRepository extends JpaRepository<ViewAction, Long> {
     List<ViewAction> findByApplicationIdAndObjectCode(String applicationId, String objectCode);
+
+    List<ViewAction> findByApplicationId(String applicationId);
 }

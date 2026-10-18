@@ -1,0 +1,1120 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #deploy-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #deploy-app .dp-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    #deploy-app .dp-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #deploy-app .dp-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #deploy-app .dp-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #deploy-app .dp-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #deploy-app .dp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    #deploy-app .dp-btn:hover {
+        background: #f1f3f5;
+    }
+
+    #deploy-app .dp-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    #deploy-app .dp-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #deploy-app .dp-btn-primary:hover:not(:disabled) {
+        background: #3d7fce;
+    }
+
+    #deploy-app .dp-btn-success {
+        background: #16a34a;
+        border-color: #16a34a;
+        color: #fff;
+    }
+
+    #deploy-app .dp-btn-success:hover:not(:disabled) {
+        background: #15803d;
+    }
+
+    #deploy-app .dp-btn-danger {
+        color: #dc2626;
+    }
+
+    #deploy-app .dp-body {
+        padding: 16px;
+    }
+
+    #deploy-app label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #deploy-app .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 6px 10px;
+        background: #fff;
+        color: #1f2937;
+    }
+
+    #deploy-app .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #deploy-app .dp-help {
+        font-size: 11.5px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    #deploy-app .dp-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #f1f3f5;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    #deploy-app .dp-badge-on {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    #deploy-app .dp-badge-added {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    #deploy-app .dp-badge-modified {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    #deploy-app .dp-badge-deleted {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    #deploy-app .dp-badge-error {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    #deploy-app .dp-badge-warning {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    #deploy-app .dp-connection {
+        font-size: 12.5px;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    #deploy-app .dp-connection a {
+        color: #2563eb;
+    }
+
+    /* tabs */
+    #deploy-app .dp-tabs {
+        display: flex;
+        gap: 2px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 16px;
+    }
+
+    #deploy-app .dp-tab {
+        border: none;
+        background: none;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+    }
+
+    #deploy-app .dp-tab.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+
+    #deploy-app .dp-tab-pane {
+        display: none;
+    }
+
+    #deploy-app .dp-tab-pane.active {
+        display: block;
+    }
+
+    /* file list + viewer */
+    #deploy-app .dp-split {
+        display: flex;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    #deploy-app .dp-side {
+        flex: 0 0 340px;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0;
+    }
+
+    #deploy-app .dp-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-bottom: 0;
+    }
+
+    #deploy-app .dp-search {
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #deploy-app .dp-search i {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9199a3;
+        font-size: 12px;
+    }
+
+    #deploy-app .dp-search input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px 7px 28px;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    #deploy-app .dp-list {
+        max-height: 620px;
+        min-height: 240px;
+        overflow-y: auto;
+    }
+
+    #deploy-app .dp-folder {
+        padding: 8px 14px 4px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        background: #fbfbfc;
+        border-bottom: 1px solid #f1f3f5;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #deploy-app .dp-folder-toggle {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    #deploy-app .dp-folder-toggle:hover {
+        background: #f1f3f5;
+        color: #374151;
+    }
+
+    #deploy-app .dp-folder .dp-folder-caret {
+        width: 10px;
+        font-size: 9px;
+        color: #9ca3af;
+    }
+
+    #deploy-app .dp-folder-empty .dp-folder-caret {
+        visibility: hidden;
+    }
+
+    #deploy-app .dp-folder-empty {
+        color: #b0b6be;
+        font-weight: 600;
+    }
+
+    #deploy-app .dp-folder i {
+        color: #f59e0b;
+    }
+
+    #deploy-app .dp-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 14px 7px 26px;
+        border-bottom: 1px solid #f6f7f8;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        font-size: 12.5px;
+    }
+
+    #deploy-app .dp-item:hover {
+        background: #fafbfc;
+    }
+
+    #deploy-app .dp-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #deploy-app .dp-item-name {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #deploy-app .dp-item i.fa-file-code {
+        color: #9199a3;
+    }
+
+    #deploy-app .dp-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #deploy-app .dp-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    #deploy-app .dp-viewer-path {
+        font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 12px;
+        color: #374151;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #deploy-app .dp-code {
+        max-height: 620px;
+        min-height: 240px;
+        overflow: auto;
+        background: #fff;
+    }
+
+    #deploy-app .dp-code table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    #deploy-app .dp-code td {
+        padding: 0 10px;
+        vertical-align: top;
+        white-space: pre;
+    }
+
+    #deploy-app .dp-code td.dp-ln {
+        width: 1%;
+        text-align: right;
+        color: #9ca3af;
+        user-select: none;
+        border-right: 1px solid #f1f3f5;
+        padding: 0 8px;
+    }
+
+    #deploy-app .dp-code td.dp-sign {
+        width: 1%;
+        user-select: none;
+        padding: 0 4px;
+        color: #6b7280;
+    }
+
+    #deploy-app .dp-code tr.dp-add {
+        background: #ecfdf3;
+    }
+
+    #deploy-app .dp-code tr.dp-add td.dp-sign {
+        color: #15803d;
+    }
+
+    #deploy-app .dp-code tr.dp-del {
+        background: #fef2f2;
+    }
+
+    #deploy-app .dp-code tr.dp-del td.dp-sign {
+        color: #b91c1c;
+    }
+
+    #deploy-app .dp-code tr.dp-fold td {
+        background: #f5f7fa;
+        color: #6b7280;
+        font-style: italic;
+        text-align: center;
+        padding: 2px 10px;
+    }
+
+    #deploy-app .dp-cut {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* issues */
+    #deploy-app .dp-issues {
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    #deploy-app .dp-issue {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 7px 16px;
+        border-bottom: 1px solid #f6f7f8;
+        font-size: 12.5px;
+    }
+
+    #deploy-app .dp-issue-path {
+        color: #2563eb;
+        cursor: pointer;
+        font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 11.5px;
+        white-space: nowrap;
+    }
+
+    #deploy-app .dp-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 12.5px;
+        color: #374151;
+    }
+
+    #deploy-app .dp-commit-box {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    #deploy-app .dp-commit-box textarea {
+        flex: 1 1 auto;
+        resize: vertical;
+        min-height: 60px;
+    }
+
+    #deploy-app .dp-result {
+        margin-top: 12px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #ecfdf3;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        font-size: 12.5px;
+        display: none;
+    }
+
+    #deploy-app .dp-result a {
+        color: #15803d;
+        font-weight: 600;
+    }
+</style>
+<script th:fragment="script">
+    // 비교/커밋은 GitHub 를 여러 번 부르므로 기본 10초로는 모자랄 수 있다
+    httpClient.timeout = 180000;
+
+    const DEPLOY_API = `/${APPLICATION_ID}/console/api/deploy`;
+    // 화면에 보여줄 때 한 줄이 너무 길면(이미지 base64 등) 자른다. 실제 DSL 은 자르지 않는다
+    const MAX_LINE_LENGTH = 400;
+    // 같은 줄이 이보다 길게 이어지면 접어서 보여준다
+    const DIFF_CONTEXT = 3;
+
+    let SETTING = null;
+    let DSL_FOLDERS = [];
+    let DSL_FILES = [];
+    let DSL_ISSUES = [];
+    let SELECTED_DSL_PATH = null;
+    // 접은 DSL 폴더 (folderOf 값). 새로고침해도 유지한다
+    const COLLAPSED_FOLDERS = new Set();
+    let COMPARE_RESULT = null;
+    let SELECTED_CHANGE_PATH = null;
+
+    $(document).ready(function() {
+        renderCompare();
+        getSetting();
+        getDsl();
+    });
+
+    function alertError(error) {
+        const message = error && error.responseJSON && error.responseJSON.message;
+        alert(message || (error && error.statusText === 'timeout' ? '요청 시간이 초과되었습니다.' : '오류가 발생했습니다.'));
+    }
+
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function showTab(name) {
+        $('#deploy-app .dp-tab').removeClass('active');
+        $(`#deploy-app .dp-tab[data-tab="${name}"]`).addClass('active');
+        $('#deploy-app .dp-tab-pane').removeClass('active');
+        $(`#deployTab-${name}`).addClass('active');
+    }
+
+    // ---- 저장소 연동 상태 (설정은 deploy-repository 화면) ----
+
+    function getSetting() {
+        httpClient.get(`${DEPLOY_API}/setting`, {},
+            function(response) {
+                SETTING = response;
+                renderSetting();
+            },
+            alertError
+        );
+    }
+
+    function renderSetting() {
+        const configured = SETTING && SETTING.configured;
+
+        const $status = $('#gitStatus').empty();
+        if(configured) {
+            $status.append($('<span class="dp-badge dp-badge-on"><i class="fas fa-check-circle"></i>연동됨</span>'));
+            const $repo = $('<a target="_blank" rel="noopener"></a>')
+                .attr('href', SETTING.repositoryUrl || '#')
+                .text(`${SETTING.owner}/${SETTING.repository}`);
+            $status.append($repo);
+            $status.append($('<span></span>').text(`브랜치 ${SETTING.branch}`));
+            if(SETTING.githubLogin) {
+                $status.append($('<span class="dp-badge"></span>').text(`@${SETTING.githubLogin}`));
+            }
+        }
+        else {
+            $status.append($('<span class="dp-badge">연동 안 됨</span>'));
+            $status.append($('<span></span>').text('Deploy > Repository 에서 저장소를 연동하면 DSL 을 비교하고 커밋할 수 있습니다.'));
+        }
+
+        $('#btnCompare').prop('disabled', !configured);
+        updateCommitButton();
+    }
+
+    // ---- 현재 DSL ----
+
+    function getDsl() {
+        httpClient.get(`${DEPLOY_API}/dsl`, {},
+            function(response) {
+                DSL_FOLDERS = response.folders || [];
+                DSL_FILES = response.files || [];
+                DSL_ISSUES = response.issues || [];
+
+                if(SELECTED_DSL_PATH && !DSL_FILES.some(f => f.path === SELECTED_DSL_PATH)) {
+                    SELECTED_DSL_PATH = null;
+                }
+
+                renderDslList($('#dslSearch').val());
+                renderIssues('#dslIssues', '#dslIssueCount', DSL_ISSUES, selectDslFile);
+                $('#dslFileCount').text(`${DSL_FILES.length}개 파일`);
+
+                if(SELECTED_DSL_PATH) {
+                    selectDslFile(SELECTED_DSL_PATH);
+                }
+                else {
+                    renderEmptyViewer('#dslViewer', '#dslViewerPath', '왼쪽에서 파일을 선택하세요.');
+                }
+            },
+            alertError
+        );
+    }
+
+    // {applicationId}/workflow/workflow/W001.json -> workflow/workflow
+    function folderOf(path) {
+        const relative = path.substring(path.indexOf('/') + 1);
+        const slash = relative.lastIndexOf('/');
+        return slash < 0 ? '' : relative.substring(0, slash);
+    }
+
+    function fileNameOf(path) {
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
+    function renderDslList(keyword) {
+        const kw = (keyword || '').trim().toLowerCase();
+        const $list = $('#dslList').empty();
+
+        const files = DSL_FILES.filter(f => !kw || f.path.toLowerCase().includes(kw));
+        if(kw && files.length === 0) {
+            $list.append(emptyBox('검색 결과가 없습니다.'));
+            return;
+        }
+
+        const issueLevels = issueLevelByPath(DSL_ISSUES);
+
+        // 폴더는 서버(DslFolder) 순서대로 모두 보여준다. 검색 중에는 걸린 파일이 있는 폴더만, 접힌 폴더도 펼쳐서 보여준다
+        for(const folder of DSL_FOLDERS) {
+            const folderFiles = files.filter(f => folderOf(f.path) === folder);
+            if(kw && folderFiles.length === 0) continue;
+
+            const empty = folderFiles.length === 0;
+            const collapsed = !kw && !empty && COLLAPSED_FOLDERS.has(folder);
+
+            const $folder = $('<div class="dp-folder"><i class="dp-folder-caret fas"></i><i class="dp-folder-icon"></i><span></span></div>')
+                .attr('data-folder', folder);
+            $folder.find('span').text(`${folder}/ (${folderFiles.length})`);
+            $folder.find('.dp-folder-caret').addClass(collapsed ? 'fa-chevron-right' : 'fa-chevron-down');
+            $folder.find('.dp-folder-icon').addClass(empty || collapsed ? 'far fa-folder' : 'fas fa-folder-open');
+
+            if(empty) {
+                $folder.addClass('dp-folder-empty');
+            }
+            else if(!kw) {
+                $folder.addClass('dp-folder-toggle')
+                    .attr('title', collapsed ? '펼치기' : '접기')
+                    .on('click', () => toggleFolder(folder));
+            }
+            $list.append($folder);
+
+            if(collapsed) continue;
+
+            for(const file of folderFiles) {
+                appendDslItem($list, file, issueLevels);
+            }
+        }
+    }
+
+    function toggleFolder(folder) {
+        if(COLLAPSED_FOLDERS.has(folder)) COLLAPSED_FOLDERS.delete(folder);
+        else COLLAPSED_FOLDERS.add(folder);
+        renderDslList($('#dslSearch').val());
+    }
+
+    // 파일이 있는 폴더 전체를 접거나 펼친다
+    function toggleAllFolders(collapse) {
+        COLLAPSED_FOLDERS.clear();
+        if(collapse) {
+            DSL_FOLDERS
+                .filter(folder => DSL_FILES.some(f => folderOf(f.path) === folder))
+                .forEach(folder => COLLAPSED_FOLDERS.add(folder));
+        }
+        renderDslList($('#dslSearch').val());
+    }
+
+    function appendDslItem($list, file, issueLevels) {
+        const $item = $('<div class="dp-item"><i class="far fa-file-code"></i><span class="dp-item-name"></span></div>')
+            .attr('data-path', file.path);
+        $item.find('.dp-item-name').text(fileNameOf(file.path)).attr('title', file.path);
+        appendIssueBadge($item, issueLevels[file.path]);
+
+        if(file.path === SELECTED_DSL_PATH) {
+            $item.addClass('selected');
+        }
+
+        $item.on('click', () => selectDslFile(file.path));
+        $list.append($item);
+    }
+
+    function selectDslFile(path) {
+        const file = DSL_FILES.find(f => f.path === path);
+        if(!file) return;
+
+        SELECTED_DSL_PATH = path;
+        showTab('dsl');
+
+        // 검증 결과에서 접힌 폴더의 파일을 눌렀으면 그 폴더를 펼친다
+        if(COLLAPSED_FOLDERS.delete(folderOf(path))) {
+            renderDslList($('#dslSearch').val());
+        }
+
+        $('#dslList .dp-item').removeClass('selected');
+        $('#dslList .dp-item').filter(function() { return $(this).attr('data-path') === path; }).addClass('selected');
+
+        $('#dslViewerPath').text(path);
+        renderPlain('#dslViewer', file.content);
+    }
+
+    // ---- 비교 / 커밋 ----
+
+    function compare() {
+        if(!(SETTING && SETTING.configured)) {
+            alert('Deploy > Repository 에서 저장소 연동을 먼저 저장해주세요.');
+            return;
+        }
+
+        httpClient.post(`${DEPLOY_API}/compare`, {}, {},
+            function(response) {
+                COMPARE_RESULT = response;
+                SELECTED_CHANGE_PATH = null;
+                $('#commitResult').hide();
+                renderCompare();
+                showTab('compare');
+            },
+            alertError
+        );
+    }
+
+    function renderCompare() {
+        const $summary = $('#compareSummary').empty();
+        const $list = $('#changeList').empty();
+
+        if(!COMPARE_RESULT) {
+            $summary.append($('<span></span>').text('"저장소와 비교"를 눌러 지금 메타데이터와 저장소의 DSL 을 비교하세요.'));
+            $list.append(emptyBox('비교 결과가 없습니다.'));
+            renderIssues('#compareIssues', '#compareIssueCount', [], selectChange);
+            renderEmptyViewer('#diffViewer', '#diffViewerPath', '왼쪽에서 변경된 파일을 선택하세요.');
+            updateCommitButton();
+            return;
+        }
+
+        const changes = COMPARE_RESULT.changes || [];
+        const count = status => changes.filter(c => c.status === status).length;
+
+        $summary.append($('<span class="dp-badge"></span>').text(`브랜치 ${COMPARE_RESULT.branch}`));
+        $summary.append($('<span class="dp-badge"></span>').text(COMPARE_RESULT.baseCommitSha ? `기준 커밋 ${COMPARE_RESULT.baseCommitSha.substring(0, 7)}` : '브랜치 없음 (새로 만듦)'));
+        $summary.append($('<span class="dp-badge dp-badge-added"></span>').text(`추가 ${count('ADDED')}`));
+        $summary.append($('<span class="dp-badge dp-badge-modified"></span>').text(`수정 ${count('MODIFIED')}`));
+        $summary.append($('<span class="dp-badge dp-badge-deleted"></span>').text(`삭제 ${count('DELETED')}`));
+        $summary.append($('<span></span>').text(`/ 전체 ${COMPARE_RESULT.fileCount}개 파일`));
+
+        renderIssues('#compareIssues', '#compareIssueCount', COMPARE_RESULT.issues || [], selectChange);
+
+        if(changes.length === 0) {
+            $list.append(emptyBox('저장소와 달라진 파일이 없습니다.'));
+        }
+
+        const issueLevels = issueLevelByPath(COMPARE_RESULT.issues || []);
+        const statusLabel = { ADDED: '추가', MODIFIED: '수정', DELETED: '삭제' };
+
+        for(const change of changes) {
+            const $item = $('<div class="dp-item"><span class="dp-badge"></span><span class="dp-item-name"></span></div>')
+                .attr('data-path', change.path);
+            $item.find('.dp-badge').addClass(`dp-badge-${change.status.toLowerCase()}`).text(statusLabel[change.status]);
+            $item.find('.dp-item-name').text(change.path.substring(change.path.indexOf('/') + 1)).attr('title', change.path);
+            appendIssueBadge($item, issueLevels[change.path]);
+
+            if(change.path === SELECTED_CHANGE_PATH) {
+                $item.addClass('selected');
+            }
+
+            $item.on('click', () => selectChange(change.path));
+            $list.append($item);
+        }
+
+        if(SELECTED_CHANGE_PATH) {
+            selectChange(SELECTED_CHANGE_PATH);
+        }
+        else {
+            renderEmptyViewer('#diffViewer', '#diffViewerPath', changes.length ? '왼쪽에서 변경된 파일을 선택하세요.' : '변경사항이 없습니다.');
+        }
+
+        updateCommitButton();
+    }
+
+    function selectChange(path) {
+        const change = COMPARE_RESULT && (COMPARE_RESULT.changes || []).find(c => c.path === path);
+        if(!change) {
+            // 검증 결과에서 눌렀는데 저장소와 같은 파일이면 현재 DSL 탭에서 보여준다
+            selectDslFile(path);
+            return;
+        }
+
+        SELECTED_CHANGE_PATH = path;
+        showTab('compare');
+        $('#changeList .dp-item').removeClass('selected');
+        $('#changeList .dp-item').filter(function() { return $(this).attr('data-path') === path; }).addClass('selected');
+
+        $('#diffViewerPath').text(path);
+        renderDiff('#diffViewer', change.before, change.after);
+    }
+
+    function updateCommitButton() {
+        const enabled = !!(SETTING && SETTING.configured && COMPARE_RESULT && COMPARE_RESULT.committable);
+        $('#btnCommit').prop('disabled', !enabled);
+
+        let hint = '';
+        if(!(SETTING && SETTING.configured)) hint = 'Deploy > Repository 에서 저장소를 연동해주세요.';
+        else if(!COMPARE_RESULT) hint = '먼저 저장소와 비교해주세요.';
+        else if((COMPARE_RESULT.issues || []).some(i => i.level === 'ERROR')) hint = '검증 오류를 고친 뒤 다시 비교해주세요.';
+        else if((COMPARE_RESULT.changes || []).length === 0) hint = '커밋할 변경사항이 없습니다.';
+        $('#commitHint').text(hint);
+    }
+
+    function commit() {
+        const message = $('#commitMessage').val().trim();
+        if(!message) {
+            alert('커밋 메시지를 입력해주세요.');
+            return;
+        }
+        if(!confirm(`${(COMPARE_RESULT.changes || []).length}개 파일을 ${COMPARE_RESULT.branch} 브랜치에 커밋하고 push 하시겠습니까?`)) return;
+
+        httpClient.post(`${DEPLOY_API}/commit`, {}, { message: message, baseCommitSha: COMPARE_RESULT.baseCommitSha },
+            function(response) {
+                const $result = $('#commitResult').empty();
+                $result.append($('<i class="fas fa-check-circle"></i> '));
+                $result.append($('<span></span>').text(` ${response.branch} 브랜치에 커밋했습니다. (추가 ${response.added}, 수정 ${response.modified}, 삭제 ${response.deleted}) `));
+                if(response.commitUrl) {
+                    $result.append($('<a target="_blank" rel="noopener"></a>').attr('href', response.commitUrl).text(response.commitSha.substring(0, 7)));
+                }
+                $result.show();
+                $('#commitMessage').val('');
+
+                // 커밋 뒤 저장소 상태로 다시 비교해 둔다
+                httpClient.post(`${DEPLOY_API}/compare`, {}, {},
+                    function(compared) {
+                        COMPARE_RESULT = compared;
+                        SELECTED_CHANGE_PATH = null;
+                        renderCompare();
+                    },
+                    alertError
+                );
+            },
+            function(error) {
+                alertError(error);
+                // 브랜치가 바뀌었으면(409) 비교부터 다시 하게 한다
+                if(error && error.status === 409) {
+                    COMPARE_RESULT = null;
+                    renderCompare();
+                }
+            }
+        );
+    }
+
+    // ---- 공통 렌더링 ----
+
+    function emptyBox(message) {
+        const $empty = $('<div class="dp-empty"><i class="fas fa-inbox"></i><span></span></div>');
+        $empty.find('span').text(message);
+        return $empty;
+    }
+
+    function issueLevelByPath(issues) {
+        const levels = {};
+        for(const issue of issues) {
+            if(levels[issue.path] !== 'ERROR') levels[issue.path] = issue.level;
+        }
+        return levels;
+    }
+
+    function appendIssueBadge($item, level) {
+        if(level === 'ERROR') $item.append('<span class="dp-badge dp-badge-error" title="검증 오류"><i class="fas fa-times-circle"></i></span>');
+        else if(level === 'WARNING') $item.append('<span class="dp-badge dp-badge-warning" title="검증 경고"><i class="fas fa-exclamation-triangle"></i></span>');
+    }
+
+    function renderIssues(listSelector, countSelector, issues, onSelect) {
+        const errors = issues.filter(i => i.level === 'ERROR').length;
+        const warnings = issues.length - errors;
+
+        const $count = $(countSelector).empty();
+        $count.append($('<span class="dp-badge"></span>').addClass(errors ? 'dp-badge-error' : '').text(`오류 ${errors}`));
+        $count.append($('<span class="dp-badge"></span>').addClass(warnings ? 'dp-badge-warning' : '').text(`경고 ${warnings}`));
+
+        const $list = $(listSelector).empty();
+        if(issues.length === 0) {
+            $list.append($('<div class="dp-issue"><i class="fas fa-check-circle" style="color:#16a34a"></i><span>검증 결과 문제가 없습니다.</span></div>'));
+            return;
+        }
+
+        const sorted = [...issues].sort((a, b) => (a.level === b.level ? 0 : (a.level === 'ERROR' ? -1 : 1)));
+        for(const issue of sorted) {
+            const $issue = $('<div class="dp-issue"><span class="dp-badge"></span><span class="dp-issue-path"></span><span class="dp-issue-message"></span></div>');
+            $issue.find('.dp-badge').addClass(issue.level === 'ERROR' ? 'dp-badge-error' : 'dp-badge-warning').text(issue.level === 'ERROR' ? '오류' : '경고');
+            $issue.find('.dp-issue-path').text(issue.path.substring(issue.path.indexOf('/') + 1)).attr('title', issue.path)
+                .on('click', () => onSelect(issue.path));
+            $issue.find('.dp-issue-message').text(issue.message);
+            $list.append($issue);
+        }
+    }
+
+    function renderEmptyViewer(viewerSelector, pathSelector, message) {
+        $(pathSelector).text('');
+        $(viewerSelector).empty().append(emptyBox(message));
+    }
+
+    function lineHtml(text) {
+        if(text.length <= MAX_LINE_LENGTH) return escapeHtml(text);
+        return escapeHtml(text.substring(0, MAX_LINE_LENGTH)) + `<span class="dp-cut"> … (${text.length.toLocaleString()}자 중 일부)</span>`;
+    }
+
+    function splitLines(text) {
+        if(text == null) return [];
+        const lines = text.split('\n');
+        if(lines.length && lines[lines.length - 1] === '') lines.pop();
+        return lines;
+    }
+
+    function renderPlain(viewerSelector, content) {
+        const rows = splitLines(content).map((line, index) =>
+            `<tr><td class="dp-ln">${index + 1}</td><td>${lineHtml(line)}</td></tr>`);
+        $(viewerSelector).html(`<table>${rows.join('')}</table>`);
+    }
+
+    /**
+     * before -> after 줄 단위 비교 (LCS). 같은 줄이 길게 이어지는 구간은 앞뒤 DIFF_CONTEXT 줄만 남기고 접는다.
+     */
+    function renderDiff(viewerSelector, before, after) {
+        const ops = diffLines(splitLines(before), splitLines(after));
+
+        const rows = [];
+        let i = 0;
+        while(i < ops.length) {
+            if(ops[i].type !== 'same') {
+                rows.push(diffRow(ops[i]));
+                i++;
+                continue;
+            }
+
+            let end = i;
+            while(end < ops.length && ops[end].type === 'same') end++;
+
+            const run = end - i;
+            const keepHead = i === 0 ? 0 : DIFF_CONTEXT;
+            const keepTail = end === ops.length ? 0 : DIFF_CONTEXT;
+
+            if(run > keepHead + keepTail + 1) {
+                for(let k = i; k < i + keepHead; k++) rows.push(diffRow(ops[k]));
+                rows.push(`<tr class="dp-fold"><td colspan="4">⋯ 같은 내용 ${run - keepHead - keepTail}줄 ⋯</td></tr>`);
+                for(let k = end - keepTail; k < end; k++) rows.push(diffRow(ops[k]));
+            }
+            else {
+                for(let k = i; k < end; k++) rows.push(diffRow(ops[k]));
+            }
+            i = end;
+        }
+
+        $(viewerSelector).html(`<table>${rows.join('')}</table>`);
+    }
+
+    function diffRow(op) {
+        const cls = op.type === 'add' ? 'dp-add' : (op.type === 'del' ? 'dp-del' : '');
+        const sign = op.type === 'add' ? '+' : (op.type === 'del' ? '-' : ' ');
+        return `<tr class="${cls}"><td class="dp-ln">${op.oldNo || ''}</td><td class="dp-ln">${op.newNo || ''}</td><td class="dp-sign">${sign}</td><td>${lineHtml(op.text)}</td></tr>`;
+    }
+
+    function diffLines(a, b) {
+        // 앞뒤의 같은 줄은 표를 만들기 전에 떼어낸다
+        let start = 0;
+        while(start < a.length && start < b.length && a[start] === b[start]) start++;
+        let endA = a.length, endB = b.length;
+        while(endA > start && endB > start && a[endA - 1] === b[endB - 1]) { endA--; endB--; }
+
+        const ops = [];
+        for(let k = 0; k < start; k++) ops.push({ type: 'same', text: a[k], oldNo: k + 1, newNo: k + 1 });
+
+        const midA = a.slice(start, endA), midB = b.slice(start, endB);
+        const n = midA.length, m = midB.length;
+
+        if(n * m > 4000000) {
+            // 너무 크면 줄 맞춤 없이 지운 줄, 추가한 줄 순서로 보여준다
+            midA.forEach((text, k) => ops.push({ type: 'del', text: text, oldNo: start + k + 1 }));
+            midB.forEach((text, k) => ops.push({ type: 'add', text: text, newNo: start + k + 1 }));
+        }
+        else {
+            const width = m + 1;
+            const lcs = new Uint32Array((n + 1) * width);
+            for(let x = n - 1; x >= 0; x--) {
+                for(let y = m - 1; y >= 0; y--) {
+                    lcs[x * width + y] = midA[x] === midB[y]
+                        ? lcs[(x + 1) * width + y + 1] + 1
+                        : Math.max(lcs[(x + 1) * width + y], lcs[x * width + y + 1]);
+                }
+            }
+
+            let x = 0, y = 0;
+            while(x < n || y < m) {
+                if(x < n && y < m && midA[x] === midB[y]) {
+                    ops.push({ type: 'same', text: midA[x], oldNo: start + x + 1, newNo: start + y + 1 });
+                    x++; y++;
+                }
+                else if(y < m && (x >= n || lcs[x * width + y + 1] >= lcs[(x + 1) * width + y])) {
+                    ops.push({ type: 'add', text: midB[y], newNo: start + y + 1 });
+                    y++;
+                }
+                else {
+                    ops.push({ type: 'del', text: midA[x], oldNo: start + x + 1 });
+                    x++;
+                }
+            }
+        }
+
+        for(let k = 0; k < a.length - endA; k++) {
+            ops.push({ type: 'same', text: a[endA + k], oldNo: endA + k + 1, newNo: endB + k + 1 });
+        }
+        return ops;
+    }
+</script>
+<div id="deploy-app" th:fragment="view">
+
+    <!-- 저장소 연동 상태. 연동 설정은 Deploy > Repository 화면에서 한다 -->
+    <section class="dp-panel">
+        <div class="dp-panel-header">
+            <div class="dp-connection" id="gitStatus"></div>
+            <div class="dp-tools">
+                <a class="dp-btn" th:href="|/${applicationId}/console/deploy-repository|"><i class="fab fa-github"></i>저장소 설정</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="dp-tabs">
+        <button type="button" class="dp-tab active" data-tab="dsl" onclick="showTab('dsl')"><i class="fas fa-file-code"></i> 현재 DSL</button>
+        <button type="button" class="dp-tab" data-tab="compare" onclick="showTab('compare')"><i class="fas fa-code-branch"></i> 비교 및 커밋</button>
+    </div>
+
+    <!-- 현재 DSL -->
+    <div class="dp-tab-pane active" id="deployTab-dsl">
+        <section class="dp-panel">
+            <div class="dp-panel-header">
+                <h3><i class="fas fa-clipboard-check"></i> 검증 결과</h3>
+                <div class="dp-tools" id="dslIssueCount"></div>
+            </div>
+            <div class="dp-issues" id="dslIssues"></div>
+        </section>
+
+        <div class="dp-split">
+            <aside class="dp-panel dp-side">
+                <div class="dp-panel-header">
+                    <h3><i class="fas fa-sitemap"></i> DSL 파일 <span class="dp-badge" id="dslFileCount"></span></h3>
+                    <div class="dp-tools">
+                        <button type="button" class="dp-btn" onclick="toggleAllFolders(false)" title="모두 펼치기"><i class="fas fa-angle-double-down"></i></button>
+                        <button type="button" class="dp-btn" onclick="toggleAllFolders(true)" title="모두 접기"><i class="fas fa-angle-double-up"></i></button>
+                        <button type="button" class="dp-btn" onclick="getDsl()"><i class="fas fa-sync-alt"></i>새로고침</button>
+                    </div>
+                </div>
+                <div class="dp-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="dslSearch" placeholder="경로, ID 로 검색" oninput="renderDslList(this.value)">
+                </div>
+                <div class="dp-list" id="dslList"></div>
+            </aside>
+
+            <section class="dp-panel dp-main">
+                <div class="dp-panel-header">
+                    <span class="dp-viewer-path" id="dslViewerPath"></span>
+                </div>
+                <div class="dp-code" id="dslViewer"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- 비교 및 커밋 -->
+    <div class="dp-tab-pane" id="deployTab-compare">
+        <section class="dp-panel">
+            <div class="dp-panel-header">
+                <div class="dp-summary" id="compareSummary"></div>
+                <div class="dp-tools">
+                    <button type="button" class="dp-btn dp-btn-primary" id="btnCompare" onclick="compare()"><i class="fas fa-exchange-alt"></i>저장소와 비교</button>
+                </div>
+            </div>
+            <div class="dp-body">
+                <div class="dp-commit-box">
+                    <div style="flex: 1 1 auto;">
+                        <label for="commitMessage">커밋 메시지</label>
+                        <textarea class="form-control" id="commitMessage" rows="2" placeholder="예) 주문 워크플로우 수정"></textarea>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                        <span class="dp-help" id="commitHint"></span>
+                        <button type="button" class="dp-btn dp-btn-success" id="btnCommit" onclick="commit()" disabled><i class="fas fa-upload"></i>Commit &amp; Push</button>
+                    </div>
+                </div>
+                <div class="dp-result" id="commitResult"></div>
+            </div>
+        </section>
+
+        <section class="dp-panel">
+            <div class="dp-panel-header">
+                <h3><i class="fas fa-clipboard-check"></i> 검증 결과</h3>
+                <div class="dp-tools" id="compareIssueCount"></div>
+            </div>
+            <div class="dp-issues" id="compareIssues"></div>
+        </section>
+
+        <div class="dp-split">
+            <aside class="dp-panel dp-side">
+                <div class="dp-panel-header">
+                    <h3><i class="fas fa-list"></i> 변경된 파일</h3>
+                </div>
+                <div class="dp-list" id="changeList"></div>
+            </aside>
+
+            <section class="dp-panel dp-main">
+                <div class="dp-panel-header">
+                    <span class="dp-viewer-path" id="diffViewerPath"></span>
+                </div>
+                <div class="dp-code" id="diffViewer"></div>
+            </section>
+        </div>
+    </div>
+</div>
+</html>

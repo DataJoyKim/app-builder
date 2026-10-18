@@ -32,4 +32,7 @@ public interface ImageStorageRepository extends JpaRepository<ImageStorage, Long
     int deleteByFilename(@Param("applicationId") String applicationId, @Param("storageType") String storageType, @Param("filename") String filename);
 
     boolean existsByApplicationIdAndStorageType(String applicationId, String storageType);
+
+    // 배포 DSL 생성용: 이미지 본문(content)까지 읽는다
+    List<ImageStorage> findByApplicationIdAndStorageTypeOrderByFilenameAsc(String applicationId, String storageType);
 }

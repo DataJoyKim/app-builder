@@ -1,0 +1,1021 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #deploy-repository-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
+
+    /* header */
+    #deploy-repository-app .rp-hero {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 20px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 16px;
+    }
+
+    #deploy-repository-app .rp-hero-icon {
+        flex: 0 0 auto;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: #24292f;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    #deploy-repository-app .rp-hero-text {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #deploy-repository-app .rp-hero-text h2 {
+        margin: 0 0 3px;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    #deploy-repository-app .rp-hero-text p {
+        margin: 0;
+        font-size: 12.5px;
+        color: #6b7280;
+    }
+
+    /* layout */
+    #deploy-repository-app .rp-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #deploy-repository-app .rp-main {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #deploy-repository-app .rp-side {
+        flex: 0 0 340px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    @media (max-width: 1100px) {
+        #deploy-repository-app .rp-layout {
+            flex-direction: column;
+        }
+
+        #deploy-repository-app .rp-side {
+            flex-basis: auto;
+            width: 100%;
+        }
+    }
+
+    #deploy-repository-app .rp-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #deploy-repository-app .rp-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #deploy-repository-app .rp-card-header h3 {
+        margin: 0;
+        font-size: 13.5px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #deploy-repository-app .rp-card-header h3 i {
+        color: #4A90E2;
+    }
+
+    #deploy-repository-app .rp-card-body {
+        padding: 16px;
+    }
+
+    /* form sections */
+    #deploy-repository-app .rp-section {
+        display: flex;
+        gap: 20px;
+        padding: 18px 20px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    #deploy-repository-app .rp-section-title {
+        flex: 0 0 180px;
+    }
+
+    #deploy-repository-app .rp-section-title h4 {
+        margin: 0 0 4px;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #deploy-repository-app .rp-step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #eef5ff;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    #deploy-repository-app .rp-section-title p {
+        margin: 0;
+        font-size: 11.5px;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    #deploy-repository-app .rp-section-fields {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    @media (max-width: 760px) {
+        #deploy-repository-app .rp-section {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #deploy-repository-app .rp-section-title {
+            flex-basis: auto;
+        }
+    }
+
+    #deploy-repository-app .rp-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    #deploy-repository-app .rp-field {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    #deploy-repository-app .rp-slash {
+        flex: 0 0 auto;
+        padding-top: 30px;
+        color: #9ca3af;
+        font-size: 16px;
+    }
+
+    #deploy-repository-app label {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #deploy-repository-app label .rp-required {
+        color: #dc2626;
+        margin-left: 2px;
+    }
+
+    #deploy-repository-app .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 13px;
+        padding: 7px 10px;
+        background: #fff;
+        color: #1f2937;
+        height: auto;
+    }
+
+    #deploy-repository-app .form-control:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #deploy-repository-app .form-control.is-invalid {
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, .08);
+    }
+
+    #deploy-repository-app .rp-field-error {
+        display: none;
+        margin-top: 4px;
+        font-size: 11.5px;
+        color: #dc2626;
+    }
+
+    #deploy-repository-app .rp-field-error.show {
+        display: block;
+    }
+
+    #deploy-repository-app .rp-hint {
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: #6b7280;
+        line-height: 1.55;
+    }
+
+    #deploy-repository-app .rp-hint code,
+    #deploy-repository-app .rp-guide code {
+        font-size: 11px;
+        background: #f1f3f5;
+        padding: 1px 5px;
+        border-radius: 4px;
+        color: #374151;
+    }
+
+    #deploy-repository-app .rp-preview {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border: 1px dashed #d7dbe0;
+        border-radius: 8px;
+        font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 12px;
+        color: #374151;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    #deploy-repository-app .rp-preview i {
+        color: #6b7280;
+    }
+
+    #deploy-repository-app .rp-preview.empty {
+        color: #9ca3af;
+    }
+
+    /* token */
+    #deploy-repository-app .rp-input-group {
+        position: relative;
+    }
+
+    #deploy-repository-app .rp-input-group .form-control {
+        padding-right: 38px;
+    }
+
+    #deploy-repository-app .rp-eye {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: none;
+        color: #9199a3;
+        padding: 4px 6px;
+        cursor: pointer;
+    }
+
+    #deploy-repository-app .rp-eye:hover {
+        color: #374151;
+    }
+
+    #deploy-repository-app .rp-token-saved {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 9px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #fafbfc;
+        font-size: 12.5px;
+    }
+
+    #deploy-repository-app .rp-token-saved span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #374151;
+    }
+
+    #deploy-repository-app .rp-token-saved i.fa-key {
+        color: #16a34a;
+    }
+
+    #deploy-repository-app .rp-token-dots {
+        letter-spacing: 2px;
+        color: #9ca3af;
+    }
+
+    /* footer */
+    #deploy-repository-app .rp-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 20px;
+        background: #fbfbfc;
+        flex-wrap: wrap;
+    }
+
+    #deploy-repository-app .rp-footer-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #deploy-repository-app .rp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12.5px;
+        padding: 7px 12px;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    #deploy-repository-app .rp-btn:hover:not(:disabled) {
+        background: #f1f3f5;
+        color: #374151;
+        text-decoration: none;
+    }
+
+    #deploy-repository-app .rp-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    #deploy-repository-app .rp-btn-sm {
+        font-size: 11.5px;
+        padding: 4px 9px;
+    }
+
+    #deploy-repository-app .rp-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #deploy-repository-app .rp-btn-primary:hover:not(:disabled) {
+        background: #3d7fce;
+        color: #fff;
+    }
+
+    #deploy-repository-app .rp-btn-danger {
+        color: #dc2626;
+        border-color: #f3c4c4;
+    }
+
+    #deploy-repository-app .rp-btn-danger:hover:not(:disabled) {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    #deploy-repository-app .rp-btn-block {
+        flex: 1 1 0;
+        justify-content: center;
+    }
+
+    /* message */
+    #deploy-repository-app .rp-message {
+        display: none;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 16px 20px 0;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        line-height: 1.55;
+    }
+
+    #deploy-repository-app .rp-message.show {
+        display: flex;
+    }
+
+    #deploy-repository-app .rp-message i {
+        margin-top: 2px;
+    }
+
+    #deploy-repository-app .rp-message-success {
+        background: #ecfdf3;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+    }
+
+    #deploy-repository-app .rp-message-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+
+    #deploy-repository-app .rp-message-close {
+        margin-left: auto;
+        border: none;
+        background: none;
+        color: inherit;
+        opacity: .6;
+        cursor: pointer;
+        padding: 0 2px;
+    }
+
+    /* status */
+    #deploy-repository-app .rp-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #f1f3f5;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    #deploy-repository-app .rp-badge-on {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    #deploy-repository-app .rp-badge-off {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    #deploy-repository-app .rp-status-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    #deploy-repository-app .rp-status-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 12.5px;
+    }
+
+    #deploy-repository-app .rp-status-list li:last-child {
+        border-bottom: none;
+    }
+
+    #deploy-repository-app .rp-status-list .rp-key {
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    #deploy-repository-app .rp-status-list .rp-key i {
+        width: 14px;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    #deploy-repository-app .rp-status-list .rp-value {
+        font-weight: 600;
+        color: #1f2937;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: right;
+    }
+
+    #deploy-repository-app .rp-status-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    #deploy-repository-app .rp-empty {
+        text-align: center;
+        padding: 6px 4px 2px;
+        color: #6b7280;
+        font-size: 12.5px;
+        line-height: 1.6;
+    }
+
+    #deploy-repository-app .rp-empty i {
+        display: block;
+        font-size: 28px;
+        color: #d1d5db;
+        margin-bottom: 8px;
+    }
+
+    /* guide */
+    #deploy-repository-app .rp-guide {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: guide;
+    }
+
+    #deploy-repository-app .rp-guide li {
+        position: relative;
+        padding: 0 0 12px 30px;
+        font-size: 12px;
+        color: #374151;
+        line-height: 1.6;
+        counter-increment: guide;
+    }
+
+    #deploy-repository-app .rp-guide li:last-child {
+        padding-bottom: 0;
+    }
+
+    #deploy-repository-app .rp-guide li::before {
+        content: counter(guide);
+        position: absolute;
+        left: 0;
+        top: 1px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #eef5ff;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #deploy-repository-app .rp-guide a {
+        color: #2563eb;
+    }
+</style>
+<script th:fragment="script">
+    // 연동 저장 시 GitHub 를 여러 번 호출하므로 기본 10초보다 넉넉히 둔다
+    httpClient.timeout = 60000;
+
+    const DEPLOY_API = `/${APPLICATION_ID}/console/api/deploy`;
+    // 저장소 칸에 붙여넣은 URL(https://github.com/owner/repo(.git), git@github.com:owner/repo.git) 이나 owner/repo
+    const REPOSITORY_URL = /^(?:https?:\/\/[^\/]+\/|git@[^:]+:)?([^\/\s]+)\/([^\/\s]+?)(?:\.git)?\/?$/;
+    const NAME_PATTERN = /^[A-Za-z0-9_.-]+$/;
+
+    let SETTING = null;
+    let EDITING_TOKEN = false;
+
+    $(document).ready(function() {
+        bindForm();
+        getSetting();
+    });
+
+    function isConfigured() {
+        return !!(SETTING && SETTING.configured);
+    }
+
+    function bindForm() {
+        $('#gitRepository').on('input', function() {
+            splitRepositoryUrl();
+            onFormChanged();
+        });
+        $('#gitOwner, #gitBranch, #gitToken').on('input', onFormChanged);
+
+        $('#deploy-repository-app input').on('keydown', function(e) {
+            if(e.key === 'Enter') {
+                e.preventDefault();
+                saveSetting();
+            }
+        });
+    }
+
+    // 저장소 칸에 URL 이나 owner/repo 를 붙여넣으면 소유자와 저장소로 나눈다
+    function splitRepositoryUrl() {
+        const value = $('#gitRepository').val().trim();
+        const matched = value.match(REPOSITORY_URL);
+        if(matched) {
+            $('#gitOwner').val(matched[1]);
+            $('#gitRepository').val(matched[2]);
+        }
+    }
+
+    function onFormChanged() {
+        clearFieldErrors();
+        renderPreview();
+        $('#btnReset').prop('disabled', !isDirty());
+    }
+
+    function isDirty() {
+        if(!isConfigured()) {
+            return !!($('#gitOwner').val().trim() || $('#gitRepository').val().trim() || $('#gitBranch').val().trim() || $('#gitToken').val().trim());
+        }
+        return $('#gitOwner').val().trim() !== (SETTING.owner || '')
+            || $('#gitRepository').val().trim() !== (SETTING.repository || '')
+            || $('#gitBranch').val().trim() !== (SETTING.branch || '')
+            || !!$('#gitToken').val().trim();
+    }
+
+    // ---- 조회 ----
+
+    function getSetting() {
+        httpClient.get(`${DEPLOY_API}/setting`, {},
+            function(response) {
+                SETTING = response;
+                EDITING_TOKEN = !isConfigured();
+                fillForm();
+                renderStatus();
+            },
+            function(error) {
+                showMessage('error', errorMessageOf(error));
+            }
+        );
+    }
+
+    function fillForm() {
+        const configured = isConfigured();
+        $('#gitOwner').val(configured ? SETTING.owner : '');
+        $('#gitRepository').val(configured ? SETTING.repository : '');
+        $('#gitBranch').val(configured ? SETTING.branch : '');
+        $('#gitToken').val('').attr('type', 'password');
+        $('#btnTokenEye i').attr('class', 'far fa-eye');
+
+        renderTokenField();
+        clearFieldErrors();
+        renderPreview();
+        $('#btnReset').prop('disabled', true);
+    }
+
+    function renderTokenField() {
+        const showSaved = isConfigured() && !EDITING_TOKEN;
+        $('#tokenSaved').toggle(showSaved);
+        $('#tokenInput').toggle(!showSaved);
+        $('#btnTokenCancel').toggle(isConfigured() && EDITING_TOKEN);
+
+        if(showSaved && SETTING.githubLogin) {
+            $('#tokenSavedLogin').text(`@${SETTING.githubLogin}`);
+        }
+        else {
+            $('#tokenSavedLogin').text('');
+        }
+    }
+
+    function changeToken() {
+        EDITING_TOKEN = true;
+        renderTokenField();
+        $('#gitToken').val('').trigger('focus');
+    }
+
+    function cancelTokenChange() {
+        EDITING_TOKEN = false;
+        $('#gitToken').val('');
+        renderTokenField();
+        onFormChanged();
+    }
+
+    function toggleTokenVisible() {
+        const $input = $('#gitToken');
+        const visible = $input.attr('type') === 'text';
+        $input.attr('type', visible ? 'password' : 'text');
+        $('#btnTokenEye i').attr('class', visible ? 'far fa-eye' : 'far fa-eye-slash');
+    }
+
+    function renderPreview() {
+        const owner = $('#gitOwner').val().trim();
+        const repository = $('#gitRepository').val().trim();
+        const branch = $('#gitBranch').val().trim() || '기본 브랜치';
+
+        const $preview = $('#repoPreview');
+        if(owner && repository) {
+            $preview.removeClass('empty').find('span').text(`github.com/${owner}/${repository}  ·  ${branch}  ·  ${APPLICATION_ID}/`);
+        }
+        else {
+            $preview.addClass('empty').find('span').text('소유자와 저장소를 입력하면 커밋될 위치가 여기에 표시됩니다.');
+        }
+    }
+
+    function renderStatus() {
+        const configured = isConfigured();
+
+        $('#heroBadge')
+            .attr('class', `rp-badge ${configured ? 'rp-badge-on' : 'rp-badge-off'}`)
+            .html(configured ? '<i class="fas fa-check-circle"></i>연동됨' : '<i class="fas fa-exclamation-circle"></i>연동 안 됨');
+
+        $('#statusConfigured').toggle(configured);
+        $('#statusEmpty').toggle(!configured);
+        $('#btnDeleteSetting').prop('disabled', !configured);
+
+        if(!configured) {
+            return;
+        }
+
+        $('#statusRepository').text(`${SETTING.owner}/${SETTING.repository}`).attr('title', `${SETTING.owner}/${SETTING.repository}`);
+        $('#statusBranch').text(SETTING.branch || '-');
+        $('#statusLogin').text(SETTING.githubLogin ? `@${SETTING.githubLogin}` : '-');
+        $('#statusUpdatedAt').text(SETTING.updatedAt ? String(SETTING.updatedAt).replace('T', ' ').substring(0, 16) : '-');
+        $('#btnOpenRepository').attr('href', SETTING.repositoryUrl || `https://github.com/${SETTING.owner}/${SETTING.repository}`);
+    }
+
+
+    // ---- 저장 / 해제 ----
+
+    function validateForm(params) {
+        let valid = true;
+
+        if(!params.owner) {
+            fieldError('gitOwner', '소유자를 입력해주세요.');
+            valid = false;
+        }
+        else if(!NAME_PATTERN.test(params.owner)) {
+            fieldError('gitOwner', '영문, 숫자, - _ . 만 쓸 수 있습니다.');
+            valid = false;
+        }
+
+        if(!params.repository) {
+            fieldError('gitRepository', '저장소 이름을 입력해주세요.');
+            valid = false;
+        }
+        else if(!NAME_PATTERN.test(params.repository)) {
+            fieldError('gitRepository', '영문, 숫자, - _ . 만 쓸 수 있습니다.');
+            valid = false;
+        }
+
+        if(params.branch && /\s|\.\./.test(params.branch)) {
+            fieldError('gitBranch', '공백이나 .. 은 브랜치 이름에 쓸 수 없습니다.');
+            valid = false;
+        }
+
+        if(!params.token && (!isConfigured() || EDITING_TOKEN)) {
+            fieldError('gitToken', isConfigured() ? '새 토큰을 입력하거나 토큰 변경을 취소해주세요.' : 'GitHub 토큰을 입력해주세요.');
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    function saveSetting() {
+        hideMessage();
+        clearFieldErrors();
+
+        const params = {
+            owner: $('#gitOwner').val().trim(),
+            repository: $('#gitRepository').val().trim(),
+            branch: $('#gitBranch').val().trim(),
+            token: $('#gitToken').val().trim()
+        };
+
+        if(!validateForm(params)) {
+            return;
+        }
+
+        setSaving(true);
+        httpClient.put(`${DEPLOY_API}/setting`, {}, params,
+            function(response) {
+                setSaving(false);
+                SETTING = response;
+                EDITING_TOKEN = false;
+                fillForm();
+                renderStatus();
+                showMessage('success', `${response.owner}/${response.repository} (${response.branch}) 저장소에 연결을 확인하고 저장했습니다.`);
+            },
+            function(error) {
+                setSaving(false);
+                showMessage('error', errorMessageOf(error));
+            }
+        );
+    }
+
+    function resetForm() {
+        hideMessage();
+        EDITING_TOKEN = !isConfigured();
+        fillForm();
+    }
+
+    function deleteSetting() {
+        if(!isConfigured()) return;
+        if(!confirm(`${SETTING.owner}/${SETTING.repository} 저장소 연동을 해제하시겠습니까?\n저장된 토큰도 삭제되며, 저장소에 커밋된 파일은 그대로 남습니다.`)) return;
+
+        hideMessage();
+        httpClient.delete(`${DEPLOY_API}/setting`, {},
+            function() {
+                SETTING = { configured: false };
+                EDITING_TOKEN = true;
+                fillForm();
+                renderStatus();
+                showMessage('success', '저장소 연동을 해제했습니다.');
+            },
+            function(error) {
+                showMessage('error', errorMessageOf(error));
+            }
+        );
+    }
+
+    function setSaving(saving) {
+        $('#btnSave')
+            .prop('disabled', saving)
+            .html(saving ? '<i class="fas fa-spinner fa-spin"></i>GitHub 연결 확인 중...' : '<i class="fas fa-plug"></i>연결 확인 후 저장');
+        $('#btnReset, #btnDeleteSetting').prop('disabled', saving);
+        if(!saving) {
+            $('#btnReset').prop('disabled', !isDirty());
+            $('#btnDeleteSetting').prop('disabled', !isConfigured());
+        }
+    }
+
+    // ---- 메시지 ----
+
+    function errorMessageOf(error) {
+        const message = error && error.responseJSON && error.responseJSON.message;
+        if(message) return message;
+        if(error && error.statusText === 'timeout') return '요청 시간이 초과되었습니다. 잠시 뒤 다시 시도해주세요.';
+        return '오류가 발생했습니다.';
+    }
+
+    function showMessage(type, message) {
+        $('#formMessage')
+            .attr('class', `rp-message show rp-message-${type}`)
+            .find('i.rp-message-icon').attr('class', `rp-message-icon fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`).end()
+            .find('.rp-message-text').text(message);
+    }
+
+    function hideMessage() {
+        $('#formMessage').removeClass('show');
+    }
+
+    function fieldError(id, message) {
+        $(`#${id}`).addClass('is-invalid');
+        $(`#${id}Error`).text(message).addClass('show');
+    }
+
+    function clearFieldErrors() {
+        $('#deploy-repository-app .form-control').removeClass('is-invalid');
+        $('#deploy-repository-app .rp-field-error').removeClass('show').text('');
+    }
+</script>
+<div id="deploy-repository-app" th:fragment="view">
+
+    <div class="rp-hero">
+        <div class="rp-hero-icon"><i class="fab fa-github"></i></div>
+        <div class="rp-hero-text">
+            <h2>GitHub 저장소 연동</h2>
+            <p>애플리케이션 메타데이터를 DSL(JSON)로 커밋할 GitHub 저장소를 연결합니다. 연동한 뒤 Deploy &gt; Commit 에서 비교하고 커밋할 수 있습니다.</p>
+        </div>
+        <span class="rp-badge" id="heroBadge">확인 중</span>
+    </div>
+
+    <div class="rp-layout">
+        <!-- 설정 폼 -->
+        <div class="rp-main">
+            <section class="rp-card">
+                <div class="rp-card-header">
+                    <h3><i class="fas fa-cog"></i> 연동 설정</h3>
+                </div>
+
+                <div class="rp-message" id="formMessage">
+                    <i class="rp-message-icon fas fa-check-circle"></i>
+                    <span class="rp-message-text"></span>
+                    <button type="button" class="rp-message-close" onclick="hideMessage()" title="닫기"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="rp-section">
+                    <div class="rp-section-title">
+                        <h4><span class="rp-step">1</span>저장소</h4>
+                        <p>DSL 을 커밋할 저장소입니다. 저장소 URL 을 붙여넣으면 자동으로 나눠 입력됩니다.</p>
+                    </div>
+                    <div class="rp-section-fields">
+                        <div class="rp-row">
+                            <div class="rp-field">
+                                <label for="gitOwner">소유자 (사용자 또는 조직)<span class="rp-required">*</span></label>
+                                <input type="text" class="form-control" id="gitOwner" placeholder="my-org" autocomplete="off" spellcheck="false">
+                                <div class="rp-field-error" id="gitOwnerError"></div>
+                            </div>
+                            <div class="rp-slash">/</div>
+                            <div class="rp-field">
+                                <label for="gitRepository">저장소<span class="rp-required">*</span></label>
+                                <input type="text" class="form-control" id="gitRepository" placeholder="app-builder-dsl 또는 https://github.com/..." autocomplete="off" spellcheck="false">
+                                <div class="rp-field-error" id="gitRepositoryError"></div>
+                            </div>
+                        </div>
+                        <div class="rp-preview empty" id="repoPreview">
+                            <i class="fas fa-map-marker-alt"></i><span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rp-section">
+                    <div class="rp-section-title">
+                        <h4><span class="rp-step">2</span>브랜치</h4>
+                        <p>커밋이 올라갈 브랜치입니다. 없으면 첫 커밋 때 기본 브랜치에서 만듭니다.</p>
+                    </div>
+                    <div class="rp-section-fields">
+                        <label for="gitBranch">브랜치</label>
+                        <input type="text" class="form-control" id="gitBranch" placeholder="비우면 저장소의 기본 브랜치 (예: main)" autocomplete="off" spellcheck="false">
+                        <div class="rp-field-error" id="gitBranchError"></div>
+                        <div class="rp-hint">운영 배포용 브랜치를 따로 두려면 <code>deploy</code>, <code>release</code> 처럼 별도 브랜치를 지정하세요.</div>
+                    </div>
+                </div>
+
+                <div class="rp-section">
+                    <div class="rp-section-title">
+                        <h4><span class="rp-step">3</span>인증 토큰</h4>
+                        <p>저장소에 쓸 수 있는 Personal Access Token 입니다. 암호화해서 저장하며 다시 보여주지 않습니다.</p>
+                    </div>
+                    <div class="rp-section-fields">
+                        <div id="tokenSaved" style="display: none;">
+                            <label>Personal Access Token</label>
+                            <div class="rp-token-saved">
+                                <span><i class="fas fa-key"></i>토큰 저장됨 <span class="rp-token-dots">••••••••••••</span> <span id="tokenSavedLogin" class="rp-badge"></span></span>
+                                <button type="button" class="rp-btn rp-btn-sm" onclick="changeToken()"><i class="fas fa-sync-alt"></i>토큰 변경</button>
+                            </div>
+                        </div>
+                        <div id="tokenInput">
+                            <label for="gitToken">Personal Access Token<span class="rp-required">*</span></label>
+                            <div class="rp-input-group">
+                                <input type="password" class="form-control" id="gitToken" placeholder="github_pat_... 또는 ghp_..." autocomplete="new-password" spellcheck="false">
+                                <button type="button" class="rp-eye" id="btnTokenEye" onclick="toggleTokenVisible()" title="보기/숨기기"><i class="far fa-eye"></i></button>
+                            </div>
+                            <div class="rp-field-error" id="gitTokenError"></div>
+                            <div class="rp-hint">
+                                필요한 권한: Fine-grained 토큰은 <code>Contents: Read and write</code>, Classic 토큰은 <code>repo</code>.
+                                <a href="#" id="btnTokenCancel" onclick="cancelTokenChange(); return false;" style="display: none; margin-left: 6px;">변경 취소</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rp-footer">
+                    <button type="button" class="rp-btn rp-btn-danger" id="btnDeleteSetting" onclick="deleteSetting()" disabled><i class="fas fa-unlink"></i>연동 해제</button>
+                    <div class="rp-footer-right">
+                        <button type="button" class="rp-btn" id="btnReset" onclick="resetForm()" disabled><i class="fas fa-undo"></i>변경 취소</button>
+                        <button type="button" class="rp-btn rp-btn-primary" id="btnSave" onclick="saveSetting()"><i class="fas fa-plug"></i>연결 확인 후 저장</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 상태 / 안내 -->
+        <aside class="rp-side">
+            <section class="rp-card">
+                <div class="rp-card-header">
+                    <h3><i class="fas fa-signal"></i> 연동 상태</h3>
+                </div>
+                <div class="rp-card-body">
+                    <div id="statusConfigured" style="display: none;">
+                        <ul class="rp-status-list">
+                            <li><span class="rp-key"><i class="fas fa-book"></i>저장소</span><span class="rp-value" id="statusRepository"></span></li>
+                            <li><span class="rp-key"><i class="fas fa-code-branch"></i>브랜치</span><span class="rp-value" id="statusBranch"></span></li>
+                            <li><span class="rp-key"><i class="fas fa-user"></i>GitHub 계정</span><span class="rp-value" id="statusLogin"></span></li>
+                            <li><span class="rp-key"><i class="far fa-clock"></i>마지막 저장</span><span class="rp-value" id="statusUpdatedAt"></span></li>
+                        </ul>
+                        <div class="rp-status-actions">
+                            <a class="rp-btn rp-btn-block" id="btnOpenRepository" href="#" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i>저장소 열기</a>
+                            <a class="rp-btn rp-btn-primary rp-btn-block" th:href="|/${applicationId}/console/deploy-commit|"><i class="fas fa-code-branch"></i>Commit 으로</a>
+                        </div>
+                    </div>
+                    <div class="rp-empty" id="statusEmpty">
+                        <i class="fas fa-unlink"></i>
+                        아직 연동된 저장소가 없습니다.<br>왼쪽에서 저장소와 토큰을 입력하고 저장하세요.
+                    </div>
+                </div>
+            </section>
+
+            <section class="rp-card">
+                <div class="rp-card-header">
+                    <h3><i class="fas fa-key"></i> 토큰 만들기</h3>
+                </div>
+                <div class="rp-card-body">
+                    <ol class="rp-guide">
+                        <li>GitHub 에서 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained 토큰 만들기</a> 를 엽니다.</li>
+                        <li><b>Repository access</b> 에서 연동할 저장소만 선택합니다.</li>
+                        <li><b>Permissions</b> 의 <code>Contents</code> 를 <code>Read and write</code> 로 지정합니다.</li>
+                        <li>만든 토큰을 복사해 왼쪽 인증 토큰 칸에 붙여넣고 저장합니다.</li>
+                    </ol>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+</html>
