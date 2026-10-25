@@ -153,6 +153,116 @@ class DslValidatorTest {
         assertNull(DslJson.jsonOrText(null));
     }
 
+    @Test
+    void 쿼리는_쿼리명_폴더에_json과_sql이_짝으로_있어야_한다() {
+        Map<String, String> files = new LinkedHashMap<>();
+        put(files, DslFolder.DATABASE, "MAIN_DB", Map.of("displayName", "DB", "databaseKind", "MYSQL", "url", "jdbc:x", "username", "u"));
+
+        // json 만 있고 sql 이 없다
+        Map<String, Object> query = DslJson.document(DslFolder.QUERY);
+        query.put("queryName", "Q001");
+        query.put("displayName", "조회");
+        query.put("dataSourceName", "MAIN_DB");
+        files.put(DslFolder.QUERY.filePath(APP, "Q001"), DslJson.write(query));
+        // sql 만 있고 json 이 없다
+        files.put(DslFolder.QUERY.sqlFilePath(APP, "Q002"), "select 2");
+        // 예전 위치(폴더 없이 바로 {queryName}.json)
+        files.put(APP + "/workflow/query/Q003.json", "{}");
+        // query.sql 이 아닌 이름
+        files.put(APP + "/workflow/query/Q004/Q004.sql", "select 4");
+        // sql 은 쿼리 폴더에만 둘 수 있다
+        files.put(APP + "/security/company/C001.sql", "select 5");
+
+        List<DslIssue> issues = validator.validate(APP, files);
+        List<String> paths = issues.stream().map(DslIssue::path).toList();
+
+        assertEquals(5, issues.size(), issues.toString());
+        assertTrue(issues.stream().allMatch(DslIssue::isError));
+        assertTrue(paths.containsAll(List.of(
+                DslFolder.QUERY.filePath(APP, "Q001"),
+                DslFolder.QUERY.sqlFilePath(APP, "Q002"),
+                APP + "/workflow/query/Q003.json",
+                APP + "/workflow/query/Q004/Q004.sql",
+                APP + "/security/company/C001.sql")), issues.toString());
+    }
+
+    @Test
+    void 쿼리_경로는_쿼리명_폴더_아래에_만들어진다() {
+        assertEquals(APP + "/workflow/query/Q001/metadata.json", DslFolder.QUERY.filePath(APP, "Q001"));
+        assertEquals(APP + "/workflow/query/Q001/query.sql", DslFolder.QUERY.sqlFilePath(APP, "Q001"));
+        assertEquals(APP + "/workflow/workflow/W001.json", DslFolder.WORKFLOW.filePath(APP, "W001"));
+
+        DslFolder.Location sql = DslFolder.locate(APP, APP + "/workflow/query/Q001/query.sql").orElseThrow();
+        assertEquals(DslFolder.QUERY, sql.folder());
+        assertEquals("Q001", sql.id());
+        assertEquals(DslFolder.Part.SQL, sql.part());
+        assertTrue(DslFolder.locate(APP, APP + "/workflow/query/Q001.json").isEmpty());
+        assertTrue(DslFolder.locate(APP, APP + "/workflow/workflow/W001/W001.json").isEmpty());
+        assertTrue(DslFolder.locate(APP, APP + "/workflow/query/Q001/Q001.json").isEmpty());
+        assertEquals("Q001", DslFolder.locate(APP, APP + "/workflow/query/Q001/metadata.json").orElseThrow().id());
+    }
+
+    @Test
+    void 화면_액션은_화면폴더의_actions_아래에_있어야_한다() {
+        Map<String, String> files = new LinkedHashMap<>();
+        put(files, DslFolder.VIEW_OBJECT, "V001", Map.of("objectName", "화면"));
+
+        // 맞는 액션 + 스크립트
+        files.put(DslFolder.VIEW_OBJECT.actionFilePath(APP, "V001", "save"), DslJson.write(action("save")));
+        files.put(DslFolder.VIEW_OBJECT.actionScriptFilePath(APP, "V001", "save"), "alert(1);");
+        assertEquals(List.of(), validator.validate(APP, files));
+
+        // 폴더명과 actionName 이 다르다
+        files.put(DslFolder.VIEW_OBJECT.actionFilePath(APP, "V001", "edit"), DslJson.write(action("other")));
+        // 액션 metadata.json 없이 스크립트만 있다
+        files.put(DslFolder.VIEW_OBJECT.actionScriptFilePath(APP, "V001", "delete"), "alert(2);");
+        // 화면 metadata.json 이 없다
+        files.put(DslFolder.VIEW_OBJECT.actionFilePath(APP, "V002", "save"), DslJson.write(action("save")));
+        // kind 가 틀리다
+        files.put(DslFolder.VIEW_OBJECT.actionFilePath(APP, "V001", "wrongKind"), DslJson.write(DslJson.document(DslFolder.VIEW_OBJECT)));
+        // 대소문자만 다르다
+        files.put(DslFolder.VIEW_OBJECT.actionFilePath(APP, "V001", "SAVE"), DslJson.write(action("SAVE")));
+        // 예전 위치
+        files.put(APP + "/view/view-object/V003.json", "{}");
+
+        List<DslIssue> issues = validator.validate(APP, files);
+        List<String> paths = issues.stream().map(DslIssue::path).toList();
+
+        assertEquals(6, issues.size(), issues.toString());
+        assertTrue(issues.stream().allMatch(DslIssue::isError));
+        assertTrue(paths.containsAll(List.of(
+                DslFolder.VIEW_OBJECT.actionFilePath(APP, "V001", "edit"),
+                DslFolder.VIEW_OBJECT.actionScriptFilePath(APP, "V001", "delete"),
+                DslFolder.VIEW_OBJECT.actionFilePath(APP, "V002", "save"),
+                DslFolder.VIEW_OBJECT.actionFilePath(APP, "V001", "wrongKind"),
+                APP + "/view/view-object/V003.json")), issues.toString());
+    }
+
+    @Test
+    void 화면_경로는_화면코드_폴더_아래에_만들어진다() {
+        assertEquals(APP + "/view/view-object/V001/metadata.json", DslFolder.VIEW_OBJECT.filePath(APP, "V001"));
+        assertEquals(APP + "/view/view-object/V001/actions/save/metadata.json", DslFolder.VIEW_OBJECT.actionFilePath(APP, "V001", "save"));
+        assertEquals(APP + "/view/view-object/V001/actions/save/script.js", DslFolder.VIEW_OBJECT.actionScriptFilePath(APP, "V001", "save"));
+
+        DslFolder.Location script = DslFolder.locate(APP, APP + "/view/view-object/V001/actions/save/script.js").orElseThrow();
+        assertEquals(DslFolder.VIEW_OBJECT, script.folder());
+        assertEquals("V001", script.id());
+        assertEquals(DslFolder.Part.ACTION_SCRIPT, script.part());
+        assertEquals("save", script.partName());
+
+        // 화면에는 query.sql 이, 쿼리에는 actions 가 없다
+        assertTrue(DslFolder.locate(APP, APP + "/view/view-object/V001/query.sql").isEmpty());
+        assertTrue(DslFolder.locate(APP, APP + "/workflow/query/Q001/actions/save/metadata.json").isEmpty());
+        assertTrue(DslFolder.locate(APP, APP + "/view/view-object/V001/actions/save/other.js").isEmpty());
+    }
+
+    private static Map<String, Object> action(String actionName) {
+        Map<String, Object> action = DslJson.document(DslFolder.ACTION_KIND);
+        action.put("actionName", actionName);
+        action.put("displayName", "액션");
+        return action;
+    }
+
     // ---- fixture ----
 
     private static void put(Map<String, String> files, DslFolder folder, String id, Map<String, Object> fields) {
@@ -160,6 +270,9 @@ class DslValidatorTest {
         document.put(folder.idField(), id);
         document.putAll(fields);
         files.put(folder.filePath(APP, id), DslJson.write(document));
+        if(folder.has(DslFolder.Part.SQL)) {
+            files.put(folder.sqlFilePath(APP, id), "select 1");
+        }
     }
 
     private static Map<String, Object> workflow(List<Map<String, Object>> nodes, List<Map<String, Object>> edges,

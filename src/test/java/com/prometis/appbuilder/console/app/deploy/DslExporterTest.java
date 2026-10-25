@@ -21,8 +21,10 @@ import com.prometis.appbuilder.app.query.code.AutoValueType;
 import com.prometis.appbuilder.app.query.code.InOut;
 import com.prometis.appbuilder.app.query.code.ParamType;
 import com.prometis.appbuilder.app.view.MenuRepository;
+import com.prometis.appbuilder.app.view.ViewActionRepository;
 import com.prometis.appbuilder.app.view.ViewObjectRepository;
 import com.prometis.appbuilder.app.view.domain.Menu;
+import com.prometis.appbuilder.app.view.domain.ViewAction;
 import com.prometis.appbuilder.app.view.domain.ViewObject;
 import com.prometis.appbuilder.app.workflow.Workflow;
 import com.prometis.appbuilder.app.workflow.WorkflowPermission;
@@ -76,6 +78,8 @@ class DslExporterTest {
     @Autowired
     private MenuRepository menuRepository;
     @Autowired
+    private ViewActionRepository viewActionRepository;
+    @Autowired
     private StorageTypeRepository storageTypeRepository;
     @Autowired
     private ImageStorageRepository imageStorageRepository;
@@ -101,6 +105,10 @@ class DslExporterTest {
 
         ViewObject viewObject = viewObjectRepository.save(ViewObject.builder()
                 .applicationId(APP).objectCode("V001").objectName("화면").build());
+        viewActionRepository.save(ViewAction.builder()
+                .applicationId(APP).objectCode("V001").actionName("save").displayName("저장").type("BUTTON").script("alert(1);").build());
+        viewActionRepository.save(ViewAction.builder()
+                .applicationId(APP).objectCode("V001").actionName("noScript").displayName("스크립트 없음").type("BUTTON").build());
         Menu parent = menuRepository.save(Menu.builder().applicationId(APP).menuCd("ROOT").menuNm("상위").build());
         menuRepository.save(Menu.builder().applicationId(APP).menuCd("M001").menuNm("메뉴").parentMenu(parent).viewObject(viewObject).build());
 
@@ -125,8 +133,12 @@ class DslExporterTest {
                 "ehr/setting/image-manage/LOGO.json",
                 "ehr/view/menu/M001.json",
                 "ehr/view/menu/ROOT.json",
-                "ehr/view/view-object/V001.json",
-                "ehr/workflow/query/Q001.json",
+                "ehr/view/view-object/V001/actions/noScript/metadata.json",
+                "ehr/view/view-object/V001/actions/save/metadata.json",
+                "ehr/view/view-object/V001/actions/save/script.js",
+                "ehr/view/view-object/V001/metadata.json",
+                "ehr/workflow/query/Q001/metadata.json",
+                "ehr/workflow/query/Q001/query.sql",
                 "ehr/workflow/workflow/W001.json"
         ), files.stream().map(DslFile::path).toList());
 
@@ -145,8 +157,18 @@ class DslExporterTest {
         assertFalse(workflowDsl.has("id"));
         assertFalse(workflowDsl.has("applicationId"));
 
-        JsonNode query = DslJson.read(byPath.get("ehr/workflow/query/Q001.json"));
+        JsonNode query = DslJson.read(byPath.get("ehr/workflow/query/Q001/metadata.json"));
+        assertFalse(query.has("query"));
+        assertEquals("select 1", byPath.get("ehr/workflow/query/Q001/query.sql"));
         assertEquals("id", query.path("params").get(0).path("paramName").asText());
+
+        JsonNode view = DslJson.read(byPath.get("ehr/view/view-object/V001/metadata.json"));
+        assertFalse(view.has("actions"));
+        JsonNode saveAction = DslJson.read(byPath.get("ehr/view/view-object/V001/actions/save/metadata.json"));
+        assertEquals("ViewAction", saveAction.path("kind").asText());
+        assertEquals("save", saveAction.path("actionName").asText());
+        assertFalse(saveAction.has("script"));
+        assertEquals("alert(1);", byPath.get("ehr/view/view-object/V001/actions/save/script.js"));
 
         JsonNode menu = DslJson.read(byPath.get("ehr/view/menu/M001.json"));
         assertEquals("ROOT", menu.path("parentMenuCd").asText());

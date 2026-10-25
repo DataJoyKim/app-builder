@@ -7,6 +7,7 @@ import java.util.HexFormat;
 
 /**
  * DSL 파일 하나. path 는 저장소 최상위 기준 경로({applicationId}/workflow/workflow/W001.json)이고 content 는 JSON 본문이다.
+ * 쿼리의 SQL 본문 파일({applicationId}/workflow/query/Q001/query.sql)도 같은 folder/id 로 하나의 DslFile 이 되며, content 는 SQL 그대로다.
  */
 public record DslFile(String path, DslFolder folder, String id, String content) {
 

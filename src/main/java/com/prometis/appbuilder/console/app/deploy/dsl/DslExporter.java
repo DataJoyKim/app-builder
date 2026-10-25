@@ -147,7 +147,10 @@ public class DslExporter {
         workflowRepository.findByApplicationId(applicationId)
                 .forEach(workflow -> files.add(file(applicationId, DslFolder.WORKFLOW, workflow.getWorkflowCode(), workflow(workflow))));
         queryRepository.findByApplicationId(applicationId)
-                .forEach(query -> files.add(file(applicationId, DslFolder.QUERY, query.getQueryName(), query(query))));
+                .forEach(query -> {
+                    files.add(file(applicationId, DslFolder.QUERY, query.getQueryName(), query(query)));
+                    files.add(sqlFile(applicationId, DslFolder.QUERY, query.getQueryName(), query.getQuery()));
+                });
         entityRepository.findByApplicationId(applicationId)
                 .forEach(entity -> files.add(file(applicationId, DslFolder.ENTITY, entity.getEntityName(), entity(entity))));
         restClientRepository.findByApplicationId(applicationId)
@@ -187,8 +190,19 @@ public class DslExporter {
             files.add(file(applicationId, DslFolder.VIEW_OBJECT, objectCode, viewObject(
                     viewObject,
                     contents.get(objectCode),
-                    actions.getOrDefault(objectCode, List.of()),
                     codes.getOrDefault(objectCode, List.of()))));
+
+            // 액션은 {objectCode}/actions/{actionName}/metadata.json, 스크립트가 있으면 그 옆의 script.js 로 뗀다
+            for(ViewAction action : actions.getOrDefault(objectCode, List.of())) {
+                String actionName = action.getActionName();
+                files.add(new DslFile(DslFolder.VIEW_OBJECT.actionFilePath(applicationId, objectCode, actionName),
+                        DslFolder.VIEW_OBJECT, objectCode, DslJson.write(viewAction(action))));
+
+                if(action.getScript() != null && !action.getScript().isBlank()) {
+                    files.add(new DslFile(DslFolder.VIEW_OBJECT.actionScriptFilePath(applicationId, objectCode, actionName),
+                            DslFolder.VIEW_OBJECT, objectCode, action.getScript()));
+                }
+            }
         }
 
         menuRepository.findByApplicationId(applicationId)
@@ -200,6 +214,11 @@ public class DslExporter {
 
     private static DslFile file(String applicationId, DslFolder folder, String id, Map<String, Object> document) {
         return new DslFile(folder.filePath(applicationId, id), folder, id, DslJson.write(document));
+    }
+
+    // SQL 본문은 {ID}/metadata.json 옆의 {ID}/query.sql 로 뗀다. 저장된 글자 그대로 쓴다(줄바꿈도 손대지 않는다)
+    private static DslFile sqlFile(String applicationId, DslFolder folder, String id, String sql) {
+        return new DslFile(folder.sqlFilePath(applicationId, id), folder, id, sql == null ? "" : sql);
     }
 
     // ---- datasource ----
@@ -350,7 +369,7 @@ public class DslExporter {
         d.put("queryName", query.getQueryName());
         d.put("displayName", query.getDisplayName());
         d.put("dataSourceName", query.getDataSourceName());
-        d.put("query", query.getQuery());
+        // SQL 본문(query)은 같은 폴더의 query.sql 에 있다
         // 파라미터 순서가 인덱스 바인딩 순서다. 저장된 순서(id 순)를 그대로 쓴다
         d.put("params", nullSafe(query.getQueryParams()).stream()
                 .sorted(Comparator.comparing(QueryParam::getId, Comparator.nullsLast(Comparator.naturalOrder())))
@@ -535,7 +554,8 @@ public class DslExporter {
 
     // ---- view ----
 
-    private Map<String, Object> viewObject(ViewObject viewObject, ViewObjectContent content, List<ViewAction> actions, List<ViewCode> codes) {
+    // 액션(actions)은 같은 폴더의 actions/{actionName}/ 에 있다
+    private Map<String, Object> viewObject(ViewObject viewObject, ViewObjectContent content, List<ViewCode> codes) {
         Map<String, Object> d = DslJson.document(DslFolder.VIEW_OBJECT);
         d.put("objectCode", viewObject.getObjectCode());
         d.put("objectName", viewObject.getObjectName());
@@ -545,19 +565,6 @@ public class DslExporter {
         d.put("usePermissionValidation", viewObject.getUsePermissionValidation());
         d.put("useToolbar", viewObject.getUseToolbar());
         d.put("content", content == null ? null : DslJson.jsonOrText(content.getContent()));
-        d.put("actions", actions.stream()
-                .sorted(Comparator.comparing(ViewAction::getActionName))
-                .map(action -> {
-                    Map<String, Object> a = new LinkedHashMap<>();
-                    a.put("actionName", action.getActionName());
-                    a.put("displayName", action.getDisplayName());
-                    a.put("type", action.getType());
-                    a.put("argsName", action.getArgsName());
-                    a.put("contents", DslJson.jsonOrText(action.getContents()));
-                    a.put("script", action.getScript());
-                    return a;
-                })
-                .toList());
         d.put("codes", codes.stream()
                 .sorted(Comparator.comparing(ViewCode::getName))
                 .map(code -> {
@@ -568,6 +575,17 @@ public class DslExporter {
                     return c;
                 })
                 .toList());
+        return d;
+    }
+
+    // 스크립트(script)는 같은 폴더의 script.js 에 있다
+    private static Map<String, Object> viewAction(ViewAction action) {
+        Map<String, Object> d = DslJson.document(DslFolder.ACTION_KIND);
+        d.put("actionName", action.getActionName());
+        d.put("displayName", action.getDisplayName());
+        d.put("type", action.getType());
+        d.put("argsName", action.getArgsName());
+        d.put("contents", DslJson.jsonOrText(action.getContents()));
         return d;
     }
 

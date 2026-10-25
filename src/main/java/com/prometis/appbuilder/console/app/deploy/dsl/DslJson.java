@@ -75,8 +75,12 @@ public final class DslJson {
      * 모든 DSL 파일 앞에 붙는 kind, version 으로 시작하는 객체.
      */
     public static Map<String, Object> document(DslFolder folder) {
+        return document(folder.kind());
+    }
+
+    public static Map<String, Object> document(String kind) {
         Map<String, Object> document = new LinkedHashMap<>();
-        document.put("kind", folder.kind());
+        document.put("kind", kind);
         document.put("version", VERSION);
         return document;
     }

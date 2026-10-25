@@ -44,6 +44,7 @@ public class DslValidator {
         }
 
         checkDuplicateIds(context);
+        checkParts(applicationId, context);
 
         for(Document document : context.documents) {
             checkRequiredFields(document, context);
@@ -64,50 +65,155 @@ public class DslValidator {
 
     private void readDocument(String applicationId, String path, String content, Context context) {
         String prefix = applicationId + "/";
-        if(!path.startsWith(prefix) || !path.endsWith(DslFolder.FILE_EXTENSION)) {
-            context.error(path, "애플리케이션 폴더(" + prefix + ") 아래의 .json 파일이 아닙니다.");
+        if(!path.startsWith(prefix) || !DslFolder.isDslFile(path)) {
+            context.error(path, "애플리케이션 폴더(" + prefix + ") 아래의 .json/.sql/.js 파일이 아닙니다.");
             return;
         }
 
-        String relative = path.substring(prefix.length());
-        int slash = relative.lastIndexOf('/');
-        String folderPath = slash < 0 ? "" : relative.substring(0, slash);
-        String id = relative.substring(slash + 1, relative.length() - DslFolder.FILE_EXTENSION.length());
-
-        Optional<DslFolder> folder = DslFolder.ofPath(folderPath);
-        if(folder.isEmpty()) {
-            context.error(path, "알 수 없는 DSL 폴더입니다. [" + folderPath + "]");
+        Optional<DslFolder.Location> found = DslFolder.locate(applicationId, path);
+        if(found.isEmpty()) {
+            context.error(path, "DSL 파일 위치가 올바르지 않습니다. " + expectedLocation(path.substring(prefix.length())));
             return;
         }
 
-        JsonNode node;
-        try {
-            node = DslJson.read(content);
-        }
-        catch (JsonProcessingException e) {
-            context.error(path, "JSON 형식이 올바르지 않습니다. " + e.getOriginalMessage());
-            return;
+        DslFolder.Location location = found.get();
+        DslFolder dslFolder = location.folder();
+        String id = location.id();
+
+        switch (location.part()) {
+            // SQL, 스크립트 본문은 JSON 이 아니므로 짝이 되는 metadata.json 이 있는지만 본다(checkParts)
+            case SQL, ACTION_SCRIPT -> {
+                context.parts.add(new PartFile(path, location));
+                return;
+            }
+            case ACTION -> {
+                JsonNode node = readObject(path, content, context);
+                if(node != null && checkKind(path, DslFolder.ACTION_KIND, node, context)
+                        && checkName(path, "actionName", location.partName(), text(node, "actionName"), context)) {
+                    context.parts.add(new PartFile(path, location));
+                    context.partPaths.add(path);
+                }
+                return;
+            }
+            default -> {
+            }
         }
 
-        if(node == null || !node.isObject()) {
-            context.error(path, "JSON 객체가 아닙니다.");
-            return;
-        }
-
-        DslFolder dslFolder = folder.get();
-        String kind = text(node, "kind");
-        if(!dslFolder.kind().equals(kind)) {
-            context.error(path, "kind 가 폴더와 맞지 않습니다. (기대값: " + dslFolder.kind() + ", 실제값: " + kind + ")");
-            return;
-        }
-
-        if(!checkId(path, dslFolder, id, node, context)) {
+        JsonNode node = readObject(path, content, context);
+        if(node == null || !checkKind(path, dslFolder.kind(), node, context) || !checkId(path, dslFolder, id, node, context)) {
             return;
         }
 
         Document document = new Document(path, dslFolder, id, node);
         context.documents.add(document);
         context.byFolder.computeIfAbsent(dslFolder, f -> new LinkedHashMap<>()).put(id, document);
+    }
+
+    private static JsonNode readObject(String path, String content, Context context) {
+        JsonNode node;
+        try {
+            node = DslJson.read(content);
+        }
+        catch (JsonProcessingException e) {
+            context.error(path, "JSON 형식이 올바르지 않습니다. " + e.getOriginalMessage());
+            return null;
+        }
+
+        if(node == null || !node.isObject()) {
+            context.error(path, "JSON 객체가 아닙니다.");
+            return null;
+        }
+        return node;
+    }
+
+    private static boolean checkKind(String path, String expected, JsonNode node, Context context) {
+        String kind = text(node, "kind");
+        if(!expected.equals(kind)) {
+            context.error(path, "kind 가 폴더와 맞지 않습니다. (기대값: " + expected + ", 실제값: " + kind + ")");
+            return false;
+        }
+        return true;
+    }
+
+    // 경로가 어느 폴더 아래인지로 맞는 위치를 알려준다
+    private static String expectedLocation(String relative) {
+        return Arrays.stream(DslFolder.values())
+                .filter(folder -> relative.startsWith(folder.path() + "/"))
+                .findFirst()
+                .map(folder -> {
+                    if(!folder.hasDirectory()) {
+                        return "(" + folder.path() + "/{ID}" + DslFolder.FILE_EXTENSION + " 이어야 합니다.)";
+                    }
+
+                    List<String> allowed = new ArrayList<>();
+                    allowed.add(folder.path() + "/{ID}/" + DslFolder.METADATA_FILE_NAME);
+                    if(folder.has(DslFolder.Part.SQL)) {
+                        allowed.add(folder.path() + "/{ID}/" + DslFolder.SQL_FILE_NAME);
+                    }
+                    if(folder.has(DslFolder.Part.ACTION)) {
+                        allowed.add(folder.path() + "/{ID}/" + DslFolder.ACTIONS_DIRECTORY + "/{actionName}/" + DslFolder.METADATA_FILE_NAME);
+                    }
+                    if(folder.has(DslFolder.Part.ACTION_SCRIPT)) {
+                        allowed.add(folder.path() + "/{ID}/" + DslFolder.ACTIONS_DIRECTORY + "/{actionName}/" + DslFolder.SCRIPT_FILE_NAME);
+                    }
+                    return "(" + String.join(", ", allowed) + " 중 하나여야 합니다.)";
+                })
+                .orElse("알 수 없는 DSL 폴더입니다. [" + relative + "]");
+    }
+
+    /**
+     * {ID}/ 폴더 안의 파일끼리 짝이 맞는지 본다.
+     * 쿼리는 metadata.json 과 query.sql 이 둘 다 있어야 하고, 화면 액션은 화면 metadata.json 이, 액션 script.js 는 액션 metadata.json 이 있어야 한다.
+     */
+    private void checkParts(String applicationId, Context context) {
+        Set<String> sqlIds = new HashSet<>();
+        Map<String, Map<String, String>> actionNames = new HashMap<>();
+
+        for(PartFile part : context.parts) {
+            DslFolder.Location location = part.location;
+            DslFolder folder = location.folder();
+            String id = location.id();
+
+            switch (location.part()) {
+                case SQL -> {
+                    sqlIds.add(folder + "\n" + id);
+                    if(!context.exists(folder, id)) {
+                        context.error(part.path, "짝이 되는 " + folder.kind() + " 파일이 없습니다. [" + folder.filePath(applicationId, id) + "]");
+                    }
+                }
+                case ACTION -> {
+                    if(!context.exists(folder, id)) {
+                        context.error(part.path, "액션이 속한 " + folder.kind() + " 파일이 없습니다. [" + folder.filePath(applicationId, id) + "]");
+                    }
+
+                    // 대소문자만 다른 액션 폴더는 윈도우/맥에서 같은 폴더로 겹친다
+                    String other = actionNames.computeIfAbsent(folder + "\n" + id, k -> new HashMap<>())
+                            .putIfAbsent(location.partName().toLowerCase(Locale.ROOT), location.partName());
+                    if(other != null) {
+                        context.error(part.path, "대소문자만 다른 actionName 이 있습니다. [" + other + ", " + location.partName() + "] 운영체제에 따라 같은 폴더로 겹칩니다.");
+                    }
+                }
+                case ACTION_SCRIPT -> {
+                    String actionPath = folder.actionFilePath(applicationId, id, location.partName());
+                    if(!context.partPaths.contains(actionPath)) {
+                        context.error(part.path, "스크립트가 속한 액션 파일이 없습니다. [" + actionPath + "]");
+                    }
+                }
+                default -> {
+                }
+            }
+        }
+
+        for(DslFolder folder : DslFolder.values()) {
+            if(!folder.has(DslFolder.Part.SQL)) {
+                continue;
+            }
+            context.byFolder.getOrDefault(folder, Map.of()).forEach((id, document) -> {
+                if(!sqlIds.contains(folder + "\n" + id)) {
+                    context.error(document.path, "SQL 파일이 없습니다. [" + folder.sqlFilePath(applicationId, id) + "]");
+                }
+            });
+        }
     }
 
     private boolean checkId(String path, DslFolder folder, String fileId, JsonNode node, Context context) {
@@ -119,24 +225,32 @@ public class DslValidator {
             return true;
         }
 
-        String id = text(node, folder.idField());
-        if(isBlank(id)) {
-            context.error(path, folder.idField() + " 값이 없습니다.");
+        return checkName(path, folder.idField(), fileId, text(node, folder.idField()), context);
+    }
+
+    /**
+     * 파일명(폴더명)이 되는 값을 검사한다.
+     * @param expected 경로에서 읽은 이름 (파일명, {ID}/ 폴더를 두면 폴더명)
+     * @param value JSON 에 적힌 값
+     */
+    private static boolean checkName(String path, String field, String expected, String value, Context context) {
+        if(isBlank(value)) {
+            context.error(path, field + " 값이 없습니다.");
             return false;
         }
 
-        if(!id.equals(fileId)) {
-            context.error(path, "파일명과 " + folder.idField() + " 가 다릅니다. (" + folder.idField() + ": " + id + ")");
+        if(!value.equals(expected)) {
+            context.error(path, (path.endsWith("/" + DslFolder.METADATA_FILE_NAME) ? "폴더명과 " : "파일명과 ") + field + " 가 다릅니다. (" + field + ": " + value + ")");
             return false;
         }
 
-        if(id.length() > MAX_ID_LENGTH) {
-            context.error(path, folder.idField() + " 는 " + MAX_ID_LENGTH + "자를 넘을 수 없습니다.");
+        if(value.length() > MAX_ID_LENGTH) {
+            context.error(path, field + " 는 " + MAX_ID_LENGTH + "자를 넘을 수 없습니다.");
             return false;
         }
 
-        if(UNSAFE_ID.matcher(id).find() || id.equals(".") || id.equals("..") || !id.equals(id.trim())) {
-            context.error(path, folder.idField() + " 에 파일명으로 쓸 수 없는 문자(\\ / : * ? \" < > | 앞뒤 공백 등)가 있습니다. [" + id + "]");
+        if(UNSAFE_ID.matcher(value).find() || value.equals(".") || value.equals("..") || !value.equals(value.trim())) {
+            context.error(path, field + " 에 파일명으로 쓸 수 없는 문자(\\ / : * ? \" < > | 앞뒤 공백 등)가 있습니다. [" + value + "]");
             return false;
         }
 
@@ -362,6 +476,9 @@ public class DslValidator {
         return value == null || value.isBlank();
     }
 
+    private record PartFile(String path, DslFolder.Location location) {
+    }
+
     private record Document(String path, DslFolder folder, String id, JsonNode node) {
     }
 
@@ -369,6 +486,10 @@ public class DslValidator {
         private final List<DslIssue> issues = new ArrayList<>();
         private final List<Document> documents = new ArrayList<>();
         private final Map<DslFolder, Map<String, Document>> byFolder = new EnumMap<>(DslFolder.class);
+        // {ID}/ 폴더 안의 SQL, 화면 액션, 액션 스크립트 파일
+        private final List<PartFile> parts = new ArrayList<>();
+        // 읽은 화면 액션 metadata.json 경로 (스크립트 짝 확인용)
+        private final Set<String> partPaths = new HashSet<>();
 
         boolean exists(DslFolder folder, String id) {
             return id != null && byFolder.getOrDefault(folder, Map.of()).containsKey(id);

@@ -198,7 +198,7 @@ public class DeployService {
     }
 
     /**
-     * 저장소의 {applicationId}/ 아래 .json 파일과 비교한다. 저장소에만 있는 파일은 메타데이터에서 지워진 것이므로 삭제로 본다.
+     * 저장소의 {applicationId}/ 아래 .json/.sql 파일과 비교한다. 저장소에만 있는 파일은 메타데이터에서 지워진 것이므로 삭제로 본다.
      *
      * @param withContent 화면에 보여줄 비교 내용(before)까지 내려받을지. 커밋할 때는 필요 없다
      */
@@ -207,7 +207,7 @@ public class DeployService {
         if(commitSha != null) {
             String prefix = applicationId + "/";
             gitHubClient.getTreeFiles(target, gitHubClient.getCommitTreeSha(target, commitSha)).stream()
-                    .filter(entry -> entry.path().startsWith(prefix) && entry.path().endsWith(DslFolder.FILE_EXTENSION))
+                    .filter(entry -> entry.path().startsWith(prefix) && DslFolder.isDslFile(entry.path()))
                     .forEach(entry -> remoteShas.put(entry.path(), entry.sha()));
         }
 
@@ -230,7 +230,7 @@ public class DeployService {
         remoteShas.forEach((path, sha) -> {
             if(!localPaths.contains(path)) {
                 String before = withContent ? gitHubClient.getBlobText(target, sha) : null;
-                changes.add(new DeployChange(path, kindOf(applicationId, path), idOf(path), DeployChange.Status.DELETED, before, null));
+                changes.add(new DeployChange(path, kindOf(applicationId, path), idOf(applicationId, path), DeployChange.Status.DELETED, before, null));
             }
         });
 
@@ -298,16 +298,27 @@ public class DeployService {
         }
     }
 
-    // 저장소에만 남은 파일의 종류. 알 수 없는 폴더면 null
+    // 저장소에만 남은 파일의 종류. 지금 규칙의 위치가 아니면(예: 예전 workflow/query/Q001.json) 바로 위 폴더로 찾고, 그래도 모르면 null
     private static String kindOf(String applicationId, String path) {
-        String relative = path.substring(applicationId.length() + 1);
-        int slash = relative.lastIndexOf('/');
-        return DslFolder.ofPath(slash < 0 ? "" : relative.substring(0, slash)).map(DslFolder::kind).orElse(null);
+        return DslFolder.locate(applicationId, path)
+                .map(location -> location.folder().kind())
+                .orElseGet(() -> {
+                    String relative = path.substring(applicationId.length() + 1);
+                    int slash = relative.lastIndexOf('/');
+                    return DslFolder.ofPath(slash < 0 ? "" : relative.substring(0, slash)).map(DslFolder::kind).orElse(null);
+                });
     }
 
-    private static String idOf(String path) {
+    // 쿼리(workflow/query/{ID}/metadata.json)는 폴더명이 ID 다
+    private static String idOf(String applicationId, String path) {
+        Optional<DslFolder.Location> location = DslFolder.locate(applicationId, path);
+        if(location.isPresent()) {
+            return location.get().id();
+        }
+
         String name = path.substring(path.lastIndexOf('/') + 1);
-        return name.substring(0, name.length() - DslFolder.FILE_EXTENSION.length());
+        int dot = name.lastIndexOf('.');
+        return dot < 0 ? name : name.substring(0, dot);
     }
 
     private static int count(List<DeployChange> changes, DeployChange.Status status) {

@@ -20,7 +20,7 @@
         align-items: center;
         justify-content: space-between;
         gap: 10px;
-        padding: 12px 16px;
+        padding: 12wpx 16px;
         background: #fbfbfc;
         border-bottom: 1px solid #eef0f2;
         flex-wrap: wrap;
@@ -317,6 +317,20 @@
         font-size: 12.5px;
     }
 
+    #deploy-app .dp-subfolder {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px 4px 26px;
+        font-size: 12px;
+        color: #6b7280;
+        border-bottom: 1px solid #f6f7f8;
+    }
+
+    #deploy-app .dp-subfolder i {
+        color: #f59e0b;
+    }
+
     #deploy-app .dp-item:hover {
         background: #fafbfc;
     }
@@ -602,10 +616,37 @@
     }
 
     // {applicationId}/workflow/workflow/W001.json -> workflow/workflow
+    // {applicationId}/workflow/query/Q001/query.sql -> workflow/query (쿼리, 화면은 메타데이터마다 하위 폴더가 있다)
     function folderOf(path) {
         const relative = path.substring(path.indexOf('/') + 1);
+        const folder = DSL_FOLDERS.find(f => relative.startsWith(f + '/'));
+        if(folder) return folder;
+
         const slash = relative.lastIndexOf('/');
         return slash < 0 ? '' : relative.substring(0, slash);
+    }
+
+    // DSL 폴더 아래의 하위 폴더들 (view/view-object/V001/actions/save/script.js -> ['V001', 'actions', 'save']). 없으면 []
+    function subFoldersOf(path) {
+        const relative = path.substring(path.indexOf('/') + 1);
+        const names = relative.substring(folderOf(path).length + 1).split('/');
+        return names.slice(0, -1);
+    }
+
+    // 같은 폴더 안에서는 파일을 하위 폴더보다 먼저 보여준다 (V001/metadata.json 다음에 V001/actions/...)
+    function compareTreePath(a, b) {
+        const as = a.split('/'), bs = b.split('/');
+        for(let i = 0; i < Math.min(as.length, bs.length); i++) {
+            const aFile = i === as.length - 1, bFile = i === bs.length - 1;
+            if(aFile !== bFile) return aFile ? -1 : 1;
+            if(as[i] !== bs[i]) return as[i] < bs[i] ? -1 : 1;
+        }
+        return as.length - bs.length;
+    }
+
+    // 하위 폴더 깊이만큼 들여쓴다
+    function treeIndent(depth) {
+        return `${26 + depth * 18}px`;
     }
 
     function fileNameOf(path) {
@@ -650,8 +691,21 @@
 
             if(collapsed) continue;
 
-            for(const file of folderFiles) {
-                appendDslItem($list, file, issueLevels);
+            // 하위 폴더가 바뀌는 곳마다 새로 들어간 폴더 줄을 넣는다
+            let previous = [];
+            for(const file of [...folderFiles].sort((a, b) => compareTreePath(a.path, b.path))) {
+                const subFolders = subFoldersOf(file.path);
+                let same = 0;
+                while(same < previous.length && same < subFolders.length && previous[same] === subFolders[same]) same++;
+
+                for(let depth = same; depth < subFolders.length; depth++) {
+                    const $sub = $('<div class="dp-subfolder"><i class="far fa-folder-open"></i><span></span></div>')
+                        .css('padding-left', treeIndent(depth));
+                    $sub.find('span').text(`${subFolders[depth]}/`);
+                    $list.append($sub);
+                }
+                previous = subFolders;
+                appendDslItem($list, file, issueLevels, subFolders.length);
             }
         }
     }
@@ -673,9 +727,11 @@
         renderDslList($('#dslSearch').val());
     }
 
-    function appendDslItem($list, file, issueLevels) {
+    // depth : 파일이 들어있는 하위 폴더 깊이 (DSL 폴더 바로 아래면 0)
+    function appendDslItem($list, file, issueLevels, depth) {
         const $item = $('<div class="dp-item"><i class="far fa-file-code"></i><span class="dp-item-name"></span></div>')
-            .attr('data-path', file.path);
+            .attr('data-path', file.path)
+            .css('padding-left', treeIndent(depth || 0));
         $item.find('.dp-item-name').text(fileNameOf(file.path)).attr('title', file.path);
         appendIssueBadge($item, issueLevels[file.path]);
 
