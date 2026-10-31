@@ -9,45 +9,53 @@ class ComponentPanel {
 
         let $listWrap = $(`<div class="vb-component-list"></div>`);
 
-        let $layoutEl = this.category('레이아웃', true, 'fas fa-th-large');
-        this.item($layoutEl, 'row', 'Row', 'fas fa-grip-lines', '가로로 나열되는 행(Row) 컨테이너');
-        this.item($layoutEl, 'col', 'Col', 'fas fa-grip-lines-vertical', 'Row 안에서 폭을 나누는 열(Col) 컨테이너');
-        $listWrap.append($layoutEl);
-
-        let $containerEl = this.category('컨테이너', true, 'fas fa-square');
-        this.item($containerEl, 'card', 'Card', 'fas fa-window-maximize', '제목과 내용 영역을 가진 카드');
-        this.item($containerEl, 'form', 'Form', 'fas fa-clipboard-list', '입력 요소를 하나로 묶는 폼 영역');
-        $listWrap.append($containerEl);
-
-        let $sheetEl = this.category('데이터 그리드', true, 'fas fa-table');
-        this.item($sheetEl, 'sheet', 'Sheet', 'fas fa-table', '행/열 데이터를 표로 보여주는 그리드');
-        //this.item($sheetEl, 'grid', 'jsGrid', 'fas fa-table');
-        $listWrap.append($sheetEl);
-
-        let $chartEl = this.category('차트', true, 'fas fa-chart-bar');
-        this.item($chartEl, 'barline-chart', 'Bar/Line', 'fas fa-chart-bar', '막대/선 그래프 차트');
-        this.item($chartEl, 'pie-chart', 'Pie', 'fas fa-chart-pie', '원형(파이/도넛) 차트');
-        $listWrap.append($chartEl);
-
-        let $buttonEl = this.category('버튼', true, 'far fa-hand-pointer');
-        this.item($buttonEl, 'button', 'Button', 'far fa-hand-pointer', '클릭 가능한 버튼');
-        $listWrap.append($buttonEl);
-
-        let $inputEl = this.category('폼 입력 요소', true, 'fas fa-keyboard');
-        this.item($inputEl, 'input', 'Input', 'fas fa-i-cursor', '한 줄 텍스트 입력창');
-        this.item($inputEl, 'select', 'Select', 'fas fa-caret-square-down', '드롭다운 선택 목록');
-        this.item($inputEl, 'date-input', 'Date', 'far fa-calendar-alt', '달력에서 고르는 날짜 입력창');
-        this.item($inputEl, 'textarea', 'TextArea', 'fas fa-align-left', '여러 줄 텍스트 입력창');
-        this.item($inputEl, 'checkbox', 'Checkbox', 'far fa-check-square', '단일 체크박스');
-        this.item($inputEl, 'radio', 'Radio', 'far fa-dot-circle', '항목을 직접 지정하는 라디오 버튼 그룹');
-        this.item($inputEl, 'toggle', 'Toggle', 'fas fa-toggle-on', '스위치 모양의 on/off 입력');
-        $listWrap.append($inputEl);
-
-        let $etcEl = this.category('기타', true, 'fas fa-ellipsis-h');
-        this.item($etcEl, 'custom-html', 'Html', 'fas fa-code', '직접 작성하는 HTML 영역');
-        $listWrap.append($etcEl);
+        for (const category of ComponentPanel.catalog()) {
+            const $categoryEl = this.category(category.name, true, category.icon);
+            for (const item of category.items) {
+                this.item($categoryEl, item.id, item.label, item.icon, item.description);
+            }
+            $listWrap.append($categoryEl);
+        }
 
         $panel.append($listWrap);
+    }
+
+    // 팔레트에 보이는 컴포넌트 목록. 좌측 팔레트와 옵션패널의 "컴포넌트 추가" 모달
+    // (ComponentPicker)이 같은 목록을 쓰도록 한 곳에 둔다.
+    static catalog() {
+        return [
+            {name: '레이아웃', icon: 'fas fa-th-large', items: [
+                {id: 'row', label: 'Row', icon: 'fas fa-grip-lines', description: '가로로 나열되는 행(Row) 컨테이너'},
+                {id: 'col', label: 'Col', icon: 'fas fa-grip-lines-vertical', description: 'Row 안에서 폭을 나누는 열(Col) 컨테이너'}
+            ]},
+            {name: '컨테이너', icon: 'fas fa-square', items: [
+                {id: 'card', label: 'Card', icon: 'fas fa-window-maximize', description: '제목과 내용 영역을 가진 카드'},
+                {id: 'form', label: 'Form', icon: 'fas fa-clipboard-list', description: '입력 요소를 하나로 묶는 폼 영역'}
+            ]},
+            {name: '데이터 그리드', icon: 'fas fa-table', items: [
+                {id: 'sheet', label: 'Sheet', icon: 'fas fa-table', description: '행/열 데이터를 표로 보여주는 그리드'}
+                //{id: 'grid', label: 'jsGrid', icon: 'fas fa-table'}
+            ]},
+            {name: '차트', icon: 'fas fa-chart-bar', items: [
+                {id: 'barline-chart', label: 'Bar/Line', icon: 'fas fa-chart-bar', description: '막대/선 그래프 차트'},
+                {id: 'pie-chart', label: 'Pie', icon: 'fas fa-chart-pie', description: '원형(파이/도넛) 차트'}
+            ]},
+            {name: '버튼', icon: 'far fa-hand-pointer', items: [
+                {id: 'button', label: 'Button', icon: 'far fa-hand-pointer', description: '클릭 가능한 버튼'}
+            ]},
+            {name: '폼 입력 요소', icon: 'fas fa-keyboard', items: [
+                {id: 'input', label: 'Input', icon: 'fas fa-i-cursor', description: '한 줄 텍스트 입력창'},
+                {id: 'select', label: 'Select', icon: 'fas fa-caret-square-down', description: '드롭다운 선택 목록'},
+                {id: 'date-input', label: 'Date', icon: 'far fa-calendar-alt', description: '달력에서 고르는 날짜 입력창'},
+                {id: 'textarea', label: 'TextArea', icon: 'fas fa-align-left', description: '여러 줄 텍스트 입력창'},
+                {id: 'checkbox', label: 'Checkbox', icon: 'far fa-check-square', description: '단일 체크박스'},
+                {id: 'radio', label: 'Radio', icon: 'far fa-dot-circle', description: '항목을 직접 지정하는 라디오 버튼 그룹'},
+                {id: 'toggle', label: 'Toggle', icon: 'fas fa-toggle-on', description: '스위치 모양의 on/off 입력'}
+            ]},
+            {name: '기타', icon: 'fas fa-ellipsis-h', items: [
+                {id: 'custom-html', label: 'Html', icon: 'fas fa-code', description: '직접 작성하는 HTML 영역'}
+            ]}
+        ];
     }
 
     /* ================= 검색 + 전체 펼치기/접기 ================= */

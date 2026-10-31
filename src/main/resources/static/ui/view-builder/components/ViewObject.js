@@ -184,11 +184,86 @@ class ViewObject {
         this.optionPanel.init(this._componentId, []);
 
         this.optionPanelView($panel, options);
+        this.childComponentAddView($el, $panel);
         this.optionPanel.groupSections($panel);
 
         this.optionPanelScript($el, options);
 
         this.optionPanelEvent($el, options, componentFactory);
+        this.childComponentAddEvent($el, componentFactory);
+    }
+
+    /* ---------------------------------------
+     * 하위 컴포넌트 추가 (드래그 앤 드롭 대신 버튼 + 선택 모달)
+     * --------------------------------------- */
+
+    // 이 컴포넌트 안에 넣을 수 있는 팔레트 컴포넌트와, 각각이 들어갈 영역.
+    // 드롭 규칙(container()의 put)과 같은 기준으로 componentContainerConfig()의
+    // allowedComponentIds를 따르고, 한 타입이 여러 영역에 들어갈 수 있으면 앞 영역이 우선이다.
+    // 팔레트에 없는 내부용 컴포넌트(card-body 등)는 각 컴포넌트의 전용 버튼으로 추가하므로 뺀다.
+    addableChildComponents($el) {
+        const targets = {};
+
+        // ComponentPanel은 빌더에서만 로드된다(런타임 화면에서는 옵션패널 자체가 없다).
+        if (typeof ComponentPanel === 'undefined') {
+            return targets;
+        }
+
+        const containerConfig = this.componentContainerConfig($el) || [];
+
+        for (const category of ComponentPanel.catalog()) {
+            for (const item of category.items) {
+                const config = containerConfig.find(c =>
+                    !c.allowedComponentIds || c.allowedComponentIds.includes(item.id));
+
+                if (config) {
+                    targets[item.id] = config.element;
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    childComponentAddView($el, $panel) {
+        if (Object.keys(this.addableChildComponents($el)).length === 0) {
+            return;
+        }
+
+        // 다른 필드가 섹션 카드로 묶이는 컴포넌트면 같은 모양의 섹션으로 붙인다.
+        if ($panel.children('.vb-opt-section-title').length > 0) {
+            $panel.append(this.optionPanel.sectionTitle('하위 컴포넌트'));
+        }
+
+        $panel.append(this.optionPanel.button('child-component-add', {
+            label: '하위 컴포넌트', size: 'col-12', btnLabel: '컴포넌트 추가', icon: 'fas fa-plus'
+        }));
+    }
+
+    childComponentAddEvent($el, componentFactory) {
+        this.optionPanel.clickEvent('child-component-add', (e) => {
+            if (!window.VB || !VB.componentPicker) {
+                return;
+            }
+
+            // 모달이 떠 있는 동안엔 다른 컴포넌트를 고를 수 없으니, 지금 시점의 영역을 그대로 쓴다.
+            const targets = this.addableChildComponents($el);
+
+            VB.componentPicker.open(Object.keys(targets), (type) => {
+                const $target = targets[type];
+                if (!$target || !$target.length || !componentFactory[type]) {
+                    return;
+                }
+
+                this.addComponentByType(componentFactory, type, $target);
+
+                // 추가된 컴포넌트가 화면 밖이면 보이는 곳까지 스크롤한다.
+                const added = $target.children('.component').last()[0];
+                if (added && added.scrollIntoView) {
+                    added.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+                }
+            });
+        });
     }
 
     optionPanelView($panel, options) {}

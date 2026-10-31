@@ -258,6 +258,18 @@
     #applicationCreateModal .ds-path-preview strong {
         color: #1d4ed8;
     }
+
+    /* 모바일에서는 버튼을 아이콘만 보여 한 줄에 들어가게 한다(글자는 title 툴팁으로 남는다).
+       생성 모달 안의 취소/생성 버튼은 공간이 충분해 그대로 둔다. */
+    @media (max-width: 767.98px) {
+        #application-manage-app .ds-btn {
+            padding: 6px 10px;
+        }
+
+        #application-manage-app .ds-btn span {
+            display: none;
+        }
+    }
 </style>
 <script th:fragment="script">
     // 서버(ApplicationIdPolicy)의 검증 규칙과 동일하게 유지. 예약 경로는 저장 시 서버가 검사한다
@@ -307,7 +319,7 @@
             .toggleClass('full', !OWNED.creatable);
         $("#openCreateModalBtn")
             .prop('disabled', !OWNED.creatable)
-            .attr('title', OWNED.creatable ? '' : notCreatableMessage());
+            .attr('title', OWNED.creatable ? '애플리케이션 생성' : notCreatableMessage());
 
         const $body = $("#ownedListBody");
         $body.empty();
@@ -335,8 +347,8 @@
                         <span class="ds-list-item-desc"></span>
                     </div>
                     <div class="ds-list-item-actions">
-                        <button type="button" class="ds-btn" data-action="app"><i class="fas fa-external-link-alt"></i>애플리케이션 접속</button>
-                        <button type="button" class="ds-btn ds-btn-primary" data-action="console"><i class="fas fa-tools"></i>콘솔 접속</button>
+                        <button type="button" class="ds-btn" data-action="app" title="애플리케이션 접속"><i class="fas fa-external-link-alt"></i><span>애플리케이션 접속</span></button>
+                        <button type="button" class="ds-btn ds-btn-primary" data-action="console" title="콘솔 접속"><i class="fas fa-tools"></i><span>콘솔 접속</span></button>
                     </div>
                 </div>
             `);
@@ -446,8 +458,8 @@
         <div class="ds-panel-header">
             <h3><i class="fas fa-th-large"></i> 내 애플리케이션 <span class="ds-count" id="ownedCount">0 / 0</span></h3>
             <div class="ds-panel-tools">
-                <button type="button" class="ds-btn" onclick="getList()"><i class="fas fa-sync-alt"></i>새로고침</button>
-                <button type="button" class="ds-btn ds-btn-primary" id="openCreateModalBtn" onclick="openCreateModal()" disabled><i class="fas fa-plus"></i>애플리케이션 생성</button>
+                <button type="button" class="ds-btn" onclick="getList()" title="새로고침"><i class="fas fa-sync-alt"></i><span>새로고침</span></button>
+                <button type="button" class="ds-btn ds-btn-primary" id="openCreateModalBtn" onclick="openCreateModal()" title="애플리케이션 생성" disabled><i class="fas fa-plus"></i><span>애플리케이션 생성</span></button>
             </div>
         </div>
         <div id="ownedListBody"></div>

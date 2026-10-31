@@ -27,6 +27,9 @@ $(function () {
             const componentPanel = new ComponentPanel();
             componentPanel.init('component-panel');
 
+            // 옵션패널의 "컴포넌트 추가" 버튼이 여는 컴포넌트 선택 모달 (ViewObject.initOptionPanel)
+            window.VB.componentPicker = new ComponentPicker();
+
             ViewManager.init('layout');
 
             window.VB.builder = new ViewBuilder('canvas', VB.actionsFactory, VB.componentFactory, VB.dropComponent, VB.viewDataLoader);
@@ -42,6 +45,7 @@ $(document).on("click", ".vb-item", function(e) {
     const $el = $(this);
     const type = $el.data("type");
 
+    // 옵션패널을 여닫는 건 상단바 버튼(view-builder.html toggleOptionPanel)이 맡는다.
     VB.builder.setOptionPanel($el, type);
 });
 
@@ -49,8 +53,15 @@ $(document).on("click", ".vb-item", function(e) {
 $(document).on("click", ".component-delete-btn", function(e) {
     e.stopPropagation();
 
-    VB.builder.clearOptionPanel($("#options"))
     $(this).closest(".component").remove();
+
+    // 옵션 내용만 비우고 안내문구로 되돌린다 (패널 열림 상태는 유지)
+    if(typeof window.resetOptionPanel === 'function') {
+        window.resetOptionPanel();
+    }
+    else {
+        VB.builder.clearOptionPanel($("#options"));
+    }
 });
 
 // 컴포넌트 선택 영역

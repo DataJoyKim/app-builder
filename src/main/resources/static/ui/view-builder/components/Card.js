@@ -118,6 +118,12 @@ class Card extends ViewObject {
         ];
     }
 
+    // Card는 헤더 버튼/컨텐츠 영역 추가를 전용 버튼으로 이미 제공하고, 헤더를 끄면 헤더 영역
+    // (card-tools)이 숨겨져 거기 넣은 컴포넌트가 안 보이므로 공통 "컴포넌트 추가"는 붙이지 않는다.
+    addableChildComponents($el) {
+        return {};
+    }
+
     afterAddComponent(componentFactory, $el, $componentEl) {
         super.addComponentByType(componentFactory, 'card-body', this.getElement($componentEl).cardEl);
     }

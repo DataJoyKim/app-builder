@@ -52,7 +52,8 @@ class ModuleLoader {
             `${configs.paths.runtime}/View.js`,
             `${configs.paths.builder}/DropComponent.js`,
             `${configs.paths.builder}/OptionPanel.js`,
-            `${configs.paths.builder}/ComponentPanel.js`
+            `${configs.paths.builder}/ComponentPanel.js`,
+            `${configs.paths.builder}/ComponentPicker.js`
         ];
 
         const builderModule = [
