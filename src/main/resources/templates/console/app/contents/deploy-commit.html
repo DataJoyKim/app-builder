@@ -348,6 +348,27 @@
         white-space: nowrap;
     }
 
+    #deploy-app .dp-item .dp-check {
+        flex: 0 0 auto;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    #deploy-app .dp-item.unchecked .dp-item-name {
+        color: #9199a3;
+    }
+
+    #deploy-app .dp-check-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 400;
+        color: #6b7280;
+        cursor: pointer;
+    }
+
     #deploy-app .dp-item i.fa-file-code {
         color: #9199a3;
     }
@@ -523,6 +544,8 @@
     const COLLAPSED_FOLDERS = new Set();
     let COMPARE_RESULT = null;
     let SELECTED_CHANGE_PATH = null;
+    // 커밋할 파일 (DeployChange.path). 비교할 때마다 전부 선택된 상태로 시작한다
+    const CHECKED_CHANGE_PATHS = new Set();
 
     $(document).ready(function() {
         renderCompare();
@@ -774,6 +797,7 @@
             function(response) {
                 COMPARE_RESULT = response;
                 SELECTED_CHANGE_PATH = null;
+                resetCheckedChanges();
                 $('#commitResult').hide();
                 renderCompare();
                 showTab('compare');
@@ -791,7 +815,7 @@
             $list.append(emptyBox('비교 결과가 없습니다.'));
             renderIssues('#compareIssues', '#compareIssueCount', [], selectChange);
             renderEmptyViewer('#diffViewer', '#diffViewerPath', '왼쪽에서 변경된 파일을 선택하세요.');
-            updateCommitButton();
+            renderCheckedChanges();
             return;
         }
 
@@ -815,8 +839,12 @@
         const statusLabel = { ADDED: '추가', MODIFIED: '수정', DELETED: '삭제' };
 
         for(const change of changes) {
-            const $item = $('<div class="dp-item"><span class="dp-badge"></span><span class="dp-item-name"></span></div>')
+            const $item = $('<div class="dp-item"><input type="checkbox" class="dp-check"><span class="dp-badge"></span><span class="dp-item-name"></span></div>')
                 .attr('data-path', change.path);
+            $item.find('.dp-check')
+                .attr('title', '커밋에 포함')
+                .on('click', event => event.stopPropagation())
+                .on('change', event => checkChange(change, event.target.checked));
             $item.find('.dp-badge').addClass(`dp-badge-${change.status.toLowerCase()}`).text(statusLabel[change.status]);
             $item.find('.dp-item-name').text(change.path.substring(change.path.indexOf('/') + 1)).attr('title', change.path);
             appendIssueBadge($item, issueLevels[change.path]);
@@ -835,6 +863,57 @@
         else {
             renderEmptyViewer('#diffViewer', '#diffViewerPath', changes.length ? '왼쪽에서 변경된 파일을 선택하세요.' : '변경사항이 없습니다.');
         }
+
+        renderCheckedChanges();
+    }
+
+    // ---- 커밋할 파일 선택 ----
+
+    // 함께 커밋해야 하는 파일 묶음 (서버 DeployService.groupOf 와 같은 규칙).
+    // 메타데이터 하나에 딸린 파일(metadata.json 과 query.sql/script.js, 화면 액션...)은 kind+ID 가 같아 같이 골라지고 같이 풀린다
+    function changeGroupOf(change) {
+        return change.kind && change.id ? `${change.kind}\n${change.id}` : `path:${change.path}`;
+    }
+
+    function resetCheckedChanges() {
+        CHECKED_CHANGE_PATHS.clear();
+        ((COMPARE_RESULT && COMPARE_RESULT.changes) || []).forEach(change => CHECKED_CHANGE_PATHS.add(change.path));
+    }
+
+    function checkChange(change, checked) {
+        const group = changeGroupOf(change);
+        (COMPARE_RESULT.changes || [])
+            .filter(c => changeGroupOf(c) === group)
+            .forEach(c => checked ? CHECKED_CHANGE_PATHS.add(c.path) : CHECKED_CHANGE_PATHS.delete(c.path));
+        renderCheckedChanges();
+    }
+
+    function checkAllChanges(checked) {
+        if(checked) resetCheckedChanges();
+        else CHECKED_CHANGE_PATHS.clear();
+        renderCheckedChanges();
+    }
+
+    function checkedChanges() {
+        return ((COMPARE_RESULT && COMPARE_RESULT.changes) || []).filter(change => CHECKED_CHANGE_PATHS.has(change.path));
+    }
+
+    // 체크박스, 전체 선택, 선택 개수, 커밋 버튼을 선택 상태에 맞춘다
+    function renderCheckedChanges() {
+        const total = ((COMPARE_RESULT && COMPARE_RESULT.changes) || []).length;
+        const checked = checkedChanges().length;
+
+        $('#changeList .dp-item').each(function() {
+            const on = CHECKED_CHANGE_PATHS.has($(this).attr('data-path'));
+            $(this).find('.dp-check').prop('checked', on);
+            $(this).toggleClass('unchecked', !on);
+        });
+
+        $('#changeCheckAll')
+            .prop('disabled', total === 0)
+            .prop('checked', total > 0 && checked === total)
+            .prop('indeterminate', checked > 0 && checked < total);
+        $('#changeSelectedCount').text(total ? `${checked} / ${total}` : '').toggle(total > 0);
 
         updateCommitButton();
     }
@@ -857,7 +936,8 @@
     }
 
     function updateCommitButton() {
-        const enabled = !!(SETTING && SETTING.configured && COMPARE_RESULT && COMPARE_RESULT.committable);
+        const checked = checkedChanges().length;
+        const enabled = !!(SETTING && SETTING.configured && COMPARE_RESULT && COMPARE_RESULT.committable && checked > 0);
         $('#btnCommit').prop('disabled', !enabled);
 
         let hint = '';
@@ -865,6 +945,8 @@
         else if(!COMPARE_RESULT) hint = '먼저 저장소와 비교해주세요.';
         else if((COMPARE_RESULT.issues || []).some(i => i.level === 'ERROR')) hint = '검증 오류를 고친 뒤 다시 비교해주세요.';
         else if((COMPARE_RESULT.changes || []).length === 0) hint = '커밋할 변경사항이 없습니다.';
+        else if(checked === 0) hint = '커밋할 파일을 선택해주세요.';
+        else hint = `선택한 ${checked}개 파일을 커밋합니다.`;
         $('#commitHint').text(hint);
     }
 
@@ -874,9 +956,14 @@
             alert('커밋 메시지를 입력해주세요.');
             return;
         }
-        if(!confirm(`${(COMPARE_RESULT.changes || []).length}개 파일을 ${COMPARE_RESULT.branch} 브랜치에 커밋하고 push 하시겠습니까?`)) return;
+        const paths = checkedChanges().map(change => change.path);
+        if(paths.length === 0) {
+            alert('커밋할 파일을 선택해주세요.');
+            return;
+        }
+        if(!confirm(`선택한 ${paths.length}개 파일을 ${COMPARE_RESULT.branch} 브랜치에 커밋하고 push 하시겠습니까?`)) return;
 
-        httpClient.post(`${DEPLOY_API}/commit`, {}, { message: message, baseCommitSha: COMPARE_RESULT.baseCommitSha },
+        httpClient.post(`${DEPLOY_API}/commit`, {}, { message: message, baseCommitSha: COMPARE_RESULT.baseCommitSha, paths: paths },
             function(response) {
                 const $result = $('#commitResult').empty();
                 $result.append($('<i class="fas fa-check-circle"></i> '));
@@ -892,6 +979,7 @@
                     function(compared) {
                         COMPARE_RESULT = compared;
                         SELECTED_CHANGE_PATH = null;
+                        resetCheckedChanges();
                         renderCompare();
                     },
                     alertError
@@ -1159,7 +1247,10 @@
         <div class="dp-split">
             <aside class="dp-panel dp-side">
                 <div class="dp-panel-header">
-                    <h3><i class="fas fa-list"></i> 변경된 파일</h3>
+                    <h3><i class="fas fa-list"></i> 변경된 파일 <span class="dp-badge" id="changeSelectedCount"></span></h3>
+                    <div class="dp-tools">
+                        <label class="dp-check-all" title="커밋할 파일 전체 선택/해제"><input type="checkbox" id="changeCheckAll" onchange="checkAllChanges(this.checked)">전체</label>
+                    </div>
                 </div>
                 <div class="dp-list" id="changeList"></div>
             </aside>

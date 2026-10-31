@@ -60,17 +60,17 @@ class DslValidatorTest {
     @Test
     void 파일명과_ID가_다르거나_kind가_틀리면_오류다() {
         Map<String, String> files = new LinkedHashMap<>();
-        Map<String, Object> company = DslJson.document(DslFolder.COMPANY);
-        company.put("companyCode", "OTHER");
-        company.put("companyName", "회사");
-        files.put(DslFolder.COMPANY.filePath(APP, "C001"), DslJson.write(company));
+        Map<String, Object> company = DslJson.document(DslFolder.COMMON_CODE);
+        company.put("code", "OTHER");
+        company.put("name", "회사");
+        files.put(DslFolder.COMMON_CODE.filePath(APP, "C001"), DslJson.write(company));
 
         Map<String, Object> wrongKind = DslJson.document(DslFolder.MENU);
-        wrongKind.put("companyCode", "C002");
-        files.put(DslFolder.COMPANY.filePath(APP, "C002"), DslJson.write(wrongKind));
+        wrongKind.put("code", "C002");
+        files.put(DslFolder.COMMON_CODE.filePath(APP, "C002"), DslJson.write(wrongKind));
 
         files.put(APP + "/unknown/X.json", "{}");
-        files.put(DslFolder.COMPANY.filePath(APP, "C003"), "{ broken");
+        files.put(DslFolder.COMMON_CODE.filePath(APP, "C003"), "{ broken");
 
         List<DslIssue> issues = validator.validate(APP, files);
 
@@ -81,8 +81,8 @@ class DslValidatorTest {
     @Test
     void 대소문자만_다른_ID는_오류다() {
         Map<String, String> files = new LinkedHashMap<>();
-        put(files, DslFolder.COMPANY, "abc", Map.of("companyName", "a"));
-        put(files, DslFolder.COMPANY, "ABC", Map.of("companyName", "b"));
+        put(files, DslFolder.COMMON_CODE, "abc", Map.of("name", "a"));
+        put(files, DslFolder.COMMON_CODE, "ABC", Map.of("name", "b"));
 
         assertEquals(1, errors(validator.validate(APP, files)).size());
     }
@@ -132,14 +132,14 @@ class DslValidatorTest {
 
     @Test
     void DSL_JSON은_줄바꿈이_LF로_고정되고_git_blob_SHA를_계산한다() {
-        Map<String, Object> document = DslJson.document(DslFolder.COMPANY);
-        document.put("companyCode", "C001");
+        Map<String, Object> document = DslJson.document(DslFolder.COMMON_CODE);
+        document.put("code", "C001");
         document.put("items", List.of());
 
         String json = DslJson.write(document);
 
         assertFalse(json.contains("\r"));
-        assertTrue(json.startsWith("{\n  \"kind\": \"Company\",\n  \"version\": 1,\n"), json);
+        assertTrue(json.startsWith("{\n  \"kind\": \"CommonCodeKind\",\n  \"version\": 1,\n"), json);
         assertTrue(json.endsWith("}\n"));
         // git hash-object 로 확인한 값: printf 'hello\n' | git hash-object --stdin
         assertEquals("ce013625030ba8dba906f756967f9e9ca394464a", DslFile.gitBlobSha("hello\n"));
@@ -171,7 +171,7 @@ class DslValidatorTest {
         // query.sql 이 아닌 이름
         files.put(APP + "/workflow/query/Q004/Q004.sql", "select 4");
         // sql 은 쿼리 폴더에만 둘 수 있다
-        files.put(APP + "/security/company/C001.sql", "select 5");
+        files.put(APP + "/setting/common-code/C001.sql", "select 5");
 
         List<DslIssue> issues = validator.validate(APP, files);
         List<String> paths = issues.stream().map(DslIssue::path).toList();
@@ -183,7 +183,38 @@ class DslValidatorTest {
                 DslFolder.QUERY.sqlFilePath(APP, "Q002"),
                 APP + "/workflow/query/Q003.json",
                 APP + "/workflow/query/Q004/Q004.sql",
-                APP + "/security/company/C001.sql")), issues.toString());
+                APP + "/setting/common-code/C001.sql")), issues.toString());
+    }
+
+    @Test
+    void 메시지_프로세서는_프로세서명_폴더에_json과_script가_짝으로_있어야_한다() {
+        Map<String, String> files = new LinkedHashMap<>();
+        // 짝이 맞다
+        put(files, DslFolder.MESSAGE_PROCESSOR, "P001", Map.of("displayName", "정상"));
+        // json 만 있고 script 가 없다
+        Map<String, Object> processor = DslJson.document(DslFolder.MESSAGE_PROCESSOR);
+        processor.put("processorName", "P002");
+        processor.put("displayName", "스크립트 없음");
+        files.put(DslFolder.MESSAGE_PROCESSOR.filePath(APP, "P002"), DslJson.write(processor));
+        // script 만 있고 json 이 없다
+        files.put(DslFolder.MESSAGE_PROCESSOR.scriptFilePath(APP, "P003"), "return params;");
+        // 예전 위치(폴더 없이 바로 {processorName}.json)
+        files.put(APP + "/workflow/message/P004.json", "{}");
+
+        List<DslIssue> issues = validator.validate(APP, files);
+        List<String> paths = issues.stream().map(DslIssue::path).toList();
+
+        assertEquals(3, issues.size(), issues.toString());
+        assertTrue(issues.stream().allMatch(DslIssue::isError));
+        assertTrue(paths.containsAll(List.of(
+                DslFolder.MESSAGE_PROCESSOR.filePath(APP, "P002"),
+                DslFolder.MESSAGE_PROCESSOR.scriptFilePath(APP, "P003"),
+                APP + "/workflow/message/P004.json")), issues.toString());
+
+        assertEquals(APP + "/workflow/message/P001/metadata.json", DslFolder.MESSAGE_PROCESSOR.filePath(APP, "P001"));
+        assertEquals(APP + "/workflow/message/P001/script.js", DslFolder.MESSAGE_PROCESSOR.scriptFilePath(APP, "P001"));
+        // 쿼리 폴더에는 script.js 를 둘 수 없다
+        assertTrue(DslFolder.locate(APP, APP + "/workflow/query/Q001/script.js").isEmpty());
     }
 
     @Test
@@ -272,6 +303,9 @@ class DslValidatorTest {
         files.put(folder.filePath(APP, id), DslJson.write(document));
         if(folder.has(DslFolder.Part.SQL)) {
             files.put(folder.sqlFilePath(APP, id), "select 1");
+        }
+        if(folder.has(DslFolder.Part.SCRIPT)) {
+            files.put(folder.scriptFilePath(APP, id), "return params;");
         }
     }
 

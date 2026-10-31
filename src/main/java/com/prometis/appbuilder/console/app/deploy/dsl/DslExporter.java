@@ -14,10 +14,6 @@ import com.prometis.appbuilder.app.datasource.restserver.DataSourceRestServerRep
 import com.prometis.appbuilder.app.entity.Entity;
 import com.prometis.appbuilder.app.entity.EntityColumn;
 import com.prometis.appbuilder.app.entity.EntityRepository;
-import com.prometis.appbuilder.app.image.ImageStorage;
-import com.prometis.appbuilder.app.image.ImageStorageRepository;
-import com.prometis.appbuilder.app.image.StorageType;
-import com.prometis.appbuilder.app.image.StorageTypeRepository;
 import com.prometis.appbuilder.app.message.MessageProcessor;
 import com.prometis.appbuilder.app.message.MessageProcessorRepository;
 import com.prometis.appbuilder.app.node.WorkflowNode;
@@ -40,8 +36,6 @@ import com.prometis.appbuilder.app.scheduler.SchedulerJobRepository;
 import com.prometis.appbuilder.app.scheduler.SchedulerJobWorkflowRepository;
 import com.prometis.appbuilder.app.scheduler.domain.SchedulerJob;
 import com.prometis.appbuilder.app.scheduler.domain.SchedulerJobWorkflow;
-import com.prometis.appbuilder.app.security.company.Company;
-import com.prometis.appbuilder.app.security.company.CompanyRepository;
 import com.prometis.appbuilder.app.view.LayoutRepository;
 import com.prometis.appbuilder.app.view.MenuPermission;
 import com.prometis.appbuilder.app.view.MenuPermissionRepository;
@@ -85,6 +79,7 @@ import java.util.regex.Pattern;
  * - 목록은 항상 같은 순서로 쓴다. 같은 메타데이터면 같은 파일이 나와야 저장소와 비교할 때 바뀐 것만 잡힌다.
  * - 비밀번호 같은 민감정보는 저장소에 올리지 않는다. (데이터베이스 password, 알림 제공자 options 의 password/secret/token 류)
  *   배포 환경의 값은 그 환경에서 따로 관리한다.
+ * - 회사(Company), 이미지(Image Manage)는 환경마다 따로 관리하는 데이터라 DSL 에 넣지 않는다.
  */
 @Component
 @RequiredArgsConstructor
@@ -123,10 +118,6 @@ public class DslExporter {
     private final MenuPermissionRepository menuPermissionRepository;
     private final LayoutRepository layoutRepository;
 
-    private final CompanyRepository companyRepository;
-
-    private final StorageTypeRepository storageTypeRepository;
-    private final ImageStorageRepository imageStorageRepository;
     private final CommonCodeKindRepository commonCodeKindRepository;
     private final CommonCodeRepository commonCodeRepository;
 
@@ -158,7 +149,10 @@ public class DslExporter {
         notificationRepository.findByApplicationId(applicationId)
                 .forEach(notification -> files.add(file(applicationId, DslFolder.NOTIFICATION, notification.getNotificationName(), notification(notification))));
         messageProcessorRepository.findByApplicationId(applicationId)
-                .forEach(processor -> files.add(file(applicationId, DslFolder.MESSAGE_PROCESSOR, processor.getProcessorName(), messageProcessor(processor))));
+                .forEach(processor -> {
+                    files.add(file(applicationId, DslFolder.MESSAGE_PROCESSOR, processor.getProcessorName(), messageProcessor(processor)));
+                    files.add(scriptFile(applicationId, DslFolder.MESSAGE_PROCESSOR, processor.getProcessorName(), processor.getScript()));
+                });
 
         restApiRepository.findByApplicationId(applicationId)
                 .forEach(restApi -> files.add(file(applicationId, DslFolder.REST_API, restApi.getApiCode(), restApi(restApi))));
@@ -168,11 +162,6 @@ public class DslExporter {
 
         exportViews(applicationId, files);
 
-        companyRepository.findOrderedByApplicationId(applicationId)
-                .forEach(company -> files.add(file(applicationId, DslFolder.COMPANY, company.getCompanyCode(), company(company))));
-
-        storageTypeRepository.findByApplicationIdOrderByStorageTypeAsc(applicationId)
-                .forEach(storageType -> files.add(file(applicationId, DslFolder.IMAGE_STORAGE_TYPE, storageType.getStorageType(), imageStorageType(applicationId, storageType))));
         commonCodeKindRepository.findByApplicationId(applicationId)
                 .forEach(codeKind -> files.add(file(applicationId, DslFolder.COMMON_CODE, codeKind.getCode(), commonCodeKind(codeKind))));
 
@@ -219,6 +208,11 @@ public class DslExporter {
     // SQL 본문은 {ID}/metadata.json 옆의 {ID}/query.sql 로 뗀다. 저장된 글자 그대로 쓴다(줄바꿈도 손대지 않는다)
     private static DslFile sqlFile(String applicationId, DslFolder folder, String id, String sql) {
         return new DslFile(folder.sqlFilePath(applicationId, id), folder, id, sql == null ? "" : sql);
+    }
+
+    // 메시지 프로세서 스크립트는 {ID}/metadata.json 옆의 {ID}/script.js 로 뗀다. 저장된 글자 그대로 쓴다
+    private static DslFile scriptFile(String applicationId, DslFolder folder, String id, String script) {
+        return new DslFile(folder.scriptFilePath(applicationId, id), folder, id, script == null ? "" : script);
     }
 
     // ---- datasource ----
@@ -482,7 +476,6 @@ public class DslExporter {
         d.put("processorName", processor.getProcessorName());
         d.put("displayName", processor.getDisplayName());
         d.put("processorType", processor.getProcessorType());
-        d.put("script", processor.getScript());
         return d;
     }
 
@@ -620,36 +613,7 @@ public class DslExporter {
         return d;
     }
 
-    // ---- security ----
-
-    private Map<String, Object> company(Company company) {
-        Map<String, Object> d = DslJson.document(DslFolder.COMPANY);
-        d.put("companyCode", company.getCompanyCode());
-        d.put("companyName", company.getCompanyName());
-        d.put("orderNum", company.getOrderNum());
-        return d;
-    }
-
     // ---- setting ----
-
-    private Map<String, Object> imageStorageType(String applicationId, StorageType storageType) {
-        Map<String, Object> d = DslJson.document(DslFolder.IMAGE_STORAGE_TYPE);
-        d.put("storageType", storageType.getStorageType());
-        d.put("displayName", storageType.getDisplayName());
-        // 이미지 본문은 base64 로 담는다. 배포 환경에서 같은 링크(/{applicationId}/image/{storageType}/{filename})로 보이게 하려면 파일도 함께 가야 한다
-        d.put("images", imageStorageRepository.findByApplicationIdAndStorageTypeOrderByFilenameAsc(applicationId, storageType.getStorageType()).stream()
-                .map(image -> {
-                    Map<String, Object> i = new LinkedHashMap<>();
-                    i.put("filename", image.getFilename());
-                    i.put("originalFilename", image.getOriginalFilename());
-                    i.put("fileExtension", image.getFileExtension());
-                    i.put("fileSize", image.getFileSize());
-                    i.put("content", image.getContent() == null ? null : Base64.getEncoder().encodeToString(image.getContent()));
-                    return i;
-                })
-                .toList());
-        return d;
-    }
 
     private Map<String, Object> commonCodeKind(CommonCodeKind codeKind) {
         Map<String, Object> d = DslJson.document(DslFolder.COMMON_CODE);

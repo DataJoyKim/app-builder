@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 배포 1단계: 메타데이터 -> DSL -> GitHub 커밋.
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
  * 1. 연동 : 애플리케이션마다 GitHub 저장소/브랜치/토큰을 저장한다. 저장할 때 토큰으로 저장소에 쓸 수 있는지 확인한다.
  * 2. 비교 : 지금 메타데이터로 DSL 을 만들고 검증한 뒤, 브랜치의 {applicationId}/ 폴더와 비교해 추가/수정/삭제된 파일을 찾는다.
  *          내용 비교는 git blob SHA 로 하므로 바뀐 파일만 내려받는다.
- * 3. 커밋 : 다시 DSL 을 만들고 검증해서(오류가 있으면 멈춤) 바뀐 파일로 커밋을 만들고 브랜치를 옮긴다(push).
+ * 3. 커밋 : 다시 DSL 을 만들고 검증해서(오류가 있으면 멈춤) 바뀐 파일 중 고른 것만으로 커밋을 만들고 브랜치를 옮긴다(push).
  *          비교한 뒤 브랜치에 다른 커밋이 올라왔으면 덮어쓰지 않고 다시 비교하게 한다.
  */
 @Service
@@ -167,6 +168,11 @@ public class DeployService {
         List<DeployChange> changes = diff(target, applicationId, files, parentSha, false);
         if(changes.isEmpty()) {
             throw DeployException.badRequest("저장소와 달라진 내용이 없습니다.");
+        }
+
+        changes = selectChanges(changes, request.paths());
+        if(changes.isEmpty()) {
+            throw DeployException.badRequest("선택한 파일 중 저장소와 달라진 파일이 없습니다. 다시 비교한 뒤 커밋해주세요.");
         }
 
         List<GitHubClient.FileChange> fileChanges = changes.stream()
@@ -319,6 +325,35 @@ public class DeployService {
         String name = path.substring(path.lastIndexOf('/') + 1);
         int dot = name.lastIndexOf('.');
         return dot < 0 ? name : name.substring(0, dot);
+    }
+
+    /**
+     * 고른 파일만 남긴다. paths 가 null 이면 전부.
+     * 메타데이터 하나에 딸린 파일(쿼리 metadata.json 과 query.sql 처럼 kind+ID 가 같은 파일)은 하나만 골라도 함께 남긴다.
+     * 짝 중 하나만 올라가면 저장소의 DSL 이 검증을 통과하지 못하기 때문이다.
+     * 비교 뒤 메타데이터가 바뀌어 고른 파일이 더는 달라지지 않았으면 그 파일은 빠지고, 고르지 않은 새 변경은 커밋하지 않는다.
+     */
+    static List<DeployChange> selectChanges(List<DeployChange> changes, List<String> paths) {
+        if(paths == null) {
+            return changes;
+        }
+
+        Set<String> selectedPaths = new HashSet<>(paths);
+        Set<String> selectedGroups = changes.stream()
+                .filter(change -> selectedPaths.contains(change.path()))
+                .map(DeployService::groupOf)
+                .collect(Collectors.toSet());
+
+        return changes.stream()
+                .filter(change -> selectedGroups.contains(groupOf(change)))
+                .toList();
+    }
+
+    // 함께 커밋해야 하는 파일 묶음. 종류를 모르는 파일(저장소에만 남은 예전 위치 파일)은 파일 하나가 한 묶음이다
+    private static String groupOf(DeployChange change) {
+        return change.kind() == null || change.id() == null
+                ? "path:" + change.path()
+                : change.kind() + "\n" + change.id();
     }
 
     private static int count(List<DeployChange> changes, DeployChange.Status status) {

@@ -15,6 +15,9 @@ import java.util.Set;
  *   쿼리(QUERY)
  *     {applicationId}/workflow/query/{queryName}/metadata.json : 쿼리 설정(데이터소스, 파라미터...)
  *     {applicationId}/workflow/query/{queryName}/query.sql     : SQL 본문
+ *   메시지 프로세서(MESSAGE_PROCESSOR)
+ *     {applicationId}/workflow/message/{processorName}/metadata.json : 프로세서 설정
+ *     {applicationId}/workflow/message/{processorName}/script.js     : 변환 스크립트 본문
  *   화면(VIEW_OBJECT)
  *     {applicationId}/view/view-object/{objectCode}/metadata.json                      : 화면 설정
  *     {applicationId}/view/view-object/{objectCode}/actions/{actionName}/metadata.json : 화면 액션 설정
@@ -38,7 +41,7 @@ public enum DslFolder {
     NOTIFICATION("workflow/notification", "Notification", "notificationName",
             List.of("displayName", "dataSourceName")),
     MESSAGE_PROCESSOR("workflow/message", "MessageProcessor", "processorName",
-            List.of("displayName")),
+            List.of("displayName"), Set.of(Part.SCRIPT)),
     REST_API("rest-api", "RestApi", "apiCode",
             List.of("displayName", "httpMethod", "path", "workflowCode", "enabled")),
     SCHEDULER("scheduler", "SchedulerJob", "jobCode",
@@ -49,10 +52,6 @@ public enum DslFolder {
             List.of("menuNm")),
     SITE("view/site", "Site", null,
             List.of()),
-    COMPANY("security/company", "Company", "companyCode",
-            List.of("companyName")),
-    IMAGE_STORAGE_TYPE("setting/image-manage", "ImageStorageType", "storageType",
-            List.of("displayName")),
     COMMON_CODE("setting/common-code", "CommonCodeKind", "code",
             List.of("name"));
 
@@ -74,6 +73,8 @@ public enum DslFolder {
     public enum Part {
         METADATA,
         SQL,
+        // {ID}/script.js (메시지 프로세서 스크립트). 화면 액션의 script.js 는 ACTION_SCRIPT
+        SCRIPT,
         ACTION,
         ACTION_SCRIPT
     }
@@ -131,6 +132,10 @@ public enum DslFolder {
 
     public String sqlFilePath(String applicationId, String id) {
         return directoryOf(applicationId, id) + SQL_FILE_NAME;
+    }
+
+    public String scriptFilePath(String applicationId, String id) {
+        return directoryOf(applicationId, id) + SCRIPT_FILE_NAME;
     }
 
     public String actionFilePath(String applicationId, String id, String actionName) {
@@ -191,6 +196,9 @@ public enum DslFolder {
         }
         else if(names.length == 2 && SQL_FILE_NAME.equals(names[1])) {
             location = new Location(folder, id, Part.SQL, null);
+        }
+        else if(names.length == 2 && SCRIPT_FILE_NAME.equals(names[1])) {
+            location = new Location(folder, id, Part.SCRIPT, null);
         }
         else if(names.length == 4 && ACTIONS_DIRECTORY.equals(names[1]) && METADATA_FILE_NAME.equals(names[3])) {
             location = new Location(folder, id, Part.ACTION, names[2]);

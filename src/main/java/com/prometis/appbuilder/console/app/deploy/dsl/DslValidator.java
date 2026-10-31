@@ -82,7 +82,7 @@ public class DslValidator {
 
         switch (location.part()) {
             // SQL, 스크립트 본문은 JSON 이 아니므로 짝이 되는 metadata.json 이 있는지만 본다(checkParts)
-            case SQL, ACTION_SCRIPT -> {
+            case SQL, SCRIPT, ACTION_SCRIPT -> {
                 context.parts.add(new PartFile(path, location));
                 return;
             }
@@ -150,6 +150,9 @@ public class DslValidator {
                     if(folder.has(DslFolder.Part.SQL)) {
                         allowed.add(folder.path() + "/{ID}/" + DslFolder.SQL_FILE_NAME);
                     }
+                    if(folder.has(DslFolder.Part.SCRIPT)) {
+                        allowed.add(folder.path() + "/{ID}/" + DslFolder.SCRIPT_FILE_NAME);
+                    }
                     if(folder.has(DslFolder.Part.ACTION)) {
                         allowed.add(folder.path() + "/{ID}/" + DslFolder.ACTIONS_DIRECTORY + "/{actionName}/" + DslFolder.METADATA_FILE_NAME);
                     }
@@ -163,10 +166,11 @@ public class DslValidator {
 
     /**
      * {ID}/ 폴더 안의 파일끼리 짝이 맞는지 본다.
-     * 쿼리는 metadata.json 과 query.sql 이 둘 다 있어야 하고, 화면 액션은 화면 metadata.json 이, 액션 script.js 는 액션 metadata.json 이 있어야 한다.
+     * 쿼리는 metadata.json 과 query.sql 이, 메시지 프로세서는 metadata.json 과 script.js 가 둘 다 있어야 하고, 화면 액션은 화면 metadata.json 이, 액션 script.js 는 액션 metadata.json 이 있어야 한다.
      */
     private void checkParts(String applicationId, Context context) {
         Set<String> sqlIds = new HashSet<>();
+        Set<String> scriptIds = new HashSet<>();
         Map<String, Map<String, String>> actionNames = new HashMap<>();
 
         for(PartFile part : context.parts) {
@@ -175,8 +179,8 @@ public class DslValidator {
             String id = location.id();
 
             switch (location.part()) {
-                case SQL -> {
-                    sqlIds.add(folder + "\n" + id);
+                case SQL, SCRIPT -> {
+                    (location.part() == DslFolder.Part.SQL ? sqlIds : scriptIds).add(folder + "\n" + id);
                     if(!context.exists(folder, id)) {
                         context.error(part.path, "짝이 되는 " + folder.kind() + " 파일이 없습니다. [" + folder.filePath(applicationId, id) + "]");
                     }
@@ -205,12 +209,17 @@ public class DslValidator {
         }
 
         for(DslFolder folder : DslFolder.values()) {
-            if(!folder.has(DslFolder.Part.SQL)) {
+            boolean needsSql = folder.has(DslFolder.Part.SQL);
+            boolean needsScript = folder.has(DslFolder.Part.SCRIPT);
+            if(!needsSql && !needsScript) {
                 continue;
             }
             context.byFolder.getOrDefault(folder, Map.of()).forEach((id, document) -> {
-                if(!sqlIds.contains(folder + "\n" + id)) {
+                if(needsSql && !sqlIds.contains(folder + "\n" + id)) {
                     context.error(document.path, "SQL 파일이 없습니다. [" + folder.sqlFilePath(applicationId, id) + "]");
+                }
+                if(needsScript && !scriptIds.contains(folder + "\n" + id)) {
+                    context.error(document.path, "스크립트 파일이 없습니다. [" + folder.scriptFilePath(applicationId, id) + "]");
                 }
             });
         }
@@ -302,7 +311,6 @@ public class DslValidator {
                     context.warning(document.path, "homeObjectCode 가 가리키는 화면이 없습니다. [" + homeObjectCode + "]");
                 }
             }
-            case IMAGE_STORAGE_TYPE -> checkUnique(document, "images", "filename", context);
             case COMMON_CODE -> checkUnique(document, "codes", "code", context);
             default -> {
             }

@@ -11,6 +11,8 @@ import com.prometis.appbuilder.app.image.ImageStorage;
 import com.prometis.appbuilder.app.image.ImageStorageRepository;
 import com.prometis.appbuilder.app.image.StorageType;
 import com.prometis.appbuilder.app.image.StorageTypeRepository;
+import com.prometis.appbuilder.app.message.MessageProcessor;
+import com.prometis.appbuilder.app.message.MessageProcessorRepository;
 import com.prometis.appbuilder.app.node.WorkflowNode;
 import com.prometis.appbuilder.app.node.WorkflowNodeRepository;
 import com.prometis.appbuilder.app.node.code.FunctionType;
@@ -20,6 +22,8 @@ import com.prometis.appbuilder.app.query.QueryRepository;
 import com.prometis.appbuilder.app.query.code.AutoValueType;
 import com.prometis.appbuilder.app.query.code.InOut;
 import com.prometis.appbuilder.app.query.code.ParamType;
+import com.prometis.appbuilder.app.security.company.Company;
+import com.prometis.appbuilder.app.security.company.CompanyRepository;
 import com.prometis.appbuilder.app.view.MenuRepository;
 import com.prometis.appbuilder.app.view.ViewActionRepository;
 import com.prometis.appbuilder.app.view.ViewObjectRepository;
@@ -83,6 +87,10 @@ class DslExporterTest {
     private StorageTypeRepository storageTypeRepository;
     @Autowired
     private ImageStorageRepository imageStorageRepository;
+    @Autowired
+    private CompanyRepository companyRepository;
+    @Autowired
+    private MessageProcessorRepository messageProcessorRepository;
 
     @Test
     void 메타데이터를_ID_파일명의_DSL로_만든다() throws Exception {
@@ -96,8 +104,10 @@ class DslExporterTest {
                 .applicationId(APP).queryName("Q001").displayName("조회").dataSourceName("MAIN_DB").query("select 1")
                 .queryParams(List.of(QueryParam.builder().paramName("id").paramType(ParamType.STRING).autoValueType(AutoValueType.DEFAULT).inOut(InOut.IN).build()))
                 .build());
+        messageProcessorRepository.save(MessageProcessor.builder()
+                .applicationId(APP).processorName("P001").displayName("변환").script("return params;\r\n").build());
 
-        Workflow workflow = workflowRepository.save(Workflow.builder()
+        Workflow workflow =workflowRepository.save(Workflow.builder()
                 .applicationId(APP).workflowCode("W001").displayName("워크플로우").useAuthValidation(true).build());
         workflowNodeRepository.save(WorkflowNode.builder()
                 .workflowId(workflow.getId()).nodeId("n1").functionName("Q001").functionType(FunctionType.SQL).orderNum(1).build());
@@ -116,6 +126,8 @@ class DslExporterTest {
         imageStorageRepository.save(ImageStorage.builder()
                 .applicationId(APP).storageType("LOGO").filename("main").originalFilename("main.png").fileExtension("png")
                 .fileSize(3L).content(new byte[]{1, 2, 3}).build());
+        // 회사, 이미지는 DSL 에 넣지 않는다
+        companyRepository.save(Company.builder().applicationId(APP).companyCode("C001").companyName("본사").build());
 
         // 다른 애플리케이션 것은 나오지 않는다
         workflowRepository.save(Workflow.builder()
@@ -130,13 +142,14 @@ class DslExporterTest {
         assertEquals(List.of(
                 "ehr/datasource/database/MAIN_DB.json",
                 "ehr/datasource/notification-provider/MAIL.json",
-                "ehr/setting/image-manage/LOGO.json",
                 "ehr/view/menu/M001.json",
                 "ehr/view/menu/ROOT.json",
                 "ehr/view/view-object/V001/actions/noScript/metadata.json",
                 "ehr/view/view-object/V001/actions/save/metadata.json",
                 "ehr/view/view-object/V001/actions/save/script.js",
                 "ehr/view/view-object/V001/metadata.json",
+                "ehr/workflow/message/P001/metadata.json",
+                "ehr/workflow/message/P001/script.js",
                 "ehr/workflow/query/Q001/metadata.json",
                 "ehr/workflow/query/Q001/query.sql",
                 "ehr/workflow/workflow/W001.json"
@@ -162,7 +175,13 @@ class DslExporterTest {
         assertEquals("select 1", byPath.get("ehr/workflow/query/Q001/query.sql"));
         assertEquals("id", query.path("params").get(0).path("paramName").asText());
 
-        JsonNode view = DslJson.read(byPath.get("ehr/view/view-object/V001/metadata.json"));
+        JsonNode processor = DslJson.read(byPath.get("ehr/workflow/message/P001/metadata.json"));
+        assertEquals("MessageProcessor", processor.path("kind").asText());
+        assertFalse(processor.has("script"));
+        // 스크립트는 저장된 글자 그대로 (줄바꿈 포함)
+        assertEquals("return params;\r\n", byPath.get("ehr/workflow/message/P001/script.js"));
+
+        JsonNode view =DslJson.read(byPath.get("ehr/view/view-object/V001/metadata.json"));
         assertFalse(view.has("actions"));
         JsonNode saveAction = DslJson.read(byPath.get("ehr/view/view-object/V001/actions/save/metadata.json"));
         assertEquals("ViewAction", saveAction.path("kind").asText());
@@ -173,9 +192,6 @@ class DslExporterTest {
         JsonNode menu = DslJson.read(byPath.get("ehr/view/menu/M001.json"));
         assertEquals("ROOT", menu.path("parentMenuCd").asText());
         assertEquals("V001", menu.path("objectCode").asText());
-
-        JsonNode logo = DslJson.read(byPath.get("ehr/setting/image-manage/LOGO.json"));
-        assertEquals("AQID", logo.path("images").get(0).path("content").asText());
 
         assertEquals(List.of(), dslValidator.validate(APP, byPath));
 

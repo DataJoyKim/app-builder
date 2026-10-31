@@ -53,9 +53,9 @@ class DeployServiceTest {
                 .encryptedToken(tokenCipher.encrypt(TOKEN)).repositoryUrl("https://github.com/acme/dsl")
                 .build()));
 
-        same = company("C001", "본사");
-        changed = company("C002", "지사(변경)");
-        added = company("C003", "신규");
+        same = codeKind("C001", "본사");
+        changed = codeKind("C002", "지사(변경)");
+        added = codeKind("C003", "신규");
         when(dslExporter.export(APP)).thenReturn(List.of(same, changed, added));
 
         when(gitHubClient.findBranchHead(any(), eq("main"))).thenReturn(Optional.of(HEAD));
@@ -63,9 +63,9 @@ class DeployServiceTest {
         when(gitHubClient.getTreeFiles(any(), eq("tree-sha"))).thenReturn(List.of(
                 new GitHubClient.TreeEntry(same.path(), same.gitBlobSha()),
                 new GitHubClient.TreeEntry(changed.path(), "old-sha"),
-                new GitHubClient.TreeEntry(DslFolder.COMPANY.filePath(APP, "C999"), "removed-sha"),
+                new GitHubClient.TreeEntry(DslFolder.COMMON_CODE.filePath(APP, "C999"), "removed-sha"),
                 // 다른 애플리케이션과 json 이 아닌 파일은 건드리지 않는다
-                new GitHubClient.TreeEntry("other/security/company/C001.json", "x"),
+                new GitHubClient.TreeEntry("other/setting/common-code/C001.json", "x"),
                 new GitHubClient.TreeEntry(APP + "/README.md", "y"),
                 new GitHubClient.TreeEntry("README.md", "z")
         ));
@@ -103,7 +103,7 @@ class DeployServiceTest {
         when(gitHubClient.createTree(any(), eq("tree-sha"), anyList(), anyInt())).thenReturn("new-tree");
         when(gitHubClient.createCommit(any(), anyString(), eq("new-tree"), eq(HEAD))).thenReturn(new GitHubClient.CommitInfo("new-commit", "https://github.com/acme/dsl/commit/new-commit"));
 
-        DeployCommitResult result = deployService.commit(APP, new DeployCommitRequest("회사 수정", HEAD), "홍길동");
+        DeployCommitResult result = deployService.commit(APP, new DeployCommitRequest("회사 수정", HEAD, null), "홍길동");
 
         assertEquals("new-commit", result.commitSha());
         assertEquals(1, result.added());
@@ -117,8 +117,8 @@ class DeployServiceTest {
         changes.getValue().forEach(change -> byPath.put(change.path(), change.content()));
         assertEquals(3, byPath.size());
         assertEquals(added.content(), byPath.get(added.path()));
-        assertNull(byPath.get(DslFolder.COMPANY.filePath(APP, "C999")));
-        assertTrue(byPath.containsKey(DslFolder.COMPANY.filePath(APP, "C999")));
+        assertNull(byPath.get(DslFolder.COMMON_CODE.filePath(APP, "C999")));
+        assertTrue(byPath.containsKey(DslFolder.COMMON_CODE.filePath(APP, "C999")));
 
         ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
         verify(gitHubClient).createCommit(any(), message.capture(), eq("new-tree"), eq(HEAD));
@@ -131,9 +131,60 @@ class DeployServiceTest {
     }
 
     @Test
+    void 고른_파일만_커밋한다() {
+        when(gitHubClient.createTree(any(), eq("tree-sha"), anyList(), anyInt())).thenReturn("new-tree");
+        when(gitHubClient.createCommit(any(), anyString(), eq("new-tree"), eq(HEAD))).thenReturn(new GitHubClient.CommitInfo("new-commit", null));
+
+        // 같은 파일(same)은 골라도 달라진 게 없으니 빠진다
+        DeployCommitResult result = deployService.commit(APP,
+                new DeployCommitRequest("추가만", HEAD, List.of(added.path(), same.path())), null);
+
+        assertEquals(1, result.added());
+        assertEquals(0, result.modified());
+        assertEquals(0, result.deleted());
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<GitHubClient.FileChange>> changes = ArgumentCaptor.forClass(List.class);
+        verify(gitHubClient).createTree(any(), eq("tree-sha"), changes.capture(), anyInt());
+        assertEquals(List.of(added.path()), changes.getValue().stream().map(GitHubClient.FileChange::path).toList());
+    }
+
+    @Test
+    void 고른_파일이_모두_달라지지_않았으면_커밋하지_않는다() {
+        DeployException e = assertThrows(DeployException.class,
+                () -> deployService.commit(APP, new DeployCommitRequest("없음", HEAD, List.of(same.path(), "ehr/nothing.json")), null));
+
+        assertEquals(400, e.getStatus());
+        verify(gitHubClient, never()).createTree(any(), any(), anyList(), anyInt());
+    }
+
+    @Test
+    void 메타데이터_하나에_딸린_파일은_하나만_골라도_함께_커밋한다() {
+        String sql = DslFolder.QUERY.sqlFilePath(APP, "Q001");
+        String metadata = DslFolder.QUERY.filePath(APP, "Q001");
+        String oldMetadata = APP + "/workflow/query/Q001.json";
+        List<DeployChange> changes = List.of(
+                new DeployChange(metadata, "Query", "Q001", DeployChange.Status.ADDED, null, "{}"),
+                new DeployChange(sql, "Query", "Q001", DeployChange.Status.ADDED, null, "select 1"),
+                // 예전 위치 파일도 kind/ID 가 같으면 같은 묶음이다
+                new DeployChange(oldMetadata, "Query", "Q001", DeployChange.Status.DELETED, "{}", null),
+                new DeployChange(DslFolder.QUERY.sqlFilePath(APP, "Q002"), "Query", "Q002", DeployChange.Status.MODIFIED, "a", "b"),
+                // 종류를 모르는 파일은 그 파일만
+                new DeployChange(APP + "/unknown/X.json", null, "X", DeployChange.Status.DELETED, "{}", null),
+                new DeployChange(APP + "/unknown/Y.json", null, "Y", DeployChange.Status.DELETED, "{}", null));
+
+        assertEquals(List.of(metadata, sql, oldMetadata),
+                DeployService.selectChanges(changes, List.of(sql)).stream().map(DeployChange::path).toList());
+        assertEquals(List.of(APP + "/unknown/X.json"),
+                DeployService.selectChanges(changes, List.of(APP + "/unknown/X.json")).stream().map(DeployChange::path).toList());
+        assertEquals(changes, DeployService.selectChanges(changes, null));
+        assertEquals(List.of(), DeployService.selectChanges(changes, List.of()));
+    }
+
+    @Test
     void 비교한_뒤_브랜치가_바뀌었으면_커밋하지_않는다() {
         DeployException e = assertThrows(DeployException.class,
-                () -> deployService.commit(APP, new DeployCommitRequest("회사 수정", "older-sha"), null));
+                () -> deployService.commit(APP, new DeployCommitRequest("회사 수정", "older-sha", null), null));
 
         assertEquals(409, e.getStatus());
         verify(gitHubClient, never()).createTree(any(), any(), anyList(), anyInt());
@@ -146,7 +197,7 @@ class DeployServiceTest {
         doThrow(new GitHubException(422, "Update is not a fast forward")).when(gitHubClient).updateBranch(any(), any(), any());
 
         DeployException e = assertThrows(DeployException.class,
-                () -> deployService.commit(APP, new DeployCommitRequest("회사 수정", HEAD), null));
+                () -> deployService.commit(APP, new DeployCommitRequest("회사 수정", HEAD, null), null));
 
         assertEquals(409, e.getStatus());
     }
@@ -160,7 +211,7 @@ class DeployServiceTest {
         when(dslExporter.export(APP)).thenReturn(List.of(new DslFile(DslFolder.QUERY.filePath(APP, "Q001"), DslFolder.QUERY, "Q001", DslJson.write(query))));
 
         DeployException e = assertThrows(DeployException.class,
-                () -> deployService.commit(APP, new DeployCommitRequest("쿼리", HEAD), null));
+                () -> deployService.commit(APP, new DeployCommitRequest("쿼리", HEAD, null), null));
 
         assertEquals(400, e.getStatus());
         verify(gitHubClient, never()).findBranchHead(any(), any());
@@ -172,7 +223,7 @@ class DeployServiceTest {
         when(gitHubClient.getTreeFiles(any(), eq("tree-sha"))).thenReturn(List.of(new GitHubClient.TreeEntry(same.path(), same.gitBlobSha())));
 
         assertFalse(deployService.compare(APP).committable());
-        assertThrows(DeployException.class, () -> deployService.commit(APP, new DeployCommitRequest("없음", HEAD), null));
+        assertThrows(DeployException.class, () -> deployService.commit(APP, new DeployCommitRequest("없음", HEAD, null), null));
     }
 
     @Test
@@ -183,7 +234,7 @@ class DeployServiceTest {
         when(gitHubClient.createTree(any(), any(), anyList(), anyInt())).thenReturn("new-tree");
         when(gitHubClient.createCommit(any(), anyString(), any(), any())).thenReturn(new GitHubClient.CommitInfo("new-commit", null));
 
-        deployService.commit(APP, new DeployCommitRequest("처음", null), null);
+        deployService.commit(APP, new DeployCommitRequest("처음", null, null), null);
 
         verify(gitHubClient).createBranch(any(), eq("main"), eq(HEAD));
         verify(gitHubClient).updateBranch(any(), eq("main"), eq("new-commit"));
@@ -220,11 +271,10 @@ class DeployServiceTest {
         verify(settingRepository, never()).save(any());
     }
 
-    private static DslFile company(String code, String name) {
-        Map<String, Object> document = DslJson.document(DslFolder.COMPANY);
-        document.put("companyCode", code);
-        document.put("companyName", name);
-        document.put("orderNum", null);
-        return new DslFile(DslFolder.COMPANY.filePath(APP, code), DslFolder.COMPANY, code, DslJson.write(document));
+    private static DslFile codeKind(String code, String name) {
+        Map<String, Object> document = DslJson.document(DslFolder.COMMON_CODE);
+        document.put("code", code);
+        document.put("name", name);
+        return new DslFile(DslFolder.COMMON_CODE.filePath(APP, code), DslFolder.COMMON_CODE, code, DslJson.write(document));
     }
 }
