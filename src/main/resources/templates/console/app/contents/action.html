@@ -12,6 +12,7 @@
     }
 
     #action-app .act-layout {
+        position: relative; /* 모바일에서 겹쳐 뜨는 목록 패널/배경의 기준 */
         flex: 1 1 auto;
         min-height: 0;
         display: flex;
@@ -29,8 +30,52 @@
         overflow: hidden;
     }
 
+    /* 좌측 Action 목록 패널: 상세 설정 헤더의 버튼(toggleActionList)으로 접고 펼친다.
+       접을 때는 패널 폭 + 패널 사이 gap(14px)만큼 왼쪽으로 밀어 상세 패널이 그 자리를 채운다. */
     #action-app .act-list-panel {
         flex: 0 0 360px;
+        margin-left: 0;
+        visibility: visible;
+        transition: margin-left .18s ease, visibility 0s;
+    }
+
+    #action-app .act-layout.list-collapsed .act-list-panel {
+        margin-left: -374px;
+        /* 접힌 뒤엔 숨겨서 Tab 으로 focus 되지 않게 한다 */
+        visibility: hidden;
+        transition: margin-left .18s ease, visibility 0s linear .18s;
+    }
+
+    /* 페이지 로드 시 처음 상태(모바일: 접힘)를 잡는 동안 슬라이드가 보이지 않게 한다 */
+    #action-app .act-layout.no-transition .act-list-panel,
+    #action-app .act-layout.no-transition .act-list-backdrop {
+        transition: none !important;
+    }
+
+    #action-app .act-list-backdrop {
+        display: none;
+    }
+
+    #action-app .act-header-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    #action-app .act-list-toggle {
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-size: 15px;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 6px;
+    }
+
+    #action-app .act-list-toggle:hover {
+        background: #f1f3f5;
+        color: #374151;
     }
 
     #action-app .act-detail-panel {
@@ -270,6 +315,50 @@
         padding: 16px;
     }
 
+    /* ---- 모바일: 목록 패널이 상세 패널을 밀어내지 않고 위에 겹쳐 슬라이드한다.
+       뒤에 반투명 배경을 깔고, 배경을 누르면 닫힌다. 기준 폭은 script의 ACT_MOBILE_MEDIA와 맞춘다. ---- */
+    @media (max-width: 767.98px) {
+        #action-app {
+            padding: 8px;
+        }
+
+        #action-app .act-list-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: min(360px, 100%);
+            z-index: 20;
+            box-shadow: 6px 0 18px rgba(16, 24, 40, .12);
+            transform: translateX(0);
+            transition: transform .18s ease, visibility 0s;
+        }
+
+        #action-app .act-layout.list-collapsed .act-list-panel {
+            margin-left: 0;
+            transform: translateX(calc(-100% - 20px));
+            transition: transform .18s ease, visibility 0s linear .18s;
+        }
+
+        #action-app .act-list-backdrop {
+            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: 19;
+            border-radius: 12px;
+            background: rgba(17, 24, 39, .35);
+            opacity: 1;
+            visibility: visible;
+            transition: opacity .18s ease, visibility 0s;
+        }
+
+        #action-app .act-layout.list-collapsed .act-list-backdrop {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .18s ease, visibility 0s linear .18s;
+        }
+    }
+
     /* ---- 기본 정보(Action명/화면노출명/유형/argument) ---- */
     #action-app .act-basic-card {
         display: flex;
@@ -494,14 +583,38 @@
         let ACTION_LIST = [];
         let SELECTED_ACTION_ID = null;
 
+        // 이 폭 이하에서는 목록 패널을 기본으로 접어두고, 펼치면 상세 패널 위에 겹쳐 뜬다 (style의 @media와 기준을 맞춘다)
+        const ACT_MOBILE_MEDIA = window.matchMedia('(max-width: 767.98px)');
+
         $( document ).ready(function() {
             console.log('version.0.0.1');
+            initActionListPanel();
             init();
 
             $('#type').on('change', function () {
                 setActionGrid($('#type').val());
             });
         });
+
+        function initActionListPanel() {
+            if(ACT_MOBILE_MEDIA.matches) {
+                // 로드하자마자 접히는 슬라이드가 보이지 않도록 잠깐 트랜지션을 끈다
+                const $layout = $("#action-app .act-layout").addClass('no-transition list-collapsed');
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        $layout.removeClass('no-transition');
+                    });
+                });
+            }
+        }
+
+        function toggleActionList() {
+            $("#action-app .act-layout").toggleClass('list-collapsed');
+        }
+
+        function closeActionList() {
+            $("#action-app .act-layout").addClass('list-collapsed');
+        }
 
         function setActionGrid(type) {
             VB.builder.actionPanel.setOptionPanel($("#actionContentGrid"), type);
@@ -614,6 +727,11 @@
             SELECTED_ACTION_ID = id;
             $("#actionListBody .act-list-item").removeClass('selected');
             $(`#actionListBody .act-list-item[data-id="${id}"]`).addClass('selected');
+
+            // 모바일에서는 목록이 상세 화면을 덮고 있으므로, 고르면 닫아서 상세 설정을 바로 보여준다
+            if(ACT_MOBILE_MEDIA.matches) {
+                closeActionList();
+            }
 
             selectedContent(item);
         }
@@ -753,9 +871,17 @@
                 </div>
             </aside>
 
+            <!-- 모바일에서 목록 패널이 겹쳐 떴을 때 깔리는 배경. 누르면 목록이 닫힌다. -->
+            <div class="act-list-backdrop" onclick="closeActionList()"></div>
+
             <section class="act-detail-panel">
                 <div class="act-panel-header">
-                    <h3><i class="fas fa-sliders-h"></i> 상세 설정</h3>
+                    <div class="act-header-title">
+                        <button type="button" class="act-list-toggle" onclick="toggleActionList()" title="Action 목록 접기/펼치기">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h3><i class="fas fa-sliders-h"></i> 상세 설정</h3>
+                    </div>
                     <div class="act-panel-tools">
                         <mf-action-button id="new" actionName="newContent()" icon="fas fa-plus" label="신규"></mf-action-button>
                         <mf-action-button id="save" actionName="save()" icon="fas fa-save" label="저장"></mf-action-button>
