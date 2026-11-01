@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface DataSourceDatabaseMetaRepository extends JpaRepository<DataSourceDatabaseMeta, Long> {
     List<DataSourceDatabaseMeta> findByApplicationId(String applicationId);
+
+    long countByApplicationId(String applicationId);
 }

@@ -10,11 +10,13 @@ import com.prometis.appbuilder.security.repository.RefreshTokenStoreRepository;
 import com.prometis.appbuilder.security.dto.AuthTokenResponse;
 import com.prometis.appbuilder.security.token.JwtProvider;
 import com.prometis.appbuilder.platform.user.User;
+import com.prometis.appbuilder.platform.user.UserRepository;
 import com.prometis.appbuilder.platform.user.UserService;
 import com.prometis.core.crypto.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -24,6 +26,7 @@ public class LoginService {
     private final UserService userService;
     private final JwtProvider jwtProvider;
     private final RefreshTokenStoreRepository refreshTokenStoreRepository;
+    private final UserRepository userRepository;
 
     public AuthTokenResponse login(LoginRequest loginRequest, Client client) throws SecurityBusinessException {
 
@@ -60,6 +63,8 @@ public class LoginService {
         }
 
         refreshTokenStoreRepository.save(store);
+
+        userRepository.recordLogin(user.getId(), LocalDateTime.now());
 
         return AuthTokenResponse.builder()
                 .accessToken(accessToken)

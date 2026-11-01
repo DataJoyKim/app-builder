@@ -3,6 +3,8 @@ package com.prometis.appbuilder.platform.user;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -32,6 +34,21 @@ public class User {
 
     @Column(length = 100)
     private String authority;
+
+    // 계정을 만든 시각. 이 값이 생기기 전에 만든 계정은 비어 있다
+    @Column
+    private LocalDateTime createdAt;
+
+    // 마지막으로 로그인(토큰 발급)한 시각. 비밀번호 로그인과 가입 직후 자동 로그인 모두 갱신한다
+    @Column
+    private LocalDateTime lastLoginAt;
+
+    @PrePersist
+    void prePersist() {
+        if(createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 
     public void update(
             String loginId,

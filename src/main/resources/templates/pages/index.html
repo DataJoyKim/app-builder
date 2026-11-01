@@ -183,8 +183,12 @@
                 let logoHtml = ``;
                 logoHtml += `<div style="background-color:${data.logoBackgroundColor}">`;
                 logoHtml += `   <a href="${data.logoLink}" class="brand-link">`;
-                logoHtml += `       <img src="${data.logoImg}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">`;
-                logoHtml += `       <span style="color:${data.logoTextColor || '#FFFFFF'};font-weight:bold;font-size: 19px;">${data.logoText}</span>`;
+                if(data.logoImg) {
+                    logoHtml += `<img src="${data.logoImg}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">`;
+                }
+                if(data.logoText) {
+                    logoHtml += `<span style="color:${data.logoTextColor || '#FFFFFF'};font-weight:bold;font-size: 19px;">${data.logoText}</span>`;
+                }
                 logoHtml += `   </a>`;
                 logoHtml += `</div>`;
 
@@ -237,16 +241,22 @@
                   success: function(response) {
                     const $companyList = $("#companyList");
                     $companyList.empty();
+                    if(response.companyList && response.companyList.length > 0){
+                        const companyList = response.companyList || [];
+                        $companyList.append($('<option></option>').val("").text("회사를 선택해주세요."));
 
-                    const companyList = response.companyList || [];
-                    for(let i=0; i<companyList.length; i++) {
-                        $companyList.append($('<option></option>').val(companyList[i].companyCode).text(companyList[i].companyName));
+                        for(let i=0; i<companyList.length; i++) {
+                            $companyList.append($('<option></option>').val(companyList[i].companyCode).text(companyList[i].companyName));
+                        }
+
+                        // 현재 세션의 회사 선택 (목록에 없으면 선택 없음)
+                        $companyList.val(response.companyCode);
+                        if($companyList.val() == null) {
+                            $companyList.prop('selectedIndex', -1);
+                        }
                     }
-
-                    // 현재 세션의 회사 선택 (목록에 없으면 선택 없음)
-                    $companyList.val(response.companyCode);
-                    if($companyList.val() == null) {
-                        $companyList.prop('selectedIndex', -1);
+                    else {
+                        $companyList.append($('<option></option>').val("").text("대상이없습니다."));
                     }
                   },
                   error: function(error) {
@@ -297,10 +307,9 @@
                   success: function(response) {
                   console.log('response',response);
                     let shtml = '';
-
-                    for(let i=0; i<response.length; i++) {
-                        shtml += getMenuHtml(response[i]);
-                    }
+                      for(let i=0; i<response.length; i++) {
+                          shtml += getMenuHtml(response[i]);
+                      }
 
                     $("#menu").html(shtml);
                   },

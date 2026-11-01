@@ -80,9 +80,19 @@ public class WorkflowRestController {
                 ? null
                 : Long.valueOf((String) workflowParams.get("id"));
 
+        String displayName = (String) workflowParams.get("displayName");
+        if(displayName == null || displayName.isBlank()) {
+            return badRequest("워크플로우 이름을 입력하세요.");
+        }
+
         Workflow workflow;
 
         if (id == null) {
+            ResponseEntity<?> invalidCode = validateNewCode(applicationId, (String) workflowParams.get("workflowCode"));
+            if(invalidCode != null) {
+                return invalidCode;
+            }
+
             workflow = Workflow.builder()
                     .applicationId(applicationId)
                     .workflowCode((String) workflowParams.get("workflowCode"))
@@ -96,8 +106,8 @@ public class WorkflowRestController {
                     .filter(owned -> applicationId.equals(owned.getApplicationId()))
                     .orElseThrow();
 
+            // 워크플로우 코드는 생성 후 바꾸지 않는다. 요청에 다른 코드가 와도 무시한다.
             workflow.update(
-                    (String) workflowParams.get("workflowCode"),
                     (String) workflowParams.get("displayName"),
                     (String) workflowParams.get("note"),
                     (Boolean) workflowParams.get("useAuthValidation")
@@ -292,6 +302,15 @@ public class WorkflowRestController {
 
     @PostMapping("")
     public ResponseEntity<?> create(@PathVariable("applicationId") String applicationId, @RequestBody Map<String,Object> params) {
+        String displayName = (String) params.get("displayName");
+        if(displayName == null || displayName.isBlank()) {
+            return badRequest("워크플로우 이름을 입력하세요.");
+        }
+
+        ResponseEntity<?> invalidCode = validateNewCode(applicationId, (String) params.get("workflowCode"));
+        if(invalidCode != null) {
+            return invalidCode;
+        }
 
         Workflow workflowBuilder = Workflow.builder()
                 .applicationId(applicationId)
@@ -312,9 +331,14 @@ public class WorkflowRestController {
                 .filter(owned -> applicationId.equals(owned.getApplicationId()))
                 .orElseThrow(RuntimeException::new);
 
+        String displayName = (String) params.get("displayName");
+        if(displayName == null || displayName.isBlank()) {
+            return badRequest("워크플로우 이름을 입력하세요.");
+        }
+
+        // 워크플로우 코드는 생성 후 바꾸지 않는다.
         workflowBuilder.update(
-                (String) params.get("workflowCode"),
-                (String) params.get("displayName"),
+                displayName,
                 (String) params.get("note"),
                 (Boolean) params.get("useAuthValidation")
         );
@@ -322,5 +346,26 @@ public class WorkflowRestController {
         Workflow results = repository.save(workflowBuilder);
 
         return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
+    // 새 워크플로우의 코드 형식과 중복을 본다. 문제가 없으면 null.
+    private ResponseEntity<?> validateNewCode(String applicationId, String workflowCode) {
+        if(workflowCode == null || workflowCode.isBlank()) {
+            return badRequest("워크플로우 ID를 입력하세요.");
+        }
+
+        if(!Workflow.isValidCode(workflowCode)) {
+            return badRequest("워크플로우 ID는 영문으로 시작하고 영문, 숫자, _ 만 사용할 수 있습니다(100자 이하). [" + workflowCode + "]");
+        }
+
+        if(repository.findByApplicationIdAndWorkflowCode(applicationId, workflowCode).isPresent()) {
+            return badRequest("이미 사용중인 워크플로우 ID입니다. [" + workflowCode + "]");
+        }
+
+        return null;
+    }
+
+    private ResponseEntity<?> badRequest(String message) {
+        return new ResponseEntity<>(Map.of("message", message), HttpStatus.BAD_REQUEST);
     }
 }

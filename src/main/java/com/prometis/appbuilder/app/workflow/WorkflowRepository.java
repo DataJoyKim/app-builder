@@ -9,4 +9,6 @@ public interface WorkflowRepository extends JpaRepository<Workflow, Long> {
     List<Workflow> findByApplicationId(String applicationId);
 
     Optional<Workflow> findByApplicationIdAndWorkflowCode(String applicationId, String workflowCode);
+
+    long countByApplicationId(String applicationId);
 }

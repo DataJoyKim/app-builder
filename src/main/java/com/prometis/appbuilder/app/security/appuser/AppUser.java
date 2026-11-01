@@ -3,6 +3,8 @@ package com.prometis.appbuilder.app.security.appuser;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -28,6 +30,21 @@ public class AppUser {
 
     @Column(length = 100)
     private String authority;
+
+    // 이 애플리케이션에 가입(AppUser 생성)한 시각. 이 값이 생기기 전에 가입한 사용자는 비어 있다
+    @Column
+    private LocalDateTime joinedAt;
+
+    // 이 애플리케이션에 마지막으로 접속(인증)한 시각. 요청마다 쓰지 않도록 AppUserRepository.recordAccess 가 간격을 두고 갱신한다
+    @Column
+    private LocalDateTime lastAccessAt;
+
+    @PrePersist
+    void prePersist() {
+        if(joinedAt == null) {
+            joinedAt = LocalDateTime.now();
+        }
+    }
 
     public void changeAuthority(String authority) {
         this.authority = authority;

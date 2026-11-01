@@ -10,4 +10,6 @@ public interface ViewObjectRepository extends JpaRepository<ViewObject, Long> {
     Optional<ViewObject> findByApplicationIdAndObjectCode(String applicationId, String objectCode);
 
     List<ViewObject> findByApplicationId(String applicationId);
+
+    long countByApplicationId(String applicationId);
 }

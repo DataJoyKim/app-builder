@@ -12,4 +12,6 @@ public interface RestApiRepository extends JpaRepository<RestApi, Long> {
     List<RestApi> findByApplicationId(String applicationId);
 
     List<RestApi> findByApplicationIdAndHttpMethod(String applicationId, HttpMethodType httpMethod);
+
+    long countByApplicationId(String applicationId);
 }

@@ -25,4 +25,6 @@ public interface UserGroupRepository extends JpaRepository<UserGroup, Long> {
 
     @Query("select g from UserGroup g left join fetch g.children where g.parentUserGroup = :parentUserGroup ORDER BY g.name ASC")
     List<UserGroup> findAllTree(@Param("parentUserGroup") UserGroup parentUserGroup);
+
+    long countByApplicationId(String applicationId);
 }

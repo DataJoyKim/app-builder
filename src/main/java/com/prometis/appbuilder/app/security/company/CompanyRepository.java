@@ -19,4 +19,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     List<Company> findOrderedByApplicationIdAndCompanyCodeIn(@Param("applicationId") String applicationId, @Param("companyCodes") Collection<String> companyCodes);
 
     Optional<Company> findByApplicationIdAndCompanyCode(String applicationId, String companyCode);
+
+    long countByApplicationId(String applicationId);
 }

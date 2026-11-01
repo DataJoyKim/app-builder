@@ -9,4 +9,6 @@ public interface AppJoinRequestRepository extends JpaRepository<AppJoinRequest, 
     List<AppJoinRequest> findByApplicationIdOrderByRequestedAtAsc(String applicationId);
 
     Optional<AppJoinRequest> findByApplicationIdAndUserId(String applicationId, Long userId);
+
+    long countByApplicationId(String applicationId);
 }

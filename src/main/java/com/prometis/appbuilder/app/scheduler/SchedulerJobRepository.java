@@ -12,4 +12,6 @@ public interface SchedulerJobRepository extends JpaRepository<SchedulerJob, Long
     List<SchedulerJob> findByEnabledTrue();
 
     List<SchedulerJob> findByApplicationId(String applicationId);
+
+    long countByApplicationId(String applicationId);
 }

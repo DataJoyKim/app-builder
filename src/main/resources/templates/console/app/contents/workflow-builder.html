@@ -194,42 +194,79 @@
         padding: 4px 6px;
     }
 
+    /* 상단 제목: 입력칸이 아니라 표시용 텍스트다. 누르면 워크플로우 정보 다이얼로그가 열린다.
+       좁은 화면에서도 말줄임으로 정리되도록 입력칸을 두지 않는다. */
     .wf-title-group {
         display: flex;
-        gap: 6px;
+        flex-direction: column;
+        justify-content: center;
         flex: 1;
         min-width: 0;
-    }
-
-    .wf-code-input, .wf-name-input {
-        border: 1px solid transparent;
-        background: transparent;
+        padding: 2px 8px;
         border-radius: 6px;
-        padding: 4px 8px;
+        cursor: pointer;
     }
 
-    .wf-code-input:hover, .wf-name-input:hover {
-        border-color: #e5e7eb;
-    }
-
-    .wf-code-input:focus, .wf-name-input:focus {
+    .wf-title-group:hover {
         background: #f1f3f5;
-        outline: none;
-        border-color: #e5e7eb;
     }
 
-    .wf-code-input {
-        font-size: 12px;
-        color: #9199a3;
-        width: 160px;
-    }
-
-    .wf-name-input {
+    .wf-title-name {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
         font-size: 16px;
         font-weight: 600;
         color: #1f2937;
-        flex: 1;
-        min-width: 0;
+        line-height: 1.3;
+    }
+
+    .wf-title-name > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-title-name > i {
+        flex: 0 0 auto;
+        font-size: 11px;
+        color: #9199a3;
+    }
+
+    .wf-title-group.is-new .wf-title-name > span {
+        color: #9199a3;
+        font-weight: 500;
+    }
+
+    .wf-title-code {
+        font-size: 12px;
+        color: #9199a3;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .wf-title-code:empty {
+        display: none;
+    }
+
+    /* 워크플로우 정보 다이얼로그 */
+    .wf-info-modal .form-text {
+        font-size: 12px;
+    }
+
+    .wf-info-modal input[readonly] {
+        background: #f1f3f5;
+        color: #6b7280;
+    }
+
+    .wf-info-error {
+        display: none;
+        margin-top: 4px;
+        font-size: 12px;
+        color: #dc2626;
     }
 
     .wf-topbar-actions {
@@ -291,10 +328,8 @@
             display: none;
         }
 
-        /* 워크플로우 코드 입력칸(160px 고정)이 제목 자리를 많이 잡아먹으므로 숨긴다.
-           값은 그대로 남아 있어 저장/불러오기에는 영향이 없다. */
-        .wf-code-input {
-            display: none;
+        .wf-title-name {
+            font-size: 15px;
         }
     }
 
@@ -1582,10 +1617,12 @@
     });
 
     function init() {
+        initSidebarState();
+        bindWorkflowInfoForm();
         getWorkflowList();
         setPermissionCodesMaster();
         setIpGroupsMaster();
-        newContent();
+        resetContent();
     }
 
     /* ================= Workflow list (left sidebar) ================= */
@@ -1637,6 +1674,23 @@
         }
     }
 
+    // 처음 상태: PC에서는 워크플로우 목록을 열어두고, 좁은 화면(모바일)에서는 캔버스 자리가 부족하므로 닫아두고 시작한다.
+    // 기준 폭은 상단 버튼을 아이콘만 남기는 @media (max-width: 991.98px) 블록, 화면빌더와 같다.
+    // 로드하자마자 접히는 애니메이션이 보이지 않도록 트랜지션을 잠시 끄고 클래스만 단 뒤, 첫 렌더가 끝나면 되돌린다.
+    function initSidebarState() {
+        if (!window.matchMedia('(max-width: 991.98px)').matches) {
+            return;
+        }
+
+        const $sidebar = $("#wfSidebar").css('transition', 'none').addClass('collapsed');
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                $sidebar.css('transition', '');
+                refreshCanvas();
+            });
+        });
+    }
+
     function toggleSidebar() {
         $("#wfSidebar").toggleClass('collapsed');
         setTimeout(refreshCanvas, 200); // 사이드바 접기/펼치기 트랜지션(.18s) 종료 후 캔버스 재계산
@@ -1645,6 +1699,12 @@
     /* ================= Workflow CRUD ================= */
 
     function save() {
+        // 아직 만들지 않은 워크플로우(빈 캔버스에서 바로 그린 경우)는 ID/이름부터 받아서 만든다.
+        if(!$("#workflowId").val()) {
+            openWorkflowInfo();
+            return;
+        }
+
         const graph = collectWorkflowGraph();
 
         httpClient.post(`/${APPLICATION_ID}/console/api/workflow/save`,{},
@@ -1740,7 +1800,7 @@
           function(response){
               alert("삭제 처리 완료되었습니다.");
               getWorkflowList();
-              newContent();
+              resetContent();
           },
           function(error){
               alert('error');
@@ -1790,9 +1850,150 @@
         $("#workflowCode").val(params.workflowCode);
         $("#displayName").val(params.displayName);
         App.util.check('useAuthValidation', params.useAuthValidation);
+        renderWorkflowTitle();
     }
 
-    function newContent(){
+    function renderWorkflowTitle() {
+        const isNew = !$("#workflowId").val();
+        const name = $("#displayName").val();
+
+        $("#workflowTitle").toggleClass('is-new', isNew);
+        $("#workflowTitleName").text(isNew ? '새 워크플로우' : (name || '(이름없음)'));
+        $("#workflowTitleCode").text(isNew ? '' : ($("#workflowCode").val() || ''));
+    }
+
+    /* ================= Workflow info dialog (ID / 이름) ================= */
+
+    // 서버 Workflow.CODE_PATTERN 과 같은 규칙이어야 한다.
+    const WORKFLOW_CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,99}$/;
+
+    // 생성 다이얼로그를 New Workflow 버튼으로 열었는지(true: 빈 워크플로우로 만든다),
+    // 아직 만들지 않은 캔버스에서 저장/제목을 눌러 열었는지(false: 지금 그린 그래프를 그대로 만든다).
+    let workflowInfoFromNew = false;
+
+    // New Workflow 버튼: 캔버스를 비우기 전에 ID/이름부터 받는다. 취소하면 보던 화면이 그대로 남는다.
+    function newContent() {
+        openWorkflowInfo(true);
+    }
+
+    function openWorkflowInfo(fromNew) {
+        workflowInfoFromNew = fromNew === true;
+        const isCreate = workflowInfoFromNew || !$("#workflowId").val();
+
+        const $modal = $("#workflowInfoModal").data('mode', isCreate ? 'create' : 'edit');
+        $("#workflowInfoTitle").text(isCreate ? '새 워크플로우' : '워크플로우 정보');
+        $("#workflowInfoSubmit").text(isCreate ? '만들기' : '적용');
+        $("#workflowInfoCode")
+            .val(isCreate ? '' : $("#workflowCode").val())
+            .prop('readonly', !isCreate);
+        $("#workflowInfoCodeHelp").text(isCreate
+            ? '영문으로 시작하고 영문, 숫자, _ 만 사용할 수 있습니다. 만든 뒤에는 바꿀 수 없습니다.'
+            : '워크플로우 ID는 화면과 Rest API가 이 워크플로우를 부르는 이름이라 바꿀 수 없습니다.');
+        $("#workflowInfoName").val(isCreate ? '' : $("#displayName").val());
+        $modal.find('.wf-info-error').hide().text('');
+
+        $modal.modal('show');
+    }
+
+    function bindWorkflowInfoForm() {
+        $("#workflowInfoModal").on('shown.bs.modal', function() {
+            const $focus = $("#workflowInfoCode").prop('readonly') ? $("#workflowInfoName") : $("#workflowInfoCode");
+            $focus.trigger('focus');
+        });
+
+        // 고치는 대로 해당 칸의 오류 문구는 지운다.
+        $("#workflowInfoCode").on('input', function() { $("#workflowInfoCodeError, #workflowInfoServerError").hide(); });
+        $("#workflowInfoName").on('input', function() { $("#workflowInfoNameError, #workflowInfoServerError").hide(); });
+
+        $("#workflowInfoForm").on('submit', function(event) {
+            event.preventDefault();
+            submitWorkflowInfo();
+        });
+    }
+
+    function showWorkflowInfoError(selector, message) {
+        $(selector).text(message).show();
+    }
+
+    function submitWorkflowInfo() {
+        const isCreate = $("#workflowInfoModal").data('mode') === 'create';
+        const code = $.trim($("#workflowInfoCode").val());
+        const name = $.trim($("#workflowInfoName").val());
+        let valid = true;
+
+        if(isCreate) {
+            if(!code) {
+                showWorkflowInfoError("#workflowInfoCodeError", '워크플로우 ID를 입력하세요.');
+                valid = false;
+            }
+            else if(!WORKFLOW_CODE_PATTERN.test(code)) {
+                showWorkflowInfoError("#workflowInfoCodeError", '영문으로 시작하고 영문, 숫자, _ 만 사용할 수 있습니다(100자 이하).');
+                valid = false;
+            }
+        }
+
+        if(!name) {
+            showWorkflowInfoError("#workflowInfoNameError", '워크플로우 이름을 입력하세요.');
+            valid = false;
+        }
+
+        if(!valid) {
+            return;
+        }
+
+        if(isCreate) {
+            createWorkflow(code, name);
+        }
+        else {
+            // 이름 변경은 다른 설정과 마찬가지로 화면에 반영해 두고 '저장'할 때 함께 저장한다.
+            $("#displayName").val(name);
+            renderWorkflowTitle();
+            $("#workflowInfoModal").modal('hide');
+        }
+    }
+
+    // 워크플로우를 바로 서버에 만든다. New Workflow로 열었으면 빈 워크플로우로,
+    // 아직 만들지 않은 캔버스에서 열었으면 지금 화면의 그래프/설정까지 함께 만든다.
+    function createWorkflow(code, name) {
+        const fromNew = workflowInfoFromNew;
+        const graph = fromNew
+            ? {functions:[], edges:[], conditions:[], errorResponses:[]}
+            : collectWorkflowGraph();
+        const workflow = fromNew
+            ? {id:'', workflowCode:code, displayName:name, note:'', useAuthValidation:true}
+            : $.extend(getContent(), {id:'', workflowCode:code, displayName:name});
+
+        const $submit = $("#workflowInfoSubmit").prop('disabled', true);
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/workflow/save`,{},
+            {
+                workflow:workflow,
+                workflowNodes:graph.functions,
+                workflowEdges:graph.edges,
+                workflowConditions:graph.conditions,
+                workflowErrorResponses:graph.errorResponses,
+                workflowPermission:fromNew ? [] : currentPermissionList,
+                workflowIpGroup:fromNew ? [] : currentIpGroupList,
+                workflowDomain:fromNew ? [] : currentDomainList
+            },
+            function(response){
+                $submit.prop('disabled', false);
+                $("#workflowInfoModal").modal('hide');
+                getWorkflowList();
+                selectedContent(response.id);
+            },
+            function(error){
+                $submit.prop('disabled', false);
+                const body = error && error.responseJSON;
+                // 다이얼로그를 닫지 않고 그 자리에서 고칠 수 있게 오류를 보여준다(중복 ID 등).
+                showWorkflowInfoError("#workflowInfoServerError",
+                    (body && body.message) ? body.message : '생성하는데 실패하였습니다.');
+            }
+        );
+    }
+
+    // 선택된 워크플로우 없이 빈 캔버스로 되돌린다(저장된 워크플로우는 건드리지 않는다).
+    function resetContent(){
         selectedWorkflowId = null;
 
         setContent({
@@ -1822,7 +2023,7 @@
             selectedContent(workflowId);
         }
         else {
-            newContent();
+            resetContent();
         }
     }
 
@@ -3846,9 +4047,11 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <input type="hidden" id="workflowId">
-                <div class="wf-title-group">
-                    <input type="text" id="workflowCode" class="wf-code-input" placeholder="workflow_code" autocomplete="off">
-                    <input type="text" id="displayName" class="wf-name-input" placeholder="워크플로우 이름을 입력하세요" autocomplete="off">
+                <input type="hidden" id="workflowCode">
+                <input type="hidden" id="displayName">
+                <div class="wf-title-group is-new" id="workflowTitle" onclick="openWorkflowInfo()" title="워크플로우 정보">
+                    <div class="wf-title-name"><span id="workflowTitleName">새 워크플로우</span><i class="fas fa-pen"></i></div>
+                    <div class="wf-title-code" id="workflowTitleCode"></div>
                 </div>
                 <div class="wf-topbar-actions">
                     <button type="button" id="settingsPanelButton" onclick="toggleSettingsPanel()" title="설정"><i class="fas fa-cog"></i><span>설정</span></button>
@@ -4065,6 +4268,39 @@
                     </div>
                 </aside>
             </div>
+        </div>
+    </div>
+
+    <!-- 워크플로우 정보: 생성할 때는 ID/이름을 먼저 받고, 생성 후에는 이름만 고친다(ID는 읽기 전용). -->
+    <div class="modal fade wf-info-modal" id="workflowInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <form class="modal-content" id="workflowInfoForm" autocomplete="off" novalidate>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="workflowInfoTitle">새 워크플로우</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="workflowInfoCode">워크플로우 ID <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="workflowInfoCode" maxlength="100" placeholder="order_create"
+                               autocapitalize="off" spellcheck="false">
+                        <small class="form-text text-muted" id="workflowInfoCodeHelp"></small>
+                        <div class="wf-info-error" id="workflowInfoCodeError"></div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="workflowInfoName">워크플로우 이름 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="workflowInfoName" maxlength="200" placeholder="주문 생성">
+                        <div class="wf-info-error" id="workflowInfoNameError"></div>
+                    </div>
+                    <div class="wf-info-error" id="workflowInfoServerError"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-primary" id="workflowInfoSubmit">만들기</button>
+                </div>
+            </form>
         </div>
     </div>
 

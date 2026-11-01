@@ -26,4 +26,6 @@ public interface MenuRepository extends JpaRepository<Menu,Long> {
 
     @Query("select m from Menu m left join fetch m.parentMenu where m.viewObject = :viewObject")
     List<Menu> findByViewObject(@Param("viewObject") ViewObject viewObject);
+
+    long countByApplicationId(String applicationId);
 }

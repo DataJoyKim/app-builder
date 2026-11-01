@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -303,5 +305,54 @@ class WorkflowSaveIntegrationTest {
         assertEquals(1, workflowNodeRepository.findByWorkflowId(saved.getId()).size(), "노드");
         assertTrue(workflowEdgeRepository.findByWorkflowId(saved.getId()).isEmpty(), "연결선");
         assertTrue(workflowConditionRepository.findByWorkflowId(saved.getId()).isEmpty(), "조건");
+    }
+
+    private Map<String,Object> emptyWorkflowParams(String id, String workflowCode, String displayName) {
+        Map<String,Object> workflow = new HashMap<>();
+        workflow.put("id", id);
+        workflow.put("workflowCode", workflowCode);
+        workflow.put("displayName", displayName);
+        workflow.put("note", "");
+        workflow.put("useAuthValidation", true);
+
+        Map<String,Object> params = new HashMap<>();
+        params.put("workflow", workflow);
+        params.put("workflowNodes", new ArrayList<Map<String,Object>>());
+        params.put("workflowEdges", new ArrayList<Map<String,Object>>());
+        params.put("workflowPermission", new ArrayList<Map<String,Object>>());
+        return params;
+    }
+
+    @Test
+    public void 형식이_틀리거나_중복된_워크플로우ID와_빈_이름은_만들지않는다() {
+        for(String code : List.of("", "1abc", "order-create", "주문", "a b", "a".repeat(101))) {
+            ResponseEntity<?> response = workflowRestController.save("ehr", emptyWorkflowParams("", code, "이름"));
+            assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(), "코드 [" + code + "]");
+        }
+
+        assertEquals(HttpStatus.BAD_REQUEST,
+                workflowRestController.save("ehr", emptyWorkflowParams("", "TEST1000_R05", " ")).getStatusCode(), "빈 이름");
+
+        assertEquals(HttpStatus.OK,
+                workflowRestController.save("ehr", emptyWorkflowParams("", "TEST1000_R05", "처음")).getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST,
+                workflowRestController.save("ehr", emptyWorkflowParams("", "TEST1000_R05", "중복")).getStatusCode(), "중복");
+
+        assertEquals(1, workflowRepository.findByApplicationId("ehr").stream()
+                .filter(w -> w.getWorkflowCode().equals("TEST1000_R05")).count());
+    }
+
+    @Test
+    public void 저장된_워크플로우의_ID는_바뀌지않고_이름만_바뀐다() {
+        workflowRestController.save("ehr", emptyWorkflowParams("", "TEST1000_R06", "처음 이름"));
+        Workflow saved = workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "TEST1000_R06").orElseThrow();
+
+        ResponseEntity<?> response = workflowRestController.save("ehr",
+                emptyWorkflowParams(String.valueOf(saved.getId()), "CHANGED_CODE", "바뀐 이름"));
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Workflow reloaded = workflowRepository.findById(saved.getId()).orElseThrow();
+        assertEquals("TEST1000_R06", reloaded.getWorkflowCode());
+        assertEquals("바뀐 이름", reloaded.getDisplayName());
     }
 }

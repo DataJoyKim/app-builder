@@ -17,47 +17,197 @@
 </div>
 
 <div class="tab-empty" th:fragment="index-content">
+    <style>
+        .app-usage .info-box { min-height: 72px; margin-bottom: 12px; }
+        .app-usage .info-box-icon { width: 56px; font-size: 1.4rem; }
+        .app-usage .info-box-number { font-size: 1.4rem; }
+        .app-usage-section { font-size: 13px; font-weight: 600; color: #6c757d; margin: 8px 0 6px; }
+        .app-usage-list { list-style: none; padding: 0; margin: 0 0 12px; }
+        .app-usage-list li { display: flex; justify-content: space-between; padding: 6px 2px; border-bottom: 1px solid #f1f3f5; }
+        .app-usage-list li:last-child { border-bottom: none; }
+        .app-usage-list .value { font-weight: 600; }
+        .app-usage-list .empty { color: #adb5bd; justify-content: center; }
+        .app-usage-recent .meta { font-size: 12px; color: #6c757d; }
+    </style>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-lg-6">
-                <div class="card">
+            <div class="col-12">
+                <div class="card app-usage">
                     <div class="card-header border-0">
-                        <div class="d-flex justify-content-between">
-                            <h3 class="card-title">API 사용률</h3>
-                            <a href="javascript:void(0);">View Report</a>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title">애플리케이션 사용현황</h3>
+                            <a href="javascript:void(0);" onclick="loadAppUsage()" title="새로고침"><i class="fas fa-sync-alt"></i></a>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex">
-                            <p class="d-flex flex-column">
-                                <span class="text-bold text-lg">820</span>
-                                <span>Visitors Over Time</span>
-                            </p>
-                            <p class="ml-auto d-flex flex-column text-right">
-                                <span class="text-success">
-                                  <i class="fas fa-arrow-up"></i> 12.5%
-                                </span>
-                                <span class="text-muted">Since last week</span>
-                            </p>
+                        <div class="text-danger mb-2" id="appUsageError" style="display:none;"></div>
+
+                        <!-- 핵심 지표 -->
+                        <div class="row">
+                            <div class="col-6 col-lg-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">전체 사용자</span>
+                                        <span class="info-box-number" data-usage="users.total">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-lg-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-paper-plane"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">진행중인 초대</span>
+                                        <span class="info-box-number" data-usage="membership.invitationsPending">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-lg-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-user-check"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">초대로 가입</span>
+                                        <span class="info-box-number" data-usage="membership.invitationsAccepted">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-lg-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-user-clock"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">가입 승인 대기</span>
+                                        <span class="info-box-number" data-usage="membership.pendingRequests">-</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="position-relative mb-4">
-                            <canvas id="visitors-chart" height="200"></canvas>
-                        </div>
-
-                        <div class="d-flex flex-row justify-content-end">
-                            <span class="mr-2">
-                                <i class="fas fa-square text-primary"></i> This Week
-                            </span>
-                            <span>
-                                <i class="fas fa-square text-gray"></i> Last Week
-                            </span>
+                        <div class="row">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="app-usage-section"><i class="fas fa-user"></i> 사용자</div>
+                                <ul class="app-usage-list">
+                                    <li><span>관리자</span><span class="value" data-usage="users.admins">-</span></li>
+                                    <li><span>일반 사용자</span><span class="value" data-usage="users.members">-</span></li>
+                                    <li><span>최근 7일 접속</span><span class="value" data-usage="users.activeLast7Days">-</span></li>
+                                    <li><span>최근 30일 접속</span><span class="value" data-usage="users.activeLast30Days">-</span></li>
+                                    <li><span>최근 30일 가입</span><span class="value" data-usage="users.joinedLast30Days">-</span></li>
+                                    <li><span>접속한 적 있는 사용자</span><span class="value" data-usage="users.loggedIn">-</span></li>
+                                    <li><span>아직 접속하지 않은 사용자</span><span class="value" data-usage="users.neverLoggedIn">-</span></li>
+                                    <li id="appUsageWithoutCompany"><span>회사 미지정 사용자</span><span class="value" data-usage="users.withoutCompany">-</span></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="app-usage-section"><i class="fas fa-envelope-open-text"></i> 가입·초대</div>
+                                <ul class="app-usage-list">
+                                    <li><span>가입 방식</span><span class="value" id="appUsageJoinPolicy">-</span></li>
+                                    <li><span>진행중인 초대</span><span class="value" data-usage="membership.invitationsPending">-</span></li>
+                                    <li><span>만료된 초대</span><span class="value" data-usage="membership.invitationsExpired">-</span></li>
+                                    <li><span>수락된 초대</span><span class="value" data-usage="membership.invitationsAccepted">-</span></li>
+                                    <li><span>최근 30일 초대 수락</span><span class="value" data-usage="membership.acceptedLast30Days">-</span></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="app-usage-section"><i class="fas fa-cubes"></i> 구성 요소</div>
+                                <ul class="app-usage-list">
+                                    <li><span>화면</span><span class="value" data-usage="resources.viewObjects">-</span></li>
+                                    <li><span>메뉴</span><span class="value" data-usage="resources.menus">-</span></li>
+                                    <li><span>워크플로우</span><span class="value" data-usage="resources.workflows">-</span></li>
+                                    <li><span>Rest API</span><span class="value" data-usage="resources.restApis">-</span></li>
+                                    <li><span>스케줄 작업</span><span class="value" data-usage="resources.schedulerJobs">-</span></li>
+                                    <li><span>데이터베이스</span><span class="value" data-usage="resources.databases">-</span></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="app-usage-section"><i class="fas fa-sitemap"></i> 조직</div>
+                                <ul class="app-usage-list">
+                                    <li><span>회사</span><span class="value" data-usage="organization.companies">-</span></li>
+                                    <li><span>사용자 그룹</span><span class="value" data-usage="organization.userGroups">-</span></li>
+                                </ul>
+                                <div class="app-usage-section"><i class="fas fa-history"></i> 최근 가입</div>
+                                <ul class="app-usage-list app-usage-recent" id="appUsageRecentJoins">
+                                    <li class="empty">-</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        // 이 조각은 jQuery/Application.js 보다 먼저 들어가므로 순수 JS로 쓰고, DOM 이 준비된 뒤에 부른다.
+        const APP_USAGE_JOIN_POLICY = {INVITE_ONLY: '초대만', APPROVAL: '승인 후 가입', OPEN: '바로 가입'};
+        const APP_USAGE_AUTHORITY = {APPLICATION_ADMIN: '관리자', APPLICATION_USER: '사용자'};
+
+        function appUsageValue(data, path) {
+            return path.split('.').reduce(function(value, key) { return value == null ? null : value[key]; }, data);
+        }
+
+        function appUsageDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (isNaN(date.getTime())) return value;
+            const pad = function(n) { return String(n).padStart(2, '0'); };
+            return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate())
+                + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+        }
+
+        function renderAppUsage(data) {
+            document.querySelectorAll('.app-usage [data-usage]').forEach(function(el) {
+                const value = appUsageValue(data, el.getAttribute('data-usage'));
+                el.textContent = value == null ? '-' : Number(value).toLocaleString();
+            });
+
+            const policy = data.membership.joinPolicy;
+            document.getElementById('appUsageJoinPolicy').textContent = APP_USAGE_JOIN_POLICY[policy] || policy || '-';
+
+            // 회사가 없는 애플리케이션은 모든 사용자가 회사 미지정이라 의미가 없으므로 숨긴다.
+            document.getElementById('appUsageWithoutCompany').style.display = data.organization.companies > 0 ? '' : 'none';
+
+            const list = document.getElementById('appUsageRecentJoins');
+            list.innerHTML = '';
+            const joins = data.membership.recentJoins || [];
+            if (joins.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'empty';
+                li.textContent = '가입 기록이 없습니다.';
+                list.appendChild(li);
+                return;
+            }
+            joins.forEach(function(join) {
+                const li = document.createElement('li');
+                const email = document.createElement('span');
+                email.className = 'text-truncate mr-2';
+                email.textContent = join.userName || join.email || '(알 수 없음)';
+                if (join.email) email.title = join.email;
+                const meta = document.createElement('span');
+                meta.className = 'meta text-nowrap';
+                meta.textContent = (APP_USAGE_AUTHORITY[join.authority] || join.authority || '') + ' · ' + appUsageDate(join.joinedAt);
+                li.appendChild(email);
+                li.appendChild(meta);
+                list.appendChild(li);
+            });
+        }
+
+        function loadAppUsage() {
+            const error = document.getElementById('appUsageError');
+            fetch('/' + encodeURIComponent(window.APPLICATION_ID) + '/console/api/dashboard', {credentials: 'same-origin'})
+                .then(function(response) {
+                    if (!response.ok) throw new Error(response.status);
+                    return response.json();
+                })
+                .then(function(data) {
+                    error.style.display = 'none';
+                    renderAppUsage(data);
+                })
+                .catch(function() {
+                    error.textContent = '사용현황을 불러오지 못했습니다.';
+                    error.style.display = '';
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAppUsage);
+    </script>
 </div>
 
 <div class="tab-loading" th:fragment="tab-loading">
