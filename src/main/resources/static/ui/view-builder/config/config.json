@@ -1,0 +1,13 @@
+{
+  "version": "1.0.1",
+  "paths":{
+    "module":"/ui/view-builder",
+    "actions":"/actions",
+    "builder":"/builder",
+    "components":"/components",
+    "css":"/css",
+    "data":"/data",
+    "img":"/img",
+    "runtime":"/runtime"
+  }
+}
