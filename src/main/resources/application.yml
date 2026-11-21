@@ -152,7 +152,7 @@ platform:
   # 애플리케이션 콘솔 > Plugins : pf4j 플러그인(jar)을 올려 워크플로우 PLUGIN 노드로 실행한다
   plugin:
     # 플러그인 외부 저장소. 애플리케이션별 플러그인은 {root-path}/{applicationId}/plugins 에 놓인다
-    root-path: C:/prometis
+    root-path: /app/prometis
     # 애플리케이션 하나에 등록할 수 있는 플러그인 최대 개수
     max-count: 10
     # 플러그인 jar 한 개의 최대 크기. spring.servlet.multipart 한도(50MB)와 DB 패킷 한도(MariaDB max_allowed_packet)를 넘을 수 없다
@@ -166,6 +166,6 @@ platform:
   view:
     # 화면 소스 외부 저장소. 애플리케이션별 소스는 {root-path}/{applicationId}/views/{objectCode}.html 에 놓인다.
     # 디스크에만 있으므로 서버를 여러 대 두면 이 경로를 공유 저장소(NFS 등)로 잡아야 한다
-    root-path: C:/prometis
+    root-path: /app/prometis
     # 화면 소스 파일 한 개의 최대 크기
     max-file-size: 2MB
