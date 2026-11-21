@@ -308,7 +308,7 @@
         function init() {
             var codes = {
                 "ObjectType":[
-                    {code:"FILE",name:"파일"},
+                    {code:"FILE",name:"소스코드"},
                     {code:"VIEW_BUILDER",name:"화면빌더"}
                 ],
                 "Boolean":[
@@ -329,7 +329,7 @@
         }
 
         function typeLabel(type) {
-            const labels = {FILE:'파일', VIEW_BUILDER:'화면빌더'};
+            const labels = {FILE:'소스코드', VIEW_BUILDER:'화면빌더'};
             return labels[type] || type;
         }
 
@@ -417,6 +417,11 @@
             );
         }
 
+        function alertError(error) {
+            const message = error && error.responseJSON && error.responseJSON.message;
+            alert(message || 'error');
+        }
+
         function isEmpty(v) {
             return (v == undefined || v == null || v == '');
         }
@@ -434,10 +439,14 @@
             httpClient.post(`/${APPLICATION_ID}/console/api/object`,{},getContent(),
                 function(response){
                     alert("저장완료되었습니다.");
+                    SELECTED_OBJECT_ID = response && response.id;
                     getList();
+                    if(response && response.id) {
+                        setContentData(response);
+                    }
                 },
                 function(error){
-                    alert('error');
+                    alertError(error);
                 }
             );
         }
@@ -449,13 +458,23 @@
                   getList();
               },
               function(error){
-                  alert('error');
+                  alertError(error);
               }
           );
         }
 
         function deleteContent() {
           let id = $("#id").val();
+            if(isEmpty(id)) {
+                return;
+            }
+            const type = $("#type").val();
+            const message = type === 'FILE'
+                ? '오브젝트를 삭제합니다. 서버에 저장된 HTML 소스 파일도 함께 지워집니다. 계속할까요?'
+                : '오브젝트를 삭제합니다. 계속할까요?';
+            if(!confirm(message)) {
+                return;
+            }
 
           httpClient.delete(`/${APPLICATION_ID}/console/api/object/${id}`, {},
               function(response){
@@ -475,7 +494,6 @@
                 objectCode:response.objectCode,
                 objectName:response.objectName,
                 type:response.type,
-                path:response.path,
                 usePermissionValidation:response.usePermissionValidation,
                 useAuthValidation:response.useAuthValidation,
                 useToolbar:response.useToolbar
@@ -488,7 +506,6 @@
                 objectCode: $("#objectCode").val(),
                 objectName: $("#objectName").val(),
                 type: $("#type").val(),
-                path: $("#path").val(),
                 useAuthValidation: $("#useAuthValidation").val(),
                 usePermissionValidation: $("#usePermissionValidation").val(),
                 useToolbar: $("#useToolbar").val()
@@ -500,7 +517,9 @@
             $("#objectCode").val(params.objectCode);
             $("#objectName").val(params.objectName);
             $("#type").val(params.type);
-            $("#path").val(params.path);
+            // 오브젝트코드와 유형은 만든 뒤 바꿀 수 없다
+            $("#objectCode").prop('readonly', !isEmpty(params.id));
+            $("#type").prop('disabled', !isEmpty(params.id));
             $("#useAuthValidation").val(String(params.useAuthValidation));
             $("#usePermissionValidation").val(String(params.usePermissionValidation));
             $("#useToolbar").val(String(params.useToolbar));
@@ -515,7 +534,6 @@
                 objectCode:'',
                 objectName:'',
                 type:'',
-                path:'',
                 usePermissionValidation:'true',
                 useAuthValidation:'true',
                 useToolbar:'true'
@@ -578,8 +596,7 @@
                             <select class="form-control" id="type"></select>
                         </div>
                         <div class="form-group col-8">
-                            <label for="path">경로</label>
-                            <input type="text" class="form-control" id="path" autocomplete="off">
+                            <label>&nbsp;</label>
                         </div>
                     </div>
                 </div>

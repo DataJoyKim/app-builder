@@ -1765,7 +1765,7 @@
 
                 <section class="ds-panel">
                     <div class="ds-panel-header">
-                        <h3><i class="fas fa-user-plus"></i> 사용자 등록 <span class="ds-count" id="candidateCount">0</span></h3>
+                        <h3><i class="fas fa-user-plus"></i> 사용자 등록<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">이미 플랫폼 계정이 있는 사람을 바로 등록합니다. 계정이 없는 사람은 '가입 · 초대' 탭에서 초대하세요.</span></span> <span class="ds-count" id="candidateCount">0</span></h3>
                         <div class="ds-panel-tools">
                             <button type="button" class="ds-btn" id="registerAllBtn" onclick="registerAll()" title="검색된 사용자를 모두 선택해서 등록합니다" disabled><i class="fas fa-check-double"></i>모두선택등록</button>
                             <button type="button" class="ds-btn ds-btn-primary" id="registerSelectedBtn" onclick="registerSelected()" disabled><i class="fas fa-check"></i>선택 등록 (<span id="registerSelectedCount">0</span>)</button>
@@ -1780,9 +1780,6 @@
                         <span><strong id="selectedCount">0</strong>명 선택<button type="button" class="ds-link" id="clearSelectionBtn" onclick="clearSelection()" style="display:none">선택 해제</button></span>
                     </div>
                     <div class="ds-list-body ds-candidate-list" id="candidateListBody"></div>
-                    <div class="ds-panel-footer">
-                        <span class="ds-hint">이미 플랫폼 계정이 있는 사람을 바로 등록합니다. 계정이 없는 사람은 '가입 · 초대' 탭에서 초대하세요.</span>
-                    </div>
                 </section>
             </div>
         </div>
@@ -1821,11 +1818,10 @@
 
                     <div class="ds-join-options">
                         <div class="ds-join-option">
-                            <div class="ds-field-label">기본 사용자 그룹</div>
+                            <div class="ds-field-label">기본 사용자 그룹<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">초대나 가입 페이지로 새로 들어온 사용자를 넣을 그룹입니다. 그 그룹의 권한을 처음부터 받습니다.</span></span></div>
                             <select class="ds-select" id="defaultUserGroupId" onchange="renderJoinSettingDirty()">
                                 <option value="">그룹에 넣지 않음</option>
                             </select>
-                            <div class="ds-hint">초대나 가입 페이지로 새로 들어온 사용자를 넣을 그룹입니다. 그 그룹의 권한을 처음부터 받습니다.</div>
                         </div>
                         <div class="ds-join-warning" id="joinOpenWarning">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -1868,13 +1864,10 @@
                         </div>
                     </div>
                     <div class="ds-section-title" style="padding: 12px 16px 0;">
-                        <span>보낸 초대 <span class="ds-count" id="invitationCount">0</span></span>
+                        <span>보낸 초대<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">초대받은 사람은 메일의 링크에서 그 이메일로 가입하거나, 기존 계정으로 로그인해 수락합니다. 링크는 한 번만 쓸 수 있고, 같은 이메일을 다시 초대하면 이전 링크는 쓸 수 없게 됩니다.</span></span> <span class="ds-count" id="invitationCount">0</span></span>
                         <button type="button" class="ds-btn" onclick="getInvitationList()"><i class="fas fa-sync-alt"></i>새로고침</button>
                     </div>
                     <div class="ds-invite-list" id="invitationListBody"></div>
-                    <div class="ds-panel-footer">
-                        <span class="ds-hint">초대받은 사람은 메일의 링크에서 그 이메일로 가입하거나, 기존 계정으로 로그인해 수락합니다. 링크는 한 번만 쓸 수 있고, 같은 이메일을 다시 초대하면 이전 링크는 쓸 수 없게 됩니다.</span>
-                    </div>
                 </section>
 
                 <!-- 가입 페이지: 저장된 가입 방식에 따라 꺼짐 / 승인 / 자유 -->
@@ -1900,13 +1893,10 @@
 
                     <div id="joinRequestSection">
                         <div class="ds-section-title" style="padding: 12px 16px 0;">
-                            <span>가입 신청 <span class="ds-count" id="joinRequestCount">0</span></span>
+                            <span>가입 신청<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">승인하면 사용자로 등록되고 기본 사용자 그룹에 들어갑니다. 거절하면 신청이 지워지고, 다시 신청할 수 있습니다.</span></span> <span class="ds-count" id="joinRequestCount">0</span></span>
                             <button type="button" class="ds-btn" onclick="getJoinRequestList()"><i class="fas fa-sync-alt"></i>새로고침</button>
                         </div>
                         <div class="ds-invite-list" id="joinRequestListBody"></div>
-                        <div class="ds-panel-footer">
-                            <span class="ds-hint">승인하면 사용자로 등록되고 기본 사용자 그룹에 들어갑니다. 거절하면 신청이 지워지고, 다시 신청할 수 있습니다.</span>
-                        </div>
                     </div>
                 </section>
             </div>

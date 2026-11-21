@@ -433,11 +433,6 @@
         margin-bottom: 6px;
     }
 
-    .usergroup-field-hint {
-        font-size: 11.5px;
-        color: #9199a3;
-        margin-top: 5px;
-    }
 
     .usergroup-field-row {
         display: flex;
@@ -1531,9 +1526,8 @@
                                         <input type="text" id="code" class="usergroup-input" placeholder="group_code" autocomplete="off" oninput="onUserGroupFieldChange('code', this.value)">
                                     </div>
                                     <div class="usergroup-field">
-                                        <label>상위 사용자그룹</label>
+                                        <label>상위 사용자그룹<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">트리에서 드래그하여 상위 그룹을 변경할 수 있습니다.</span></span></label>
                                         <input type="text" id="parentUserGroupNmDisplay" class="usergroup-input-readonly" readonly>
-                                        <div class="usergroup-field-hint">트리에서 드래그하여 상위 그룹을 변경할 수 있습니다.</div>
                                     </div>
                                 </div>
                             </div>

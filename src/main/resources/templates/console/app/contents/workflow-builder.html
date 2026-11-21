@@ -1205,10 +1205,6 @@
         margin-bottom: 8px;
     }
 
-    .wf-condition-else-help {
-        font-size: 11.5px;
-        color: #9199a3;
-    }
 
     .wf-condition-textarea {
         font-family: "Consolas", "Menlo", "Monaco", monospace;
@@ -1546,6 +1542,7 @@
             {code: "REST_CLIENT", name: "Rest Client", icon: "/dist/img/func-restclient.png", description: "등록된 외부 REST 서버를 호출하여 연동합니다."},
             {code: "MESSAGE_PROCESSOR", name: "메시지처리", icon: "/dist/img/func-message.png", description: "스크립트로 요청/응답 메시지를 가공하고 변환합니다."},
             {code: "NOTIFICATION", name: "알림", icon: "/dist/img/func-notification.png", description: "이메일 등 채널로 알림을 발송합니다."},
+            {code: "PLUGIN", name: "플러그인", icon: "/dist/img/func-plugin.svg", description: "등록한 플러그인(jar)의 pluginPath 를 실행합니다."},
             //{code: "FILE", name: "파일", icon: "/dist/img/func-file.svg", description: "등록된 파일저장소에서 파일을 조회·업로드·삭제합니다."},
             {code: "CONDITION", name: "조건분기 (IF)", icon: "/dist/img/func-condition.svg", description: "if / else if / else 로 흐름을 여러 갈래로 나눕니다."},
             {code: "ERROR_MESSAGE", name: "에러메시지", icon: "/dist/img/func-error.svg", description: "흐름을 멈추고 지정한 status, code, message, contents 로 에러응답을 돌려줍니다."}
@@ -1555,6 +1552,8 @@
     const STEP_ITEM_ID_PREFIX = 'step-item-';
     const CONDITION_TYPE = 'CONDITION';
     const ERROR_MESSAGE_TYPE = 'ERROR_MESSAGE';
+    const PLUGIN_TYPE = 'PLUGIN';
+    let pluginPathList = [];       // 플러그인 노드에서 고르는 pluginPath 목록 [{pluginId, pluginPath, displayName, ...}]
     const DEFAULT_ERROR_STATUS = 400;
     const BRANCH_ELSE = 'ELSE';               // else 가지를 가리키는 branchId 자리값
     const EDGE_DEFAULT = 'DEFAULT';
@@ -1622,6 +1621,7 @@
         getWorkflowList();
         setPermissionCodesMaster();
         setIpGroupsMaster();
+        loadPluginPaths();
         resetContent();
     }
 
@@ -2240,6 +2240,86 @@
     function removeDomainChip(domain) {
         currentDomainList = currentDomainList.filter(item => item.domain !== domain);
         renderDomainChips();
+    }
+
+    /* ================= Plugin node ================= */
+
+    function loadPluginPaths(onLoaded) {
+        httpClient.get(`/${APPLICATION_ID}/console/api/plugin/path`, {},
+            function(response) {
+                pluginPathList = response || [];
+                if (onLoaded) onLoaded();
+            },
+            function(error) {
+                pluginPathList = [];
+            }
+        );
+    }
+
+    function pluginPathLabel(path) {
+        return path.displayName ? `${path.pluginPath} (${path.displayName})` : path.pluginPath;
+    }
+
+    // 노드의 기능코드(pluginPath)로 플러그인을 거꾸로 찾아 두 선택상자를 채운다.
+    function renderDrawerPluginFields(node) {
+        const current = pluginPathList.find(path => path.pluginPath === node.functionName);
+        const pluginIds = [...new Set(pluginPathList.map(path => path.pluginId))];
+
+        const $plugin = $("#drawerPluginId");
+        $plugin.empty().append($('<option value=""></option>').text(pluginIds.length ? '플러그인 선택' : '등록된 pluginPath 가 없습니다'));
+        for (const pluginId of pluginIds) {
+            $plugin.append($('<option></option>').val(pluginId).text(pluginId));
+        }
+        $plugin.val(current ? current.pluginId : '');
+
+        renderDrawerPluginPaths(node.functionName);
+
+        const missing = node.functionName && !current;
+        $("#drawerPluginMissing").toggle(!!missing).text(missing ? `등록되지 않은 pluginPath 입니다: ${node.functionName}` : '');
+    }
+
+    function renderDrawerPluginPaths(selectedPath) {
+        const pluginId = $("#drawerPluginId").val();
+        const $path = $("#drawerPluginPath");
+        $path.empty().append($('<option value=""></option>').text(pluginId ? 'pluginPath 선택' : '플러그인을 먼저 선택하세요'));
+
+        for (const path of pluginPathList.filter(item => item.pluginId === pluginId)) {
+            $path.append($('<option></option>').val(path.pluginPath).text(pluginPathLabel(path)));
+        }
+        $path.val(pluginPathList.some(item => item.pluginId === pluginId && item.pluginPath === selectedPath) ? selectedPath : '');
+    }
+
+    function onDrawerPluginChange() {
+        renderDrawerPluginPaths(null);
+        onDrawerPluginPathChange();
+    }
+
+    function onDrawerPluginPathChange() {
+        if (!activeNodeId) return;
+        const node = getNode(activeNodeId);
+        if (!node) return;
+
+        const pluginPath = $("#drawerPluginPath").val() || '';
+        const path = pluginPathList.find(item => item.pluginPath === pluginPath);
+
+        node.functionName = pluginPath;
+        node.displayName = path ? (path.displayName || `${path.pluginId} : ${path.pluginPath}`) : defaultDisplayName(PLUGIN_TYPE);
+        $("#drawerPluginMissing").hide();
+        updateStepItemView(activeNodeId);
+    }
+
+    // 플러그인 관리 화면을 팝업으로 띄운다. 닫으면 pluginPath 목록을 다시 읽어 노드 선택상자에 반영한다.
+    function openPluginManagement() {
+        App.modalPopup.open(`/${APPLICATION_ID}/console/plugin-manage`, {title:'플러그인 관리', size:'modal-fullscreen-md', height:'92vh', messageId:'PLUGIN_REQUEST'});
+
+        $('#popup').one('hidden.bs.modal', function() {
+            loadPluginPaths(function() {
+                const node = activeNodeId ? getNode(activeNodeId) : null;
+                if (node && node.functionType === PLUGIN_TYPE) {
+                    renderDrawerPluginFields(node);
+                }
+            });
+        });
     }
 
     // IP 관리 화면을 팝업으로 띄운다. 닫으면 그룹 목록을 다시 읽어 선택 목록에 바로 반영한다.
@@ -3773,6 +3853,7 @@
         const info = getFunctionTypeInfo(node.functionType) || {};
         const isCondition = node.functionType === CONDITION_TYPE;
         const isErrorMessage = node.functionType === ERROR_MESSAGE_TYPE;
+        const isPlugin = node.functionType === PLUGIN_TYPE;
 
         $("#drawerTitle").text(isCondition ? '조건분기 설정' : (isErrorMessage ? '에러메시지 설정' : '노드 설정'));
         $("#drawerTypeChip img").attr('src', info.icon || '');
@@ -3783,7 +3864,12 @@
 
         // 조건분기는 실행할 기능도, 내보낼 메시지도 없다.
         // 에러메시지는 거기에 더해 읽을 요청메시지도 없다. 응답 내용은 contents 에 적은 메시지ID로 고른다.
-        $("#drawerFunctionNameField").toggle(!isCondition && !isErrorMessage);
+        // 플러그인 노드는 기능코드(=pluginPath)를 직접 치지 않고 플러그인과 pluginPath 를 골라서 정한다.
+        $("#drawerFunctionNameField").toggle(!isCondition && !isErrorMessage && !isPlugin);
+        $("#drawerPluginField").toggle(isPlugin);
+        if (isPlugin) {
+            renderDrawerPluginFields(node);
+        }
         $("#drawerMessageFields").toggle(!isErrorMessage);
         $("#drawerResponseMessageField").toggle(!isCondition);
         $("#drawerFunctionSettingButton").toggle(!isCondition && !isErrorMessage);
@@ -3858,7 +3944,7 @@
         $list.append(`
             <div class="wf-condition-else">
                 <span class="wf-branch-label is-else">else</span>
-                <span class="wf-condition-else-help">위 조건에 모두 걸리지 않으면 else 가지로 흐릅니다.</span>
+                <span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">위 조건에 모두 걸리지 않으면 else 가지로 흐릅니다.</span></span>
             </div>
         `);
     }
@@ -4001,12 +4087,15 @@
     }
 
     function openPopupFunctionSetting(type, functionName) {
-        if(!functionName) {
+        if(!functionName && type !== PLUGIN_TYPE) {
             alert("기능코드를 입력해주세요.");
             return;
         }
 
-        if(type === 'SQL') {
+        if(type === PLUGIN_TYPE) {
+            openPluginManagement();
+        }
+        else if(type === 'SQL') {
             App.modalPopup.open(`/${APPLICATION_ID}/console/workflow-sql`,{title:'SQL 설정',size:"modal-fullscreen-md",height:"92vh",messageId:'FUNC_REQUEST'},{functionName:functionName});
         }
         else if(type === 'ENTITY') {
@@ -4086,8 +4175,8 @@
                     <button type="button" onclick="fitView()" title="화면맞춤"><i class="fas fa-expand"></i></button>
                 </div>
 
+                <!-- 하단 문구 -->
                 <div class="wf-canvas-hint">
-                    포트를 끌어 다른 노드에 놓으면 연결됩니다. 여러 갈래를 같은 노드로 모을 수 있습니다.
                 </div>
 
                 <aside class="wf-node-drawer" id="nodeDrawer">
@@ -4108,6 +4197,13 @@
                             <label>기능코드</label>
                             <input type="text" id="drawerFunctionName" class="form-control form-control-sm" placeholder="기능코드 입력" autocomplete="off" oninput="onDrawerFieldChange('functionName', this.value)">
                         </div>
+                        <div class="wf-field" id="drawerPluginField" style="display:none;">
+                            <label>플러그인<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">요청메시지(IN) 행 전체를 플러그인에 넘기고, 플러그인이 돌려준 행을 응답메시지(OUT)에 담습니다. 플러그인과 pluginPath 는 [상세 설정 열기] 의 플러그인 관리에서 등록합니다.</span></span></label>
+                            <select id="drawerPluginId" class="form-control form-control-sm" onchange="onDrawerPluginChange()"></select>
+                            <label style="margin-top:8px;">pluginPath</label>
+                            <select id="drawerPluginPath" class="form-control form-control-sm" onchange="onDrawerPluginPathChange()"></select>
+                            <div class="wf-field-help" id="drawerPluginMissing" style="display:none;color:#dc2626;"></div>
+                        </div>
                         <div class="wf-field-row" id="drawerMessageFields">
                             <div class="wf-field">
                                 <label>요청메시지ID (IN)</label>
@@ -4119,20 +4215,16 @@
                             </div>
                         </div>
                         <div class="wf-field" id="drawerConditionField" style="display:none;">
-                            <label>조건</label>
+                            <label>조건<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">위에서부터 차례로 판정해서 처음 참이 된 조건의 가지로 흐릅니다. params 는 요청메시지ID(IN) 슬롯의 배열입니다.</span></span></label>
                             <div id="drawerConditionList"></div>
                             <button type="button" class="btn btn-default btn-block btn-sm" onclick="addCondition()">
                                 <i class="fas fa-plus"></i> else if 추가
                             </button>
-                            <div class="wf-field-help">
-                                위에서부터 차례로 판정해서 처음 참이 된 조건의 가지로 흐릅니다.
-                                params 는 요청메시지ID(IN) 슬롯의 배열입니다.
-                            </div>
                         </div>
                         <div id="drawerErrorResponseField" style="display:none;">
                             <div class="wf-field-row">
                                 <div class="wf-field" style="flex:0 0 90px;">
-                                    <label>status</label>
+                                    <label>status<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">흐름이 이 노드에 닿으면 이후 노드는 실행하지 않고 위 내용으로 에러응답을 돌려줍니다. status 는 HTTP 상태코드(400~599)로도 쓰이며, 범위를 벗어나면 400 으로 보냅니다.</span></span></label>
                                     <input type="number" id="drawerErrorStatus" class="form-control form-control-sm" min="400" max="599" placeholder="400" autocomplete="off" oninput="onDrawerErrorResponseChange('status', this.value)">
                                 </div>
                                 <div class="wf-field">
@@ -4145,16 +4237,8 @@
                                 <textarea id="drawerErrorMessage" class="form-control form-control-sm" rows="3" placeholder="사용자에게 보여줄 에러메시지" oninput="onDrawerErrorResponseChange('message', this.value)"></textarea>
                             </div>
                             <div class="wf-field">
-                                <label>contents</label>
+                                <label>contents<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">응답에 함께 담아 보낼 메시지ID 입니다. 여러 개는 쉼표로 구분합니다. 앞 노드들이 채워둔 메시지가 그대로 담깁니다.</span></span></label>
                                 <input type="text" id="drawerErrorContents" class="form-control form-control-sm" placeholder="예) ME_EVAL0001_01, ME_EVAL0001_02" autocomplete="off" oninput="onDrawerErrorResponseChange('contents', this.value)">
-                                <div class="wf-field-help">
-                                    응답에 함께 담아 보낼 메시지ID 입니다. 여러 개는 쉼표로 구분합니다.
-                                    앞 노드들이 채워둔 메시지가 그대로 담깁니다.
-                                </div>
-                            </div>
-                            <div class="wf-field-help">
-                                흐름이 이 노드에 닿으면 이후 노드는 실행하지 않고 위 내용으로 에러응답을 돌려줍니다.
-                                status 는 HTTP 상태코드(400~599)로도 쓰이며, 범위를 벗어나면 400 으로 보냅니다.
                             </div>
                         </div>
                         <button type="button" class="btn btn-outline-primary btn-block btn-sm" id="drawerFunctionSettingButton" onclick="openDrawerFunctionSetting()">
@@ -4188,19 +4272,15 @@
                             </div>
                         </div>
                         <div class="wf-field">
-                            <label>권한</label>
+                            <label>권한<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">인증 사용 시, 여기 등록한 권한 중 하나를 가진 사용자만 실행할 수 있습니다. 변경한 설정은 상단 저장 버튼을 눌러야 반영됩니다.</span></span></label>
                             <div id="permissionChips" class="wf-permission-chips"></div>
                             <div class="wf-permission-add">
                                 <select id="permissionSelect" class="form-control form-control-sm"></select>
                                 <button type="button" class="btn btn-default btn-sm" onclick="addPermissionChip()">추가</button>
                             </div>
-                            <div class="wf-field-help">
-                                인증 사용 시, 여기 등록한 권한 중 하나를 가진 사용자만 실행할 수 있습니다.
-                                변경한 설정은 상단 저장 버튼을 눌러야 반영됩니다.
-                            </div>
                         </div>
                         <div class="wf-field">
-                            <label>IP 접근제어</label>
+                            <label>IP 접근제어<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">여기 등록한 IP그룹의 허용 IP에서만 실행할 수 있습니다. 하나도 등록하지 않으면 IP 제한 없이 실행됩니다. IP그룹과 허용 IP는 톱니바퀴 버튼(또는 Security &gt; IP 관리)에서 등록합니다.</span></span></label>
                             <div id="ipGroupChips" class="wf-permission-chips"></div>
                             <div class="wf-permission-add">
                                 <select id="ipGroupSelect" class="form-control form-control-sm"></select>
@@ -4209,25 +4289,15 @@
                                     <i class="fas fa-cog"></i>
                                 </button>
                             </div>
-                            <div class="wf-field-help">
-                                여기 등록한 IP그룹의 허용 IP에서만 실행할 수 있습니다. 하나도 등록하지 않으면 IP 제한 없이 실행됩니다.
-                                IP그룹과 허용 IP는 톱니바퀴 버튼(또는 Security &gt; IP 관리)에서 등록합니다.
-                            </div>
                         </div>
                         <div class="wf-field">
-                            <label>도메인 접근제어</label>
+                            <label>도메인 접근제어<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">요청의 Referer(없으면 Origin) 도메인이 여기 등록한 도메인일 때만 실행할 수 있습니다. 하나도 등록하지 않으면 도메인 제한 없이 실행됩니다.<br> 와일드카드: <code>*.example.com</code>(하위 도메인 전체, example.com 자신은 제외), <code>dev-*.example.com</code>, <code>*</code>(전체). 포트는 비교하지 않습니다.</span></span></label>
                             <div id="domainChips" class="wf-permission-chips"></div>
                             <div class="wf-permission-add">
                                 <input type="text" id="domainInput" class="form-control form-control-sm"
                                        placeholder="portal.example.com 또는 *.example.com" autocomplete="off"
                                        onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addDomainChip(); }">
                                 <button type="button" class="btn btn-default btn-sm" onclick="addDomainChip()">추가</button>
-                            </div>
-                            <div class="wf-field-help">
-                                요청의 Referer(없으면 Origin) 도메인이 여기 등록한 도메인일 때만 실행할 수 있습니다.
-                                하나도 등록하지 않으면 도메인 제한 없이 실행됩니다.<br>
-                                와일드카드: <code>*.example.com</code>(하위 도메인 전체, example.com 자신은 제외),
-                                <code>dev-*.example.com</code>, <code>*</code>(전체). 포트는 비교하지 않습니다.
                             </div>
                         </div>
                     </div>

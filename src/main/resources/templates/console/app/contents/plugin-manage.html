@@ -1,0 +1,719 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #plugin-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #plugin-app .ds-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    #plugin-app .ds-list-panel,
+    #plugin-app .ds-detail-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #plugin-app .ds-list-panel {
+        flex: 0 0 360px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #plugin-app .ds-detail-panel {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #plugin-app .ds-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        flex-wrap: wrap;
+    }
+
+    #plugin-app .ds-panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #plugin-app .ds-panel-header h3 i {
+        color: #4A90E2;
+    }
+
+    #plugin-app .ds-panel-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #plugin-app .ds-btn-divider {
+        width: 1px;
+        align-self: stretch;
+        background: #e5e7eb;
+        margin: 0 2px;
+    }
+
+    #plugin-app .ds-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color .12s ease;
+    }
+
+    #plugin-app .ds-btn:hover { background: #f1f3f5; }
+    #plugin-app .ds-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    #plugin-app .ds-btn-primary {
+        background: #4A90E2;
+        border-color: #4A90E2;
+        color: #fff;
+    }
+
+    #plugin-app .ds-btn-primary:hover { background: #3d7fce; }
+    #plugin-app .ds-btn-danger { color: #dc2626; }
+    #plugin-app .ds-btn-danger:hover { background: #fef2f2; }
+
+    #plugin-app .ds-count {
+        font-size: 11.5px;
+        color: #6b7280;
+    }
+
+    #plugin-app .ds-list-body {
+        max-height: 620px;
+        min-height: 200px;
+        overflow-y: auto;
+    }
+
+    #plugin-app .ds-list-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #f1f3f5;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+    }
+
+    #plugin-app .ds-list-item:hover { background: #fafbfc; }
+
+    #plugin-app .ds-list-item.selected {
+        background: #eef5ff;
+        border-left-color: #4A90E2;
+    }
+
+    #plugin-app .ds-list-item-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    #plugin-app .ds-list-item-name {
+        font-size: 13px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #plugin-app .ds-list-item-code {
+        font-size: 11px;
+        color: #9199a3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #plugin-app .pl-chip {
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+        background: #f1f3f5;
+        color: #6b7280;
+    }
+
+    #plugin-app .pl-chip.started { background: #e7f7ee; color: #15803d; }
+    #plugin-app .pl-chip.stopped { background: #f1f3f5; color: #6b7280; }
+    #plugin-app .pl-chip.failed { background: #fef2f2; color: #dc2626; }
+    #plugin-app .pl-chip.pending { background: #fff7e6; color: #b45309; }
+
+    #plugin-app .ds-list-empty,
+    #plugin-app .ds-detail-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 50px 16px;
+        color: #9199a3;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    #plugin-app .ds-list-empty i,
+    #plugin-app .ds-detail-empty i {
+        font-size: 22px;
+        color: #d7dbe0;
+    }
+
+    #plugin-app .ds-detail-body { padding: 16px; }
+
+    #plugin-app .ds-section {
+        border: 1px solid #eef0f2;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    #plugin-app .ds-section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+        font-weight: 700;
+        font-size: 12px;
+        color: #374151;
+        letter-spacing: .03em;
+    }
+
+    #plugin-app .ds-section-header i { color: #4A90E2; }
+
+    #plugin-app .ds-section-header .ds-panel-tools { margin-left: auto; }
+
+    #plugin-app .pl-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px 16px;
+        padding: 14px;
+    }
+
+    #plugin-app .pl-info dt {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 3px;
+    }
+
+    #plugin-app .pl-info dd {
+        margin: 0;
+        font-size: 13px;
+        word-break: break-all;
+    }
+
+    #plugin-app .pl-info .pl-wide { grid-column: 1 / -1; }
+
+    #plugin-app table.pl-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+    #plugin-app table.pl-table th {
+        text-align: left;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #6b7280;
+        padding: 8px 10px;
+        border-bottom: 1px solid #eef0f2;
+        background: #fff;
+    }
+
+    #plugin-app table.pl-table td {
+        padding: 6px 10px;
+        border-bottom: 1px solid #f5f6f7;
+        vertical-align: middle;
+    }
+
+    #plugin-app table.pl-table input.form-control {
+        font-size: 12.5px;
+        padding: 4px 8px;
+        height: auto;
+        border-radius: 6px;
+    }
+
+    #plugin-app .pl-empty-row td {
+        text-align: center;
+        color: #9199a3;
+        padding: 18px;
+    }
+
+
+
+    @media (max-width: 900px) {
+        #plugin-app .ds-layout { flex-direction: column; }
+        #plugin-app .ds-list-panel { flex: 1 1 auto; width: 100%; }
+        #plugin-app .ds-detail-panel { width: 100%; }
+    }
+</style>
+<script th:fragment="script">
+        let PLUGIN_LIST = [];
+        let SELECTED_PLUGIN_ID = null;
+        let POLICY = {maxCount: 10, maxFileSize: 30 * 1024 * 1024, syncIntervalSeconds: 30};
+        let UPLOAD_TARGET_PLUGIN_ID = null;   // jar 교체 대상 (신규 등록이면 null)
+
+        $( document ).ready(function() {
+            getPolicy();
+            getPluginList();
+        });
+
+        function apiUrl(path) {
+            return `/${APPLICATION_ID}/console/api/plugin${path || ''}`;
+        }
+
+        function alertError(error) {
+            const message = error && error.responseJSON && error.responseJSON.message;
+            alert(message || 'error');
+        }
+
+        function formatSize(bytes) {
+            if(bytes == null) return '-';
+            if(bytes < 1024) return bytes + ' B';
+            if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+        }
+
+        function formatDate(value) {
+            return value ? String(value).replace('T', ' ').substring(0, 19) : '-';
+        }
+
+        function getPolicy() {
+            httpClient.get(apiUrl('/policy'), {},
+                function(response) {
+                    POLICY = response || POLICY;
+                    renderCount();
+                },
+                function(error) { /* 기본값 사용 */ }
+            );
+        }
+
+        function getPluginList(keepSelection) {
+            httpClient.get(apiUrl(''), {},
+                function(response) {
+                    PLUGIN_LIST = response || [];
+                    renderCount();
+                    renderPluginList();
+
+                    const selected = PLUGIN_LIST.find(p => p.pluginId === SELECTED_PLUGIN_ID);
+                    if(selected) renderDetail(selected);
+                    else if(PLUGIN_LIST.length > 0 && !keepSelection) selectPlugin(PLUGIN_LIST[0].pluginId);
+                    else renderDetail(null);
+                },
+                function(error) { alertError(error); }
+            );
+        }
+
+        function renderCount() {
+            $("#pluginCount").text(`${PLUGIN_LIST.length} / ${POLICY.maxCount}`);
+        }
+
+        // 목표 상태와 서버들의 실제 상태를 합쳐 목록에 보여줄 칩을 고른다
+        function statusChipOf(plugin) {
+            const servers = plugin.servers || [];
+            if(servers.some(s => s.state === 'FAILED' || (s.message && s.revision === plugin.revision))) {
+                return {css: 'failed', text: '오류'};
+            }
+            if(servers.length === 0 || servers.some(s => !s.synced)) {
+                return {css: 'pending', text: '반영중'};
+            }
+            return plugin.status === 'STARTED' ? {css: 'started', text: '시작됨'} : {css: 'stopped', text: '중지됨'};
+        }
+
+        function renderPluginList() {
+            const $body = $("#pluginListBody");
+            $body.empty();
+
+            if(PLUGIN_LIST.length === 0) {
+                $body.append(`
+                    <div class="ds-list-empty">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <span>등록된 플러그인이 없습니다.<br>[등록] 으로 플러그인 jar 를 올려주세요.</span>
+                    </div>
+                `);
+                return;
+            }
+
+            for(const plugin of PLUGIN_LIST) {
+                const chip = statusChipOf(plugin);
+                const $item = $(`
+                    <div class="ds-list-item">
+                        <div class="ds-list-item-main">
+                            <span class="ds-list-item-name"></span>
+                            <span class="ds-list-item-code"></span>
+                        </div>
+                        <span class="pl-chip"></span>
+                    </div>
+                `);
+                $item.find('.ds-list-item-name').text(plugin.pluginId);
+                $item.find('.ds-list-item-code').text(`v${plugin.version || '-'} · pluginPath ${(plugin.paths || []).length}개`);
+                $item.find('.pl-chip').addClass(chip.css).text(chip.text);
+                if(plugin.pluginId === SELECTED_PLUGIN_ID) $item.addClass('selected');
+
+                $item.on('click', function() { selectPlugin(plugin.pluginId); });
+                $body.append($item);
+            }
+        }
+
+        function selectPlugin(pluginId) {
+            SELECTED_PLUGIN_ID = pluginId;
+            renderPluginList();
+            renderDetail(PLUGIN_LIST.find(p => p.pluginId === pluginId));
+        }
+
+        function selectedPlugin() {
+            return PLUGIN_LIST.find(p => p.pluginId === SELECTED_PLUGIN_ID);
+        }
+
+        function renderDetail(plugin) {
+            $("#pluginDetailEmpty").toggle(!plugin);
+            $("#pluginDetailBody").toggle(!!plugin);
+            $("#pluginActions button").prop('disabled', !plugin);
+            if(!plugin) return;
+
+            const started = plugin.status === 'STARTED';
+            $("#btnStart").prop('disabled', started);
+            $("#btnStop").prop('disabled', !started);
+
+            const chip = statusChipOf(plugin);
+            $("#infoPluginId").text(plugin.pluginId);
+            $("#infoStatus").empty().append($('<span class="pl-chip"></span>').addClass(chip.css).text(chip.text))
+                .append($('<span style="margin-left:6px;font-size:12px;color:#6b7280;"></span>').text(`목표: ${started ? '시작' : '중지'}`));
+            $("#infoVersion").text(plugin.version || '-');
+            $("#infoProvider").text(plugin.provider || '-');
+            $("#infoRevision").text(plugin.revision);
+            $("#infoFile").text(`${plugin.originalFilename || '-'} (${formatSize(plugin.fileSize)})`);
+            $("#infoUpdatedAt").text(formatDate(plugin.updatedAt));
+            $("#infoCreatedAt").text(formatDate(plugin.createdAt));
+            $("#infoDescription").text(plugin.description || '-');
+            $("#infoChecksum").text(plugin.checksum || '-');
+
+            renderServers(plugin);
+            renderPaths(plugin.paths || []);
+        }
+
+        function renderServers(plugin) {
+            const $body = $("#serverTableBody");
+            $body.empty();
+
+            const servers = plugin.servers || [];
+            if(servers.length === 0) {
+                $body.append(`<tr class="pl-empty-row"><td colspan="5">아직 반영한 서버가 없습니다.</td></tr>`);
+                return;
+            }
+
+            for(const server of servers) {
+                const $row = $(`
+                    <tr>
+                        <td name="serverId"></td>
+                        <td name="revision"></td>
+                        <td name="state"></td>
+                        <td name="message"></td>
+                        <td name="updatedAt"></td>
+                    </tr>
+                `);
+                $row.find('[name=serverId]').text(server.serverId + (server.currentServer ? ' (이 서버)' : ''));
+                $row.find('[name=revision]').text(server.revision == null ? '-' : server.revision);
+                const css = server.state === 'FAILED' ? 'failed' : (!server.synced ? 'pending' : (server.state === 'STARTED' ? 'started' : 'stopped'));
+                $row.find('[name=state]').append($('<span class="pl-chip"></span>').addClass(css).text(server.state + (server.synced ? '' : ' (반영대기)')));
+                $row.find('[name=message]').text(server.message || '');
+                $row.find('[name=updatedAt]').text(formatDate(server.updatedAt));
+                $body.append($row);
+            }
+        }
+
+        function renderPaths(paths) {
+            const $body = $("#pathTableBody");
+            $body.empty();
+            for(const path of paths) addPathRow(path);
+            refreshEmptyPathRow();
+        }
+
+        function addPathRow(path) {
+            const $row = $(`
+                <tr name="path-row">
+                    <td><input type="text" class="form-control" name="pluginPath" placeholder="예) order/create" autocomplete="off"></td>
+                    <td><input type="text" class="form-control" name="displayName" placeholder="노드에 보일 이름" autocomplete="off"></td>
+                    <td><input type="text" class="form-control" name="description" autocomplete="off"></td>
+                    <td style="width:44px;text-align:center;">
+                        <button type="button" class="ds-btn ds-btn-danger" title="삭제"><i class="fas fa-times"></i></button>
+                    </td>
+                </tr>
+            `);
+            $row.find('[name=pluginPath]').val((path && path.pluginPath) || '');
+            $row.find('[name=displayName]').val((path && path.displayName) || '');
+            $row.find('[name=description]').val((path && path.description) || '');
+            $row.find('button').on('click', function() {
+                $row.remove();
+                refreshEmptyPathRow();
+            });
+
+            $("#pathTableBody .pl-empty-row").remove();
+            $("#pathTableBody").append($row);
+            return $row;
+        }
+
+        function addEmptyPath() {
+            if(!selectedPlugin()) return;
+            addPathRow(null).find('[name=pluginPath]').focus();
+        }
+
+        function refreshEmptyPathRow() {
+            const $body = $("#pathTableBody");
+            if($body.find('tr[name=path-row]').length === 0 && $body.find('.pl-empty-row').length === 0) {
+                $body.append(`<tr class="pl-empty-row"><td colspan="4">등록된 pluginPath 가 없습니다. [추가] 로 이 플러그인이 처리할 경로를 등록해주세요.</td></tr>`);
+            }
+        }
+
+        function savePaths() {
+            const plugin = selectedPlugin();
+            if(!plugin) return;
+
+            const paths = [];
+            const seen = {};
+            let invalid = null;
+            $("#pathTableBody tr[name=path-row]").each(function() {
+                const pluginPath = $(this).find('[name=pluginPath]').val().trim();
+                if(!/^[A-Za-z0-9][A-Za-z0-9_./-]{0,99}$/.test(pluginPath)) {
+                    invalid = invalid || `pluginPath 는 영문/숫자로 시작하고 영문/숫자/ _ . - / 만 쓸 수 있습니다(100자 이내). [${pluginPath}]`;
+                }
+                if(seen[pluginPath]) invalid = invalid || `pluginPath 가 중복됩니다. [${pluginPath}]`;
+                seen[pluginPath] = true;
+
+                paths.push({
+                    pluginPath: pluginPath,
+                    displayName: $(this).find('[name=displayName]').val().trim(),
+                    description: $(this).find('[name=description]').val().trim()
+                });
+            });
+            if(invalid) {
+                alert(invalid);
+                return;
+            }
+
+            httpClient.put(apiUrl(`/${encodeURIComponent(plugin.pluginId)}/path`), {}, paths,
+                function(response) {
+                    alert('pluginPath 를 저장했습니다.');
+                    getPluginList(true);
+                },
+                function(error) { alertError(error); }
+            );
+        }
+
+        /* ---------- 등록 / jar 교체 ---------- */
+        function openUpload(replace) {
+            const plugin = selectedPlugin();
+            if(replace && !plugin) return;
+            if(!replace && PLUGIN_LIST.length >= POLICY.maxCount) {
+                alert(`플러그인은 최대 ${POLICY.maxCount}개까지 등록할 수 있습니다. 같은 Plugin-Id 의 jar 를 교체하려면 플러그인을 선택하고 [JAR 교체] 를 눌러주세요.`);
+                return;
+            }
+            UPLOAD_TARGET_PLUGIN_ID = replace ? plugin.pluginId : null;
+            $("#pluginFile").val('').trigger('click');
+        }
+
+        function onPluginFileSelected(input) {
+            const file = input.files && input.files[0];
+            if(!file) return;
+
+            if(!file.name.toLowerCase().endsWith('.jar')) {
+                alert('플러그인은 jar 파일만 등록할 수 있습니다.');
+                return;
+            }
+            if(file.size > POLICY.maxFileSize) {
+                alert(`플러그인 jar 는 ${formatSize(POLICY.maxFileSize)} 를 넘을 수 없습니다.`);
+                return;
+            }
+
+            const message = UPLOAD_TARGET_PLUGIN_ID
+                ? `[${UPLOAD_TARGET_PLUGIN_ID}] 의 jar 를 '${file.name}' 로 교체하고 다시 로드합니다. 계속하시겠습니까?`
+                : `'${file.name}' 을(를) 플러그인으로 등록합니다. 같은 Plugin-Id 가 이미 있으면 새 버전으로 교체됩니다. 계속하시겠습니까?`;
+            if(!confirm(message)) {
+                $(input).val('');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            if(UPLOAD_TARGET_PLUGIN_ID) formData.append('pluginId', UPLOAD_TARGET_PLUGIN_ID);
+
+            $.ajax({
+                type: 'POST',
+                url: apiUrl('/upload'),
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() { httpClient.showLoadingBar(); },
+                success: function(response) {
+                    alert(`[${response.pluginId}] v${response.version || '-'} 을(를) 등록했습니다.`);
+                    SELECTED_PLUGIN_ID = response.pluginId;
+                    getPluginList(true);
+                },
+                error: function(error) {
+                    if(error && error.responseJSON && error.responseJSON.message) alertError(error);
+                    else alert('업로드에 실패했습니다. 파일 크기가 업로드 한도를 넘지 않는지 확인해주세요.');
+                },
+                complete: function() {
+                    httpClient.hideLoadingBar();
+                    $(input).val('');
+                }
+            });
+        }
+
+        /* ---------- 시작 / 중지 / 리로드 / 삭제 ---------- */
+        function pluginAction(action) {
+            const plugin = selectedPlugin();
+            if(!plugin) return;
+
+            const labels = {start: '시작', stop: '중지', reload: '리로드'};
+            if(action === 'stop' && !confirm(`[${plugin.pluginId}] 를 중지하면 이 플러그인을 쓰는 워크플로우 노드가 실패합니다. 중지하시겠습니까?`)) return;
+            if(action === 'reload' && !confirm(`[${plugin.pluginId}] 를 모든 서버에서 다시 로드합니다. 계속하시겠습니까?`)) return;
+
+            httpClient.post(apiUrl(`/${encodeURIComponent(plugin.pluginId)}/${action}`), {}, {},
+                function(response) {
+                    alert(`${labels[action]} 요청을 반영했습니다. 다른 서버는 최대 ${POLICY.syncIntervalSeconds}초 안에 반영됩니다.`);
+                    getPluginList(true);
+                },
+                function(error) { alertError(error); }
+            );
+        }
+
+        function deletePlugin() {
+            const plugin = selectedPlugin();
+            if(!plugin) return;
+            if(!confirm(`[${plugin.pluginId}] 와 pluginPath 를 모두 삭제합니다. 삭제하시겠습니까?`)) return;
+
+            httpClient.delete(apiUrl(`/${encodeURIComponent(plugin.pluginId)}`), {},
+                function(response) {
+                    alert('삭제했습니다.');
+                    SELECTED_PLUGIN_ID = null;
+                    getPluginList();
+                },
+                function(error) { alertError(error); }
+            );
+        }
+</script>
+<div th:fragment="view">
+<div id="plugin-app">
+    <input type="file" id="pluginFile" accept=".jar" style="display:none;" onchange="onPluginFileSelected(this)">
+
+    <div class="ds-layout">
+        <aside class="ds-list-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-puzzle-piece"></i> Plugins <span class="ds-count" id="pluginCount"></span></h3>
+                <div class="ds-panel-tools">
+                    <button type="button" class="ds-btn" onclick="getPluginList(true)" title="새로고침"><i class="fas fa-sync-alt"></i></button>
+                    <button type="button" class="ds-btn ds-btn-primary" onclick="openUpload(false)"><i class="fas fa-upload"></i>등록</button>
+                </div>
+            </div>
+            <div class="ds-list-body" id="pluginListBody"></div>
+        </aside>
+
+        <section class="ds-detail-panel">
+            <div class="ds-panel-header">
+                <h3><i class="fas fa-sliders-h"></i> 플러그인 상세</h3>
+                <div class="ds-panel-tools" id="pluginActions">
+                    <button type="button" class="ds-btn" id="btnStart" onclick="pluginAction('start')"><i class="fas fa-play"></i>시작</button>
+                    <button type="button" class="ds-btn" id="btnStop" onclick="pluginAction('stop')"><i class="fas fa-stop"></i>중지</button>
+                    <button type="button" class="ds-btn" onclick="pluginAction('reload')"><i class="fas fa-redo"></i>리로드</button>
+                    <span class="ds-btn-divider"></span>
+                    <button type="button" class="ds-btn" onclick="openUpload(true)"><i class="fas fa-file-upload"></i>JAR 교체</button>
+                    <button type="button" class="ds-btn ds-btn-danger" onclick="deletePlugin()"><i class="fas fa-trash"></i>삭제</button>
+                </div>
+            </div>
+
+            <div class="ds-detail-empty" id="pluginDetailEmpty">
+                <i class="fas fa-puzzle-piece"></i>
+                <span>왼쪽 목록에서 플러그인을 선택해주세요.</span>
+            </div>
+
+            <div class="ds-detail-body" id="pluginDetailBody" style="display:none;">
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-info-circle"></i><span>기본 정보</span></div>
+                    <dl class="pl-info">
+                        <div><dt>Plugin-Id</dt><dd id="infoPluginId"></dd></div>
+                        <div><dt>상태</dt><dd id="infoStatus"></dd></div>
+                        <div><dt>버전</dt><dd id="infoVersion"></dd></div>
+                        <div><dt>제공자</dt><dd id="infoProvider"></dd></div>
+                        <div><dt>Revision</dt><dd id="infoRevision"></dd></div>
+                        <div><dt>파일</dt><dd id="infoFile"></dd></div>
+                        <div><dt>등록일시</dt><dd id="infoCreatedAt"></dd></div>
+                        <div><dt>변경일시</dt><dd id="infoUpdatedAt"></dd></div>
+                        <div class="pl-wide"><dt>설명</dt><dd id="infoDescription"></dd></div>
+                        <div class="pl-wide"><dt>SHA-256</dt><dd id="infoChecksum" style="font-family:monospace;font-size:11.5px;"></dd></div>
+                    </dl>
+                </div>
+
+                <div class="ds-section">
+                    <div class="ds-section-header">
+                        <i class="fas fa-route"></i><span>pluginPath</span><span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">워크플로우의 플러그인 노드는 pluginPath 를 골라 실행하며, 플러그인은 <code>execute(pluginPath, request, context)</code> 로 받은 pluginPath 로 요청을 구분합니다. pluginPath 는 애플리케이션 안에서 유일해야 하고, 워크플로우에서 쓰고 있는 pluginPath 는 뺄 수 없습니다.</span></span>
+                        <div class="ds-panel-tools">
+                            <button type="button" class="ds-btn" onclick="addEmptyPath()"><i class="fas fa-plus"></i>추가</button>
+                            <button type="button" class="ds-btn ds-btn-primary" onclick="savePaths()"><i class="fas fa-save"></i>저장</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="pl-table">
+                            <thead>
+                            <tr>
+                                <th style="width:32%;">pluginPath</th>
+                                <th style="width:28%;">표시명</th>
+                                <th>설명</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody id="pathTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="ds-section">
+                    <div class="ds-section-header"><i class="fas fa-server"></i><span>서버별 반영 상태</span><span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">플러그인 jar 는 DB 에 보관되고, 서버마다 자기 플러그인 경로로 내려받아 로드합니다. 요청을 받은 서버는 바로 반영하고, 다른 서버는 주기적으로(platform.plugin.sync-interval) 따라옵니다. 리로드와 JAR 교체는 애플리케이션 재시작 없이 반영됩니다.</span></span></div>
+                    <div style="overflow-x:auto;">
+                        <table class="pl-table">
+                            <thead>
+                            <tr>
+                                <th>서버</th>
+                                <th>Revision</th>
+                                <th>상태</th>
+                                <th>메시지</th>
+                                <th>반영일시</th>
+                            </tr>
+                            </thead>
+                            <tbody id="serverTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</div>
+</html>

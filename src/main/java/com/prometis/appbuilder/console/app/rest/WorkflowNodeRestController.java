@@ -11,6 +11,8 @@ import com.prometis.appbuilder.app.node.WorkflowNode;
 import com.prometis.appbuilder.app.node.WorkflowNodeRepository;
 import com.prometis.appbuilder.app.node.code.FunctionType;
 import com.prometis.appbuilder.app.notification.Notification;
+import com.prometis.appbuilder.app.plugin.PluginPath;
+import com.prometis.appbuilder.app.plugin.PluginPathRepository;
 import com.prometis.appbuilder.app.notification.NotificationRepository;
 import com.prometis.appbuilder.app.query.Query;
 import com.prometis.appbuilder.app.query.QueryRepository;
@@ -49,6 +51,8 @@ public class WorkflowNodeRestController {
     private NotificationRepository notificationRepository;
     @Autowired
     private FileHandlerRepository fileHandlerRepository;
+    @Autowired
+    private PluginPathRepository pluginPathRepository;
     @Autowired
     private AppConsoleWorkflowScope appConsoleWorkflowScope;
 
@@ -191,6 +195,15 @@ public class WorkflowNodeRestController {
             Optional<FileHandler> func = fileHandlerRepository.findByApplicationIdAndHandlerName(applicationId, w.getFunctionName());
             if(func.isPresent()){
                 displayName = func.get().getDisplayName();
+            }
+        }
+        else if(FunctionType.PLUGIN.equals(w.getFunctionType())) {
+            Optional<PluginPath> func = pluginPathRepository.findWithPlugin(applicationId, w.getFunctionName());
+            if(func.isPresent()){
+                PluginPath path = func.get();
+                displayName = (path.getDisplayName() == null || path.getDisplayName().isBlank())
+                        ? path.getPlugin().getPluginId() + " : " + path.getPluginPath()
+                        : path.getDisplayName();
             }
         }
         else if(FunctionType.CONDITION.equals(w.getFunctionType())) {

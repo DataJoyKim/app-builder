@@ -1,1 +1,6 @@
 rootProject.name = 'admin-builder'
+
+// 플러그인 개발용 API (호스트와 플러그인이 함께 쓰는 com.prometis.plugin.api). 플러그인 개발자에게 이 jar 를 배포한다.
+include 'plugin-api'
+// WorkflowNodePlugin 을 구현하는 플러그인 템플릿 (com.template). ./gradlew :plugin-template:jar 로 업로드용 jar 를 만든다.
+include 'plugin-template'

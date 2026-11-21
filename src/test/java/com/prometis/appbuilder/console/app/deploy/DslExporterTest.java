@@ -27,6 +27,8 @@ import com.prometis.appbuilder.app.security.company.CompanyRepository;
 import com.prometis.appbuilder.app.view.MenuRepository;
 import com.prometis.appbuilder.app.view.ViewActionRepository;
 import com.prometis.appbuilder.app.view.ViewObjectRepository;
+import com.prometis.appbuilder.app.view.ViewSourceStorage;
+import com.prometis.appbuilder.app.view.code.ObjectType;
 import com.prometis.appbuilder.app.view.domain.Menu;
 import com.prometis.appbuilder.app.view.domain.ViewAction;
 import com.prometis.appbuilder.app.view.domain.ViewObject;
@@ -40,10 +42,14 @@ import com.prometis.appbuilder.console.app.deploy.dsl.DslJson;
 import com.prometis.appbuilder.console.app.deploy.dsl.DslValidator;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,9 +60,21 @@ import static org.junit.jupiter.api.Assertions.*;
  * 실제 메타데이터 테이블(H2)에서 DSL 파일을 만들고, 파일 경로/내용/민감정보 제외/검증 통과를 확인한다.
  */
 @DataJpaTest
-@Import({DslExporter.class, DslValidator.class})
+@Import({DslExporter.class, DslValidator.class, ViewSourceStorage.class})
 class DslExporterTest {
     private static final String APP = "ehr";
+
+    // 파일 유형 화면의 HTML 소스 저장소 ({root-path}/{applicationId}/views)
+    @TempDir
+    static Path viewRoot;
+
+    @DynamicPropertySource
+    static void viewRootPath(DynamicPropertyRegistry registry) {
+        registry.add("platform.view.root-path", () -> viewRoot.toString());
+    }
+
+    @Autowired
+    private ViewSourceStorage viewSourceStorage;
 
     @Autowired
     private DslExporter dslExporter;
@@ -119,6 +137,12 @@ class DslExporterTest {
                 .applicationId(APP).objectCode("V001").actionName("save").displayName("저장").type("BUTTON").script("alert(1);").build());
         viewActionRepository.save(ViewAction.builder()
                 .applicationId(APP).objectCode("V001").actionName("noScript").displayName("스크립트 없음").type("BUTTON").build());
+        // 파일 유형 화면: HTML 소스는 디스크에 있고 DSL 에는 page.html 로 그대로 들어간다. 소스가 없으면 page.html 도 없다
+        viewObjectRepository.save(ViewObject.builder()
+                .applicationId(APP).objectCode("F001").objectName("파일 화면").type(ObjectType.FILE).build());
+        viewSourceStorage.write(APP, "F001", "<div>파일 화면</div>\r\n<script>$(function(){});</script>\n");
+        viewObjectRepository.save(ViewObject.builder()
+                .applicationId(APP).objectCode("F002").objectName("소스 없는 파일 화면").type(ObjectType.FILE).build());
         Menu parent = menuRepository.save(Menu.builder().applicationId(APP).menuCd("ROOT").menuNm("상위").build());
         menuRepository.save(Menu.builder().applicationId(APP).menuCd("M001").menuNm("메뉴").parentMenu(parent).viewObject(viewObject).build());
 
@@ -144,6 +168,9 @@ class DslExporterTest {
                 "ehr/datasource/notification-provider/MAIL.json",
                 "ehr/view/menu/M001.json",
                 "ehr/view/menu/ROOT.json",
+                "ehr/view/view-object/F001/metadata.json",
+                "ehr/view/view-object/F001/page.html",
+                "ehr/view/view-object/F002/metadata.json",
                 "ehr/view/view-object/V001/actions/noScript/metadata.json",
                 "ehr/view/view-object/V001/actions/save/metadata.json",
                 "ehr/view/view-object/V001/actions/save/script.js",
@@ -189,11 +216,21 @@ class DslExporterTest {
         assertFalse(saveAction.has("script"));
         assertEquals("alert(1);", byPath.get("ehr/view/view-object/V001/actions/save/script.js"));
 
+        JsonNode fileView = DslJson.read(byPath.get("ehr/view/view-object/F001/metadata.json"));
+        assertEquals("FILE", fileView.path("type").asText());
+        assertFalse(fileView.has("path"));
+        assertTrue(fileView.path("content").isNull());
+        // 소스는 저장된 글자 그대로 (줄바꿈 포함)
+        assertEquals("<div>파일 화면</div>\r\n<script>$(function(){});</script>\n", byPath.get("ehr/view/view-object/F001/page.html"));
+
         JsonNode menu = DslJson.read(byPath.get("ehr/view/menu/M001.json"));
         assertEquals("ROOT", menu.path("parentMenuCd").asText());
         assertEquals("V001", menu.path("objectCode").asText());
 
-        assertEquals(List.of(), dslValidator.validate(APP, byPath));
+        // 소스 없는 파일 유형 화면만 경고한다
+        assertEquals(List.of("ehr/view/view-object/F002/metadata.json"),
+                dslValidator.validate(APP, byPath).stream().map(issue -> issue.path()).toList());
+        assertFalse(DslValidator.hasError(dslValidator.validate(APP, byPath)));
 
         // 같은 메타데이터면 같은 파일이 나온다 (비교가 흔들리지 않는다)
         entityManager.clear();

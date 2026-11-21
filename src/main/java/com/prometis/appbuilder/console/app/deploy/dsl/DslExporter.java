@@ -43,6 +43,8 @@ import com.prometis.appbuilder.app.view.MenuRepository;
 import com.prometis.appbuilder.app.view.ViewActionRepository;
 import com.prometis.appbuilder.app.view.ViewCodeRepository;
 import com.prometis.appbuilder.app.view.ViewObjectContentRepository;
+import com.prometis.appbuilder.app.view.ViewSourceStorage;
+import com.prometis.appbuilder.app.view.code.ObjectType;
 import com.prometis.appbuilder.app.view.ViewObjectRepository;
 import com.prometis.appbuilder.app.view.domain.Layout;
 import com.prometis.appbuilder.app.view.domain.Menu;
@@ -112,6 +114,7 @@ public class DslExporter {
 
     private final ViewObjectRepository viewObjectRepository;
     private final ViewObjectContentRepository viewObjectContentRepository;
+    private final ViewSourceStorage viewSourceStorage;
     private final ViewActionRepository viewActionRepository;
     private final ViewCodeRepository viewCodeRepository;
     private final MenuRepository menuRepository;
@@ -180,6 +183,12 @@ public class DslExporter {
                     viewObject,
                     contents.get(objectCode),
                     codes.getOrDefault(objectCode, List.of()))));
+
+            // 파일 유형 화면의 HTML 소스({root-path}/{applicationId}/views/{objectCode}.html)는 {objectCode}/page.html 로 그대로 둔다. 아직 저장하지 않았으면 없다
+            if(ObjectType.FILE.equals(viewObject.getType()) && ViewObject.isValidCode(objectCode)) {
+                viewSourceStorage.read(applicationId, objectCode).ifPresent(source -> files.add(new DslFile(
+                        DslFolder.VIEW_OBJECT.pageFilePath(applicationId, objectCode), DslFolder.VIEW_OBJECT, objectCode, source)));
+            }
 
             // 액션은 {objectCode}/actions/{actionName}/metadata.json, 스크립트가 있으면 그 옆의 script.js 로 뗀다
             for(ViewAction action : actions.getOrDefault(objectCode, List.of())) {
@@ -547,17 +556,17 @@ public class DslExporter {
 
     // ---- view ----
 
-    // 액션(actions)은 같은 폴더의 actions/{actionName}/ 에 있다
+    // 액션(actions)은 같은 폴더의 actions/{actionName}/ 에, 파일 유형 화면의 HTML 소스는 같은 폴더의 page.html 에 있다.
+    // content 는 화면빌더(VIEW_BUILDER) 화면의 레이아웃 JSON 이다
     private Map<String, Object> viewObject(ViewObject viewObject, ViewObjectContent content, List<ViewCode> codes) {
         Map<String, Object> d = DslJson.document(DslFolder.VIEW_OBJECT);
         d.put("objectCode", viewObject.getObjectCode());
         d.put("objectName", viewObject.getObjectName());
         d.put("type", viewObject.getType());
-        d.put("path", viewObject.getPath());
         d.put("useAuthValidation", viewObject.getUseAuthValidation());
         d.put("usePermissionValidation", viewObject.getUsePermissionValidation());
         d.put("useToolbar", viewObject.getUseToolbar());
-        d.put("content", content == null ? null : DslJson.jsonOrText(content.getContent()));
+        d.put("content", content == null || ObjectType.FILE.equals(viewObject.getType()) ? null : DslJson.jsonOrText(content.getContent()));
         d.put("codes", codes.stream()
                 .sorted(Comparator.comparing(ViewCode::getName))
                 .map(code -> {

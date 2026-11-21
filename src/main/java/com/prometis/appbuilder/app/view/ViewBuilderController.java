@@ -26,6 +26,8 @@ public class ViewBuilderController {
     ViewGuard viewGuard;
     @Autowired
     ApplicationGuard applicationGuard;
+    @Autowired
+    ViewSourceStorage viewSourceStorage;
 
     @GetMapping("")
     public String moveAppIndex(
@@ -93,10 +95,24 @@ public class ViewBuilderController {
             }
         }
 
-        model.addAttribute("objectPath","/pages" + viewObject.getPath());
         model.addAttribute("objectCode",objectCode);
 
         if(ObjectType.FILE.equals(viewObject.getType())) {
+            // HTML 소스는 {root-path}/{applicationId}/views/{objectCode}.html. 템플릿으로 해석하지 않고 글자 그대로 넣는다(th:utext)
+            String source;
+            try {
+                source = ViewObject.isValidCode(objectCode)
+                        ? viewSourceStorage.read(applicationId, objectCode).orElse(null)
+                        : null;
+            }
+            catch (ViewSourceException e) {
+                source = null;
+            }
+            if(source == null) {
+                return "error/error404";
+            }
+
+            model.addAttribute("objectSource", source);
             return "template/mf-template";
         }
         else if(ObjectType.VIEW_BUILDER.equals(viewObject.getType())) {

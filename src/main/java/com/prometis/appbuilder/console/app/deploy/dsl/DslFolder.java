@@ -20,6 +20,7 @@ import java.util.Set;
  *     {applicationId}/workflow/message/{processorName}/script.js     : 변환 스크립트 본문
  *   화면(VIEW_OBJECT)
  *     {applicationId}/view/view-object/{objectCode}/metadata.json                      : 화면 설정
+ *     {applicationId}/view/view-object/{objectCode}/page.html                          : 파일(FILE) 유형 화면의 HTML 소스 (FILE 일 때만)
  *     {applicationId}/view/view-object/{objectCode}/actions/{actionName}/metadata.json : 화면 액션 설정
  *     {applicationId}/view/view-object/{objectCode}/actions/{actionName}/script.js     : 액션 스크립트 (스크립트가 있을 때만)
  */
@@ -47,7 +48,7 @@ public enum DslFolder {
     SCHEDULER("scheduler", "SchedulerJob", "jobCode",
             List.of("jobName", "cronExpression", "enabled")),
     VIEW_OBJECT("view/view-object", "ViewObject", "objectCode",
-            List.of("objectName"), Set.of(Part.ACTION, Part.ACTION_SCRIPT)),
+            List.of("objectName"), Set.of(Part.PAGE, Part.ACTION, Part.ACTION_SCRIPT)),
     MENU("view/menu", "Menu", "menuCd",
             List.of("menuNm")),
     SITE("view/site", "Site", null,
@@ -59,10 +60,12 @@ public enum DslFolder {
     public static final String FILE_EXTENSION = ".json";
     public static final String SQL_EXTENSION = ".sql";
     public static final String SCRIPT_EXTENSION = ".js";
+    public static final String HTML_EXTENSION = ".html";
     // {ID}/ 폴더를 두는 메타데이터의 파일명
     public static final String METADATA_FILE_NAME = "metadata" + FILE_EXTENSION;
     public static final String SQL_FILE_NAME = "query" + SQL_EXTENSION;
     public static final String SCRIPT_FILE_NAME = "script" + SCRIPT_EXTENSION;
+    public static final String PAGE_FILE_NAME = "page" + HTML_EXTENSION;
     public static final String ACTIONS_DIRECTORY = "actions";
     // 화면 액션 metadata.json 의 kind
     public static final String ACTION_KIND = "ViewAction";
@@ -75,6 +78,8 @@ public enum DslFolder {
         SQL,
         // {ID}/script.js (메시지 프로세서 스크립트). 화면 액션의 script.js 는 ACTION_SCRIPT
         SCRIPT,
+        // {ID}/page.html (파일 유형 화면의 HTML 소스)
+        PAGE,
         ACTION,
         ACTION_SCRIPT
     }
@@ -138,6 +143,10 @@ public enum DslFolder {
         return directoryOf(applicationId, id) + SCRIPT_FILE_NAME;
     }
 
+    public String pageFilePath(String applicationId, String id) {
+        return directoryOf(applicationId, id) + PAGE_FILE_NAME;
+    }
+
     public String actionFilePath(String applicationId, String id, String actionName) {
         return actionDirectoryOf(applicationId, id, actionName) + METADATA_FILE_NAME;
     }
@@ -155,10 +164,11 @@ public enum DslFolder {
     }
 
     /**
-     * DSL 이 관리하는 파일(.json, .sql, .js)인지. 저장소에서 이 확장자가 아닌 파일은 건드리지 않는다.
+     * DSL 이 관리하는 파일(.json, .sql, .js, .html)인지. 저장소에서 이 확장자가 아닌 파일은 건드리지 않는다.
      */
     public static boolean isDslFile(String path) {
-        return path.endsWith(FILE_EXTENSION) || path.endsWith(SQL_EXTENSION) || path.endsWith(SCRIPT_EXTENSION);
+        return path.endsWith(FILE_EXTENSION) || path.endsWith(SQL_EXTENSION) || path.endsWith(SCRIPT_EXTENSION)
+                || path.endsWith(HTML_EXTENSION);
     }
 
     /**
@@ -199,6 +209,9 @@ public enum DslFolder {
         }
         else if(names.length == 2 && SCRIPT_FILE_NAME.equals(names[1])) {
             location = new Location(folder, id, Part.SCRIPT, null);
+        }
+        else if(names.length == 2 && PAGE_FILE_NAME.equals(names[1])) {
+            location = new Location(folder, id, Part.PAGE, null);
         }
         else if(names.length == 4 && ACTIONS_DIRECTORY.equals(names[1]) && METADATA_FILE_NAME.equals(names[3])) {
             location = new Location(folder, id, Part.ACTION, names[2]);

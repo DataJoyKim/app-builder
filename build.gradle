@@ -28,6 +28,7 @@ repositories {
 }
 
 dependencies {
+	implementation project(':plugin-api')
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
@@ -57,6 +58,12 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// PluginRuntimeTest 가 템플릿 플러그인 jar 를 실제로 로드해 본다
+evaluationDependsOn(':plugin-template')
+
 tasks.named('test') {
 	useJUnitPlatform()
+	def templateJar = project(':plugin-template').tasks.named('jar')
+	dependsOn templateJar
+	systemProperty 'plugin.template.jar', templateJar.get().archiveFile.get().asFile.absolutePath
 }

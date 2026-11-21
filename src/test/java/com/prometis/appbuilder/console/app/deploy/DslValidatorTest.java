@@ -294,6 +294,27 @@ class DslValidatorTest {
         return action;
     }
 
+    @Test
+    void 화면_page_html_은_파일_유형에만_있고_파일_유형인데_없으면_경고다() {
+        Map<String, String> files = new LinkedHashMap<>();
+        put(files, DslFolder.VIEW_OBJECT, "F001", Map.of("objectName", "파일", "type", "FILE"));
+        files.put(DslFolder.VIEW_OBJECT.pageFilePath(APP, "F001"), "<div></div>");
+        put(files, DslFolder.VIEW_OBJECT, "F002", Map.of("objectName", "소스 없음", "type", "FILE"));
+        put(files, DslFolder.VIEW_OBJECT, "V001", Map.of("objectName", "빌더", "type", "VIEW_BUILDER"));
+        files.put(DslFolder.VIEW_OBJECT.pageFilePath(APP, "V001"), "<div></div>");
+        files.put(DslFolder.VIEW_OBJECT.pageFilePath(APP, "NONE"), "<div></div>");
+
+        List<DslIssue> issues = validator.validate(APP, files);
+
+        assertEquals(3, issues.size(), issues.toString());
+        assertTrue(issues.stream().anyMatch(issue -> !issue.isError() && issue.path().endsWith("F002/metadata.json")));
+        assertTrue(issues.stream().anyMatch(issue -> issue.isError() && issue.path().endsWith("V001/page.html")));
+        assertTrue(issues.stream().anyMatch(issue -> issue.isError() && issue.path().endsWith("NONE/page.html")));
+        assertEquals(java.util.Optional.of(DslFolder.Part.PAGE),
+                DslFolder.locate(APP, "ehr/view/view-object/F001/page.html").map(DslFolder.Location::part));
+        assertTrue(DslFolder.isDslFile("ehr/view/view-object/F001/page.html"));
+    }
+
     // ---- fixture ----
 
     private static void put(Map<String, String> files, DslFolder folder, String id, Map<String, Object> fields) {

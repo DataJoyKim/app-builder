@@ -148,3 +148,24 @@ platform:
     # 바꾸면 이미 저장된 토큰은 풀 수 없으므로 연동 설정에서 토큰을 다시 넣어야 한다
     token-secret-key: ${DEPLOY_TOKEN_SECRET_KEY:app-builder-deploy-dev-secret}
     connect-timeout: 10s
+
+  # 애플리케이션 콘솔 > Plugins : pf4j 플러그인(jar)을 올려 워크플로우 PLUGIN 노드로 실행한다
+  plugin:
+    # 플러그인 외부 저장소. 애플리케이션별 플러그인은 {root-path}/{applicationId}/plugins 에 놓인다
+    root-path: C:/prometis
+    # 애플리케이션 하나에 등록할 수 있는 플러그인 최대 개수
+    max-count: 10
+    # 플러그인 jar 한 개의 최대 크기. spring.servlet.multipart 한도(50MB)와 DB 패킷 한도(MariaDB max_allowed_packet)를 넘을 수 없다
+    max-file-size: 30MB
+    # jar 원본은 DB 에 두고 서버마다 내려받아 쓴다. 다른 서버에서 올리거나 바꾼 플러그인을 이 서버에 반영하는 주기 (0s 면 기동 시에만)
+    sync-interval: 30s
+    # 콘솔에 서버별 상태를 보여줄 때 쓰는 이 서버 이름. 비어 있으면 호스트명:포트
+    server-id: ""
+
+  # 애플리케이션 콘솔 > View Builder 의 파일(FILE) 유형 화면 : 콘솔에서 작성하거나 올린 HTML 소스를 서버 디스크에 둔다
+  view:
+    # 화면 소스 외부 저장소. 애플리케이션별 소스는 {root-path}/{applicationId}/views/{objectCode}.html 에 놓인다.
+    # 디스크에만 있으므로 서버를 여러 대 두면 이 경로를 공유 저장소(NFS 등)로 잡아야 한다
+    root-path: C:/prometis
+    # 화면 소스 파일 한 개의 최대 크기
+    max-file-size: 2MB

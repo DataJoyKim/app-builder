@@ -1,0 +1,52 @@
+plugins {
+	id 'java'
+}
+
+group = 'com.template'
+version = '1.0.0'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	// 플러그인 jar 안에 함께 넣을 라이브러리 (호스트에 없는 서드파티 라이브러리를 쓸 때만 여기에 추가)
+	bundled
+	implementation.extendsFrom bundled
+}
+
+dependencies {
+	// 호스트(admin-builder)가 실행 시 제공하므로 jar 에 넣지 않는다 (넣으면 클래스가 두 벌이 되어 ClassCastException 이 난다)
+	compileOnly project(':plugin-api')
+	// @Extension 을 읽어 META-INF/extensions.idx 를 만들어준다. 이 파일이 없으면 호스트가 플러그인 구현체를 찾지 못한다
+	annotationProcessor 'org.pf4j:pf4j:3.12.0'
+
+	// 예) bundled 'com.google.code.gson:gson:2.11.0'
+}
+
+// 플러그인 jar: MANIFEST 의 Plugin-Id 가 콘솔에 등록되는 플러그인ID 이다.
+jar {
+	manifest {
+		attributes(
+				'Plugin-Id': 'template-plugin',
+				'Plugin-Version': project.version,
+				'Plugin-Provider': 'prometis',
+				'Plugin-Description': 'WorkflowNodePlugin 템플릿 (echo, 호스트 데이터소스 조회 예시)',
+				'Plugin-Class': 'com.template.TemplatePlugin'
+		)
+	}
+	from {
+		configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+}

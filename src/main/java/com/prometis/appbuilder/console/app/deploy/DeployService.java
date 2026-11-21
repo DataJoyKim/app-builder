@@ -204,7 +204,7 @@ public class DeployService {
     }
 
     /**
-     * 저장소의 {applicationId}/ 아래 .json/.sql 파일과 비교한다. 저장소에만 있는 파일은 메타데이터에서 지워진 것이므로 삭제로 본다.
+     * 저장소의 {applicationId}/ 아래 .json/.sql/.js/.html 파일과 비교한다. 저장소에만 있는 파일은 메타데이터에서 지워진 것이므로 삭제로 본다.
      *
      * @param withContent 화면에 보여줄 비교 내용(before)까지 내려받을지. 커밋할 때는 필요 없다
      */

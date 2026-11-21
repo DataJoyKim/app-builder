@@ -931,10 +931,9 @@
                         <p>커밋이 올라갈 브랜치입니다. 없으면 첫 커밋 때 기본 브랜치에서 만듭니다.</p>
                     </div>
                     <div class="rp-section-fields">
-                        <label for="gitBranch">브랜치</label>
+                        <label for="gitBranch">브랜치<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">운영 배포용 브랜치를 따로 두려면 <code>deploy</code>, <code>release</code> 처럼 별도 브랜치를 지정하세요.</span></span></label>
                         <input type="text" class="form-control" id="gitBranch" placeholder="비우면 저장소의 기본 브랜치 (예: main)" autocomplete="off" spellcheck="false">
                         <div class="rp-field-error" id="gitBranchError"></div>
-                        <div class="rp-hint">운영 배포용 브랜치를 따로 두려면 <code>deploy</code>, <code>release</code> 처럼 별도 브랜치를 지정하세요.</div>
                     </div>
                 </div>
 
@@ -952,14 +951,13 @@
                             </div>
                         </div>
                         <div id="tokenInput">
-                            <label for="gitToken">Personal Access Token<span class="rp-required">*</span></label>
+                            <label for="gitToken">Personal Access Token<span class="rp-required">*</span><span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">필요한 권한: Fine-grained 토큰은 <code>Contents: Read and write</code>, Classic 토큰은 <code>repo</code>.</span></span></label>
                             <div class="rp-input-group">
                                 <input type="password" class="form-control" id="gitToken" placeholder="github_pat_... 또는 ghp_..." autocomplete="new-password" spellcheck="false">
                                 <button type="button" class="rp-eye" id="btnTokenEye" onclick="toggleTokenVisible()" title="보기/숨기기"><i class="far fa-eye"></i></button>
                             </div>
                             <div class="rp-field-error" id="gitTokenError"></div>
                             <div class="rp-hint">
-                                필요한 권한: Fine-grained 토큰은 <code>Contents: Read and write</code>, Classic 토큰은 <code>repo</code>.
                                 <a href="#" id="btnTokenCancel" onclick="cancelTokenChange(); return false;" style="display: none; margin-left: 6px;">변경 취소</a>
                             </div>
                         </div>

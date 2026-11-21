@@ -868,9 +868,8 @@
                                 <select class="form-control" id="dataSourceName"></select>
                             </div>
                             <div class="form-group col-8">
-                                <label for="filePath">파일경로</label>
+                                <label for="filePath">파일경로<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content"><code>#{파라미터}</code> 로 요청메시지 값을 넣을 수 있습니다. 저장소경로 기준 상대경로이며 파일명까지 포함합니다.</span></span></label>
                                 <input type="text" class="form-control" id="filePath" placeholder="예) board/#{boardId}/#{fileName}" autocomplete="off">
-                                <span class="wf-help"><code>#{파라미터}</code> 로 요청메시지 값을 넣을 수 있습니다. 저장소경로 기준 상대경로이며 파일명까지 포함합니다.</span>
                             </div>
                             <div class="form-group col-12">
                                 <label>실제 파일 위치</label>
@@ -883,19 +882,16 @@
                         <div class="wf-section-header"><i class="fas fa-file-alt"></i><span>파일 내용</span></div>
                         <div class="wf-section-grid">
                             <div class="form-group col-4 wf-action-upload">
-                                <label for="fileContentEncoding">파일내용 인코딩</label>
+                                <label for="fileContentEncoding">파일내용 인코딩<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">byte[] 값은 인코딩과 상관없이 그대로 저장합니다.<br> Multipart: multipart/form-data 로 올라온 파일을 스트림 그대로 저장합니다. 파일내용 키는 쓰지않고, 업로드한 파일의 원본 파일명을 <code>#{original_filename}</code> 으로 파일경로에 쓸 수 있습니다.</span></span></label>
                                 <select class="form-control" id="fileContentEncoding" onchange="changeContentEncoding()">
                                     <option value="BASE64">Base64 (문자열)</option>
                                     <option value="TEXT">Text (UTF-8, 문자열)</option>
                                     <option value="MULTIPART">Multipart (업로드 파일)</option>
                                 </select>
-                                <span class="wf-help">byte[] 값은 인코딩과 상관없이 그대로 저장합니다.<br>
-                                    Multipart: multipart/form-data 로 올라온 파일을 스트림 그대로 저장합니다. 파일내용 키는 쓰지않고, 업로드한 파일의 원본 파일명을 <code>#{original_filename}</code> 으로 파일경로에 쓸 수 있습니다.</span>
                             </div>
                             <div class="form-group col-4 wf-content-key">
-                                <label for="fileContentKey">파일내용 키</label>
+                                <label for="fileContentKey">파일내용 키<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">업로드: 이 키의 값을 파일로 저장 / 조회: 이 키에 파일내용을 담아 응답</span></span></label>
                                 <input type="text" class="form-control" id="fileContentKey" placeholder="기본값: fileContent" autocomplete="off">
-                                <span class="wf-help">업로드: 이 키의 값을 파일로 저장 / 조회: 이 키에 파일내용을 담아 응답</span>
                             </div>
                             <div class="form-group col-4 wf-action-upload">
                                 <div class="wf-toggle-row" style="margin-top:22px;">

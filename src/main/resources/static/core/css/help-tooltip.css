@@ -1,0 +1,58 @@
+/* ============================================================
+   콘솔 공통 도움말 아이콘 (core/HelpTooltip.js)
+   제목/라벨 옆에 ? 원형 아이콘을 두고, 마우스를 올리거나 키보드로 포커스하면 설명을 툴팁으로 보여준다.
+
+   <span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">설명 (HTML 가능)</span></span>
+   ============================================================ */
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    border-radius: 50%;
+    border: 1px solid #c3c9d1;
+    background: #fff;
+    color: #6b7280;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 10.5px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+    vertical-align: middle;
+    cursor: help;
+    user-select: none;
+}
+
+.help-icon:hover,
+.help-icon:focus {
+    border-color: #4A90E2;
+    color: #4A90E2;
+    outline: none;
+}
+
+/* 툴팁에 보여줄 설명. 화면에는 보이지 않는다 */
+.help-icon .help-content {
+    display: none;
+}
+
+/* 툴팁은 body 에 붙는다 */
+.help-tooltip .tooltip-inner {
+    max-width: 300px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.55;
+    padding: 6px 10px;
+}
+
+.help-tooltip .tooltip-inner code {
+    color: #ffd8a8;
+    background: rgba(255, 255, 255, .08);
+    padding: 0 3px;
+    border-radius: 3px;
+}

@@ -1,0 +1,26 @@
+plugins {
+	id 'java-library'
+}
+
+group = 'com.prometis'
+version = '1.0.0'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// WorkflowNodePlugin 이 pf4j ExtensionPoint 를 상속하므로 플러그인 컴파일에도 pf4j 가 필요하다.
+	// 실행 시에는 호스트(admin-builder)에 있는 pf4j 를 쓰므로 플러그인 jar 에 넣지 않는다.
+	api 'org.pf4j:pf4j:3.12.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+}

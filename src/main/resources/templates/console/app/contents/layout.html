@@ -464,9 +464,8 @@
                         </select>
                     </div>
                     <div class="form-group col-6">
-                        <label for="profileImg">프로필 이미지 링크</label>
+                        <label for="profileImg">프로필 이미지 링크<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">#{userId} 는 로그인한 사용자ID로 바뀝니다. Image Manage 에서 해당 저장소 유형에 파일명을 사용자ID로 지정해 올려주세요. 이미지가 없는 사용자는 기본 이미지가 보입니다.</span></span></label>
                         <input type="text" class="form-control" id="profileImg" readonly placeholder="저장소 유형을 선택하면 /{applicationId}/image/{storageType}/#{userId} 로 설정됩니다">
-                        <small class="text-muted">#{userId} 는 로그인한 사용자ID로 바뀝니다. Image Manage 에서 해당 저장소 유형에 파일명을 사용자ID로 지정해 올려주세요. 이미지가 없는 사용자는 기본 이미지가 보입니다.</small>
                     </div>
                     <div class="form-group col-3">
                         <label for="profileImgSize">프로필 이미지 크기 (px)</label>
@@ -477,18 +476,13 @@
 
             <div class="ds-section">
                 <div class="ds-section-header">
-                    <i class="fas fa-building"></i><span>회사 선택</span>
+                    <i class="fas fa-building"></i><span>회사 선택</span><span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">켜면 앱 사이드바에 회사 선택 목록이 보여, 사용자가 소속 회사 중 하나를 골라 그 회사 기준으로 화면을 쓸 수 있습니다.</span></span>
                     <div class="ds-section-header-switch">
                         <span>사용</span>
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="useCompanySelect">
                             <label for="useCompanySelect" class="custom-control-label"></label>
                         </div>
-                    </div>
-                </div>
-                <div class="ds-section-grid">
-                    <div class="form-group col-12">
-                        <small class="text-muted">켜면 앱 사이드바에 회사 선택 목록이 보여, 사용자가 소속 회사 중 하나를 골라 그 회사 기준으로 화면을 쓸 수 있습니다.</small>
                     </div>
                 </div>
             </div>
@@ -499,12 +493,9 @@
                 </div>
                 <div class="ds-section-grid">
                     <div class="form-group col-12">
-                        <label for="loginImgLogoLink">로그인 이미지 로고 링크</label>
+                        <label for="loginImgLogoLink">로그인 이미지 로고 링크<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">로그인 화면에 보이는 로고 이미지입니다. 비워 두거나 이미지를 불러오지 못하면 애플리케이션 이름이 글자로 보입니다.</span></span></label>
                         <input type="text" class="form-control" id="loginImgLogoLink" autocomplete="off" maxlength="500" placeholder="예: /{applicationId}/image/{storageType}/logo 또는 https://.../logo.png">
-                        <small class="text-muted">
-                            로그인 화면(<a id="appLoginLink" href="#" target="_blank"></a>)에 보이는 로고 이미지입니다.
-                            비워 두거나 이미지를 불러오지 못하면 애플리케이션 이름이 글자로 보입니다.
-                        </small>
+                        <small class="text-muted">로그인 화면: <a id="appLoginLink" href="#" target="_blank"></a></small>
                     </div>
                 </div>
             </div>

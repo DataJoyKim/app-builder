@@ -306,12 +306,6 @@
         font-size: 12.5px;
     }
 
-    #file-storage-app .ds-option-help {
-        display: block;
-        margin-top: 5px;
-        font-size: 11px;
-        color: #9199a3;
-    }
 </style>
 <script th:fragment="script">
         let DATASOURCE_LIST = [];
@@ -666,9 +660,8 @@
                     <div class="ds-option-empty-hint" id="op-grid-empty-hint">저장소유형을 선택하면 옵션이 표시됩니다.</div>
                     <div class="ds-section-grid d-none" id="op-grid-local">
                         <div class="form-group col-12">
-                            <label for="rootPath">저장소경로</label>
+                            <label for="rootPath">저장소경로<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">File 노드의 파일경로는 이 경로 아래 상대경로로 붙습니다. 경로 밖(..)으로는 접근할 수 없습니다.</span></span></label>
                             <input type="text" class="form-control" id="rootPath" placeholder="예) C:/admin-builder/files" autocomplete="off">
-                            <span class="ds-option-help">File 노드의 파일경로는 이 경로 아래 상대경로로 붙습니다. 경로 밖(..)으로는 접근할 수 없습니다.</span>
                         </div>
                     </div>
                 </div>

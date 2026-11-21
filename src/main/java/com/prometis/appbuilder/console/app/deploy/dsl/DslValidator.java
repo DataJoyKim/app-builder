@@ -20,6 +20,8 @@ public class DslValidator {
     // 윈도우/맥에서 체크아웃할 수 없거나 경로를 바꿔버리는 글자
     private static final Pattern UNSAFE_ID = Pattern.compile("[\\\\/:*?\"<>|\\p{Cntrl}]");
     private static final int MAX_ID_LENGTH = 100;
+    // 화면(ViewObject) type 중 HTML 소스(page.html)를 갖는 유형
+    private static final String FILE_VIEW_TYPE = "FILE";
 
     // 워크플로우 노드 기능유형 -> functionName 이 가리키는 DSL 폴더
     private static final Map<String, DslFolder> FUNCTION_TARGETS = Map.of(
@@ -66,7 +68,7 @@ public class DslValidator {
     private void readDocument(String applicationId, String path, String content, Context context) {
         String prefix = applicationId + "/";
         if(!path.startsWith(prefix) || !DslFolder.isDslFile(path)) {
-            context.error(path, "애플리케이션 폴더(" + prefix + ") 아래의 .json/.sql/.js 파일이 아닙니다.");
+            context.error(path, "애플리케이션 폴더(" + prefix + ") 아래의 .json/.sql/.js/.html 파일이 아닙니다.");
             return;
         }
 
@@ -81,8 +83,8 @@ public class DslValidator {
         String id = location.id();
 
         switch (location.part()) {
-            // SQL, 스크립트 본문은 JSON 이 아니므로 짝이 되는 metadata.json 이 있는지만 본다(checkParts)
-            case SQL, SCRIPT, ACTION_SCRIPT -> {
+            // SQL, 스크립트, HTML 본문은 JSON 이 아니므로 짝이 되는 metadata.json 이 있는지만 본다(checkParts)
+            case SQL, SCRIPT, PAGE, ACTION_SCRIPT -> {
                 context.parts.add(new PartFile(path, location));
                 return;
             }
@@ -153,6 +155,9 @@ public class DslValidator {
                     if(folder.has(DslFolder.Part.SCRIPT)) {
                         allowed.add(folder.path() + "/{ID}/" + DslFolder.SCRIPT_FILE_NAME);
                     }
+                    if(folder.has(DslFolder.Part.PAGE)) {
+                        allowed.add(folder.path() + "/{ID}/" + DslFolder.PAGE_FILE_NAME);
+                    }
                     if(folder.has(DslFolder.Part.ACTION)) {
                         allowed.add(folder.path() + "/{ID}/" + DslFolder.ACTIONS_DIRECTORY + "/{actionName}/" + DslFolder.METADATA_FILE_NAME);
                     }
@@ -167,10 +172,12 @@ public class DslValidator {
     /**
      * {ID}/ 폴더 안의 파일끼리 짝이 맞는지 본다.
      * 쿼리는 metadata.json 과 query.sql 이, 메시지 프로세서는 metadata.json 과 script.js 가 둘 다 있어야 하고, 화면 액션은 화면 metadata.json 이, 액션 script.js 는 액션 metadata.json 이 있어야 한다.
+     * 화면 page.html 은 파일(FILE) 유형 화면에만 있다. 파일 유형인데 없으면(소스를 아직 저장하지 않음) 배포 환경에서 404 가 되므로 경고한다.
      */
     private void checkParts(String applicationId, Context context) {
         Set<String> sqlIds = new HashSet<>();
         Set<String> scriptIds = new HashSet<>();
+        Set<String> pageIds = new HashSet<>();
         Map<String, Map<String, String>> actionNames = new HashMap<>();
 
         for(PartFile part : context.parts) {
@@ -183,6 +190,16 @@ public class DslValidator {
                     (location.part() == DslFolder.Part.SQL ? sqlIds : scriptIds).add(folder + "\n" + id);
                     if(!context.exists(folder, id)) {
                         context.error(part.path, "짝이 되는 " + folder.kind() + " 파일이 없습니다. [" + folder.filePath(applicationId, id) + "]");
+                    }
+                }
+                case PAGE -> {
+                    pageIds.add(folder + "\n" + id);
+                    Document owner = context.byFolder.getOrDefault(folder, Map.of()).get(id);
+                    if(owner == null) {
+                        context.error(part.path, "짝이 되는 " + folder.kind() + " 파일이 없습니다. [" + folder.filePath(applicationId, id) + "]");
+                    }
+                    else if(!FILE_VIEW_TYPE.equals(text(owner.node, "type"))) {
+                        context.error(part.path, "HTML 소스는 파일(" + FILE_VIEW_TYPE + ") 유형 화면에만 둘 수 있습니다. [type: " + text(owner.node, "type") + "]");
                     }
                 }
                 case ACTION -> {
@@ -207,6 +224,12 @@ public class DslValidator {
                 }
             }
         }
+
+        context.byFolder.getOrDefault(DslFolder.VIEW_OBJECT, Map.of()).forEach((id, document) -> {
+            if(FILE_VIEW_TYPE.equals(text(document.node, "type")) && !pageIds.contains(DslFolder.VIEW_OBJECT + "\n" + id)) {
+                context.warning(document.path, "파일 유형 화면의 HTML 소스가 없습니다. 화면을 열면 404 가 됩니다. [" + DslFolder.VIEW_OBJECT.pageFilePath(applicationId, id) + "]");
+            }
+        });
 
         for(DslFolder folder : DslFolder.values()) {
             boolean needsSql = folder.has(DslFolder.Part.SQL);
@@ -344,6 +367,9 @@ public class DslValidator {
             }
             else if("FILE".equals(functionType)) {
                 context.warning(document.path, "노드 [" + nodeId + "] 의 파일 핸들러 [" + functionName + "] 는 DSL 대상이 아닙니다. 배포 환경에 따로 등록되어 있어야 합니다.");
+            }
+            else if("PLUGIN".equals(functionType)) {
+                context.warning(document.path, "노드 [" + nodeId + "] 의 플러그인 경로 [" + functionName + "] 는 DSL 대상이 아닙니다. 배포 환경에 플러그인(jar)과 pluginPath 가 따로 등록되어 있어야 합니다.");
             }
         }
 

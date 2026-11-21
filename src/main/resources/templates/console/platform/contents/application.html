@@ -470,10 +470,6 @@
         justify-content: space-between;
     }
 
-    #application-app .ds-modal-hint {
-        font-size: 11.5px;
-        color: #9199a3;
-    }
 </style>
 <script th:fragment="script">
         let APPLICATION_LIST = [];
@@ -1018,7 +1014,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> 관리자 생성</h5>
+                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> 관리자 생성<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">이미 애플리케이션 사용자면 권한이 관리자로 변경됩니다.</span></span></h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="ds-modal-target">대상 애플리케이션: <strong id="adminModalTarget"></strong></div>
@@ -1028,7 +1024,6 @@
                 </div>
                 <div class="ds-list-body" id="adminUserListBody"></div>
                 <div class="modal-footer">
-                    <span class="ds-modal-hint">이미 애플리케이션 사용자면 권한이 관리자로 변경됩니다.</span>
                     <div class="ds-panel-tools">
                         <button type="button" class="ds-btn" data-dismiss="modal">취소</button>
                         <button type="button" class="ds-btn ds-btn-primary" id="createAdminBtn" onclick="createAdmin()" disabled><i class="fas fa-check"></i>생성</button>

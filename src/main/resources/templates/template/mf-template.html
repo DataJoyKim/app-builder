@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="/plugins/jsgrid/jsgrid.min.css">
     <link rel="stylesheet" href="/plugins/jsgrid/jsgrid-theme.min.css">
     <link rel="stylesheet" href="/plugins/jquery-flowchart/jquery.flowchart.css">
+    <link rel="stylesheet" href="/plugins/aggrid/ag-grid.css">
+    <link rel="stylesheet" href="/plugins/aggrid/ag-theme-quartz.css">
     <link rel="stylesheet" href="/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="/plugins/codemirror/codemirror.css">
     <link rel="stylesheet" href="/plugins/codemirror/theme/darcula.css">
@@ -18,36 +20,39 @@
             display: none;
         }
     </style>
+
+    <!--
+        FILE 화면의 HTML 소스({root-path}/{applicationId}/views/{objectCode}.html)는 body 에 그대로 들어간다.
+        소스 안의 인라인 <script> 가 바로 jQuery, HttpClient 등을 쓸 수 있도록 라이브러리는 head 에서 먼저 읽는다.
+    -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="/plugins/jquery-flowchart/jquery.flowchart.js"></script>
+    <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+    <script src="/plugins/jsgrid/jsgrid.min.js"></script>
+    <script src="/plugins/codemirror/codemirror.js"></script>
+    <script src="/plugins/codemirror/mode/sql/sql.js"></script>
+    <script src="/plugins/codemirror/mode/javascript/javascript.js"></script>
+    <script src="/plugins/jstree/jstree.min.js"></script>
+    <script src="/plugins/aggrid/ag-grid-community.min.js"></script>
+    <script src="/plugins/echart/echarts.min.js"></script>
+    <script src="/dist/js/adminlte.js?v=1"></script>
+    <script src="/core/Application.js"></script>
+    <script src="/core/Util.js"></script>
+    <script src="/core/LoadingBar.js"></script>
+    <script src="/core/HttpClient.js"></script>
+    <script src="/core/Sheet.js"></script>
+    <script src="/core/Grid.js"></script>
+    <script src="/core/GridLegacy.js"></script>
+    <script src="/core/Form.js"></script>
+    <script src="/core/WorkflowClient.js"></script>
+    <script src="/core/Popup.js"></script>
+    <script src="/core/Chart.js"></script>
+    <script type="module" src="/ui/tag/mf/module.js"></script>
 </head>
 <body>
-<!-- view 내용 -->
-<div th:replace="~{${objectPath}::view}"></div>
-
-<!-- script -->
-<script src="/plugins/jquery/jquery.min.js"></script>
-<script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
-<script src="/plugins/jquery-flowchart/jquery.flowchart.js"></script>
-<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
-<script src="/plugins/jsgrid/jsgrid.min.js"></script>
-<script src="/plugins/codemirror/codemirror.js"></script>
-<script src="/plugins/codemirror/mode/sql/sql.js"></script>
-<script src="/plugins/codemirror/mode/javascript/javascript.js"></script>
-<script src="/plugins/jstree/jstree.min.js"></script>
-<script src="/dist/js/adminlte.js?v=1"></script>
-<script src="/core/Application.js"></script>
-<script src="/core/Util.js"></script>
-<script src="/core/LoadingBar.js"></script>
-<script src="/core/HttpClient.js"></script>
-<script src="/core/Sheet.js"></script>
-<script src="/core/Grid.js"></script>
-<script src="/core/GridLegacy.js"></script>
-<script src="/core/Form.js"></script>
-<script src="/core/WorkflowClient.js"></script>
-<script src="/core/Popup.js"></script>
-<script type="module" src="/ui/tag/mf/module.js"></script>
-
-<!-- common script -->
+<!-- common script (LoadingBar.render 는 document.write 라 body 안에서 부른다) -->
 <script th:inline="javascript">
     $.widget.bridge('uibutton', $.ui.button); // adminlte 버튼 충돌방지
 
@@ -55,5 +60,8 @@
     App.loadingBar.render();
     App.objectCode = [[${objectCode}]];
 </script>
+
+<!-- view 내용: 템플릿으로 해석하지 않는다 (th:utext 는 글자 그대로 출력하고 Thymeleaf 식을 실행하지 않는다) -->
+<th:block th:utext="${objectSource}"></th:block>
 </body>
 </html>

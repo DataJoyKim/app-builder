@@ -746,9 +746,6 @@
         color: #374151;
     }
 
-    #rest-api-app .test-block-title .section-desc {
-        margin-right: auto;
-    }
 
     #rest-api-app .test-block-tools {
         display: flex;
@@ -3275,21 +3272,19 @@
                                 </select>
                             </div>
                             <div class="form-group col-6">
-                                <label class="field-label" for="path">경로</label>
+                                <label class="field-label" for="path">경로<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">{이름} 으로 경로변수를 받습니다. 경로변수는 Request Param 탭의 Path Variable 에 자동으로 추가됩니다.</span></span></label>
                                 <div class="input-prefix-group">
                                     <span class="input-prefix" id="pathPrefix"></span>
                                     <input type="text" class="form-control" id="path" autocomplete="off" placeholder="/goals/{goalId}" oninput="onPathInput()">
                                 </div>
-                                <div class="field-help">{이름} 으로 경로변수를 받습니다. 경로변수는 Request Param 탭의 Path Variable 에 자동으로 추가됩니다.</div>
                             </div>
                             <div class="form-group col-4">
-                                <label class="field-label" for="workflowDisplay">실행할 워크플로우</label>
+                                <label class="field-label" for="workflowDisplay">실행할 워크플로우<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">인증/권한 검사는 워크플로우의 설정을 따릅니다.</span></span></label>
                                 <div class="picker-group">
                                     <input type="text" class="form-control" id="workflowDisplay" placeholder="검색하여 선택" readonly onclick="openWorkflowPicker()" style="cursor:pointer;">
                                     <button type="button" class="icon-btn" style="width:34px;height:auto;" title="워크플로우 검색" onclick="openWorkflowPicker()"><i class="fas fa-search"></i></button>
                                 </div>
                                 <input type="hidden" id="workflowCode">
-                                <div class="field-help">인증/권한 검사는 워크플로우의 설정을 따릅니다.</div>
                             </div>
                             <div class="form-group col-12">
                                 <label class="field-label" for="description">설명</label>
@@ -3312,7 +3307,7 @@
 
                         <div class="section" id="pathParamSection">
                             <div class="section-head">
-                                <span class="section-title">Path Variable <span class="section-desc">경로의 {이름} 에서 자동으로 만들어집니다.</span></span>
+                                <span class="section-title">Path Variable<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">경로의 {이름} 에서 자동으로 만들어집니다.</span></span></span>
                             </div>
                             <div class="param-table-wrap">
                                 <table class="param-table">
@@ -3330,7 +3325,7 @@
 
                         <div class="section">
                             <div class="section-head">
-                                <span class="section-title">Request Param <span class="section-desc">?이름=값 으로 받는 값</span></span>
+                                <span class="section-title">Request Param<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">?이름=값 으로 받는 값</span></span></span>
                                 <button type="button" class="ds-btn" onclick="addFlatParam('QUERY')"><i class="fas fa-plus"></i>파라미터 추가</button>
                             </div>
                             <div class="param-table-wrap">
@@ -3354,7 +3349,7 @@
                     <div class="ds-detail-body">
                         <div class="section">
                             <div class="section-head">
-                                <span class="section-title">Request Header <span class="section-desc">헤더 이름은 대소문자를 구분하지 않습니다.</span></span>
+                                <span class="section-title">Request Header<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">헤더 이름은 대소문자를 구분하지 않습니다.</span></span></span>
                                 <button type="button" class="ds-btn" onclick="addFlatParam('HEADER')"><i class="fas fa-plus"></i>헤더 추가</button>
                             </div>
                             <div class="param-table-wrap">
@@ -3383,7 +3378,7 @@
 
                         <div class="body-root" id="bodyRoot">
                             <div class="form-group">
-                                <label class="field-label" for="bodyDataType">본문 타입</label>
+                                <label class="field-label" for="bodyDataType">본문 타입<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">OBJECT 는 본문이 요청메시지의 한 행, ARRAY 는 원소마다 한 행이 됩니다. OBJECT/ARRAY 필드에 요청메시지ID 를 적으면 그 필드가 별도 요청메시지가 되고, 비우면 상위 행에 중첩된 값으로 담깁니다.</span></span></label>
                                 <select class="form-control" id="bodyDataType" style="width:200px;" onchange="onBodyDataTypeChange()">
                                     <option value="">받지 않음</option>
                                     <option value="OBJECT">OBJECT ({ ... })</option>
@@ -3393,10 +3388,6 @@
                             <div class="form-group" id="bodyMessageIdGroup">
                                 <label class="field-label" for="bodyMessageId">본문을 담을 요청메시지ID</label>
                                 <input type="text" class="form-control" id="bodyMessageId" style="width:240px;" autocomplete="off" placeholder="예) ME_GOAL_SAVE">
-                            </div>
-                            <div class="field-help" style="flex:1 1 300px;margin:0 0 4px 0;">
-                                OBJECT 는 본문이 요청메시지의 한 행, ARRAY 는 원소마다 한 행이 됩니다.
-                                OBJECT/ARRAY 필드에 요청메시지ID 를 적으면 그 필드가 별도 요청메시지가 되고, 비우면 상위 행에 중첩된 값으로 담깁니다.
                             </div>
                         </div>
 
@@ -3441,15 +3432,11 @@
 
                         <div class="body-root">
                             <div class="form-group">
-                                <label class="field-label" for="responseType">응답유형</label>
+                                <label class="field-label" for="responseType">응답유형<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">JSON 은 워크플로우 응답을 JSON 으로 돌려주고, 파일 다운로드는 응답메시지 한 행의 파일 데이터를 첨부파일로 내려줍니다. 워크플로우가 실패하면 응답유형과 상관없이 JSON 오류를 돌려줍니다.</span></span></label>
                                 <select class="form-control" id="responseType" style="width:200px;" onchange="onResponseTypeChange()">
                                     <option value="JSON">JSON</option>
                                     <option value="FILE">파일 다운로드</option>
                                 </select>
-                            </div>
-                            <div class="field-help" style="flex:1 1 300px;margin:0 0 4px 0;">
-                                JSON 은 워크플로우 응답을 JSON 으로 돌려주고, 파일 다운로드는 응답메시지 한 행의 파일 데이터를 첨부파일로 내려줍니다.
-                                워크플로우가 실패하면 응답유형과 상관없이 JSON 오류를 돌려줍니다.
                             </div>
                         </div>
 
@@ -3539,14 +3526,12 @@
                                     <input type="text" class="form-control" id="fileNameKey" autocomplete="off" placeholder="예) file_name">
                                 </div>
                                 <div class="form-group col-4">
-                                    <label class="field-label" for="fileName">기본 파일명</label>
+                                    <label class="field-label" for="fileName">기본 파일명<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">파일명 컬럼이 없거나 값이 비어있을 때 씁니다. 둘 다 없으면 download 입니다.</span></span></label>
                                     <input type="text" class="form-control" id="fileName" autocomplete="off" placeholder="예) report.pdf">
-                                    <div class="field-help">파일명 컬럼이 없거나 값이 비어있을 때 씁니다. 둘 다 없으면 download 입니다.</div>
                                 </div>
                                 <div class="form-group col-4">
-                                    <label class="field-label" for="fileContentTypeKey">Content-Type 컬럼</label>
+                                    <label class="field-label" for="fileContentTypeKey">Content-Type 컬럼<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">비어있으면 파일명 확장자로 정합니다.</span></span></label>
                                     <input type="text" class="form-control" id="fileContentTypeKey" autocomplete="off" placeholder="예) mime_type">
-                                    <div class="field-help">비어있으면 파일명 확장자로 정합니다.</div>
                                 </div>
                             </div>
                             <div class="field-help" id="workflowResponseMessageHintFile"></div>
@@ -3586,7 +3571,7 @@
                                     </div>
 
                                     <div class="test-block" id="testQuerySection">
-                                        <div class="test-block-title">Request Params <span class="section-desc">값을 적은 파라미터만 보냅니다.</span></div>
+                                        <div class="test-block-title">Request Params<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">값을 적은 파라미터만 보냅니다.</span></span></div>
                                         <table class="test-param-table">
                                             <colgroup><col style="width:34%"><col style="width:90px"><col></colgroup>
                                             <tbody id="testQueryBody"></tbody>

@@ -24,3 +24,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+  plugin:
+    root-path: C:/prometis
+  view:
+    root-path: C:/prometis
