@@ -1543,6 +1543,7 @@
             {code: "MESSAGE_PROCESSOR", name: "메시지처리", icon: "/dist/img/func-message.png", description: "스크립트로 요청/응답 메시지를 가공하고 변환합니다."},
             {code: "NOTIFICATION", name: "알림", icon: "/dist/img/func-notification.png", description: "이메일 등 채널로 알림을 발송합니다."},
             {code: "PLUGIN", name: "플러그인", icon: "/dist/img/func-plugin.svg", description: "등록한 플러그인(jar)의 pluginPath 를 실행합니다."},
+            {code: "WORKFLOW", name: "워크플로우 실행", icon: "/dist/img/func-workflow.svg", description: "같은 애플리케이션의 다른 워크플로우를 이어서 실행합니다."},
             //{code: "FILE", name: "파일", icon: "/dist/img/func-file.svg", description: "등록된 파일저장소에서 파일을 조회·업로드·삭제합니다."},
             {code: "CONDITION", name: "조건분기 (IF)", icon: "/dist/img/func-condition.svg", description: "if / else if / else 로 흐름을 여러 갈래로 나눕니다."},
             {code: "ERROR_MESSAGE", name: "에러메시지", icon: "/dist/img/func-error.svg", description: "흐름을 멈추고 지정한 status, code, message, contents 로 에러응답을 돌려줍니다."}
@@ -1553,6 +1554,8 @@
     const CONDITION_TYPE = 'CONDITION';
     const ERROR_MESSAGE_TYPE = 'ERROR_MESSAGE';
     const PLUGIN_TYPE = 'PLUGIN';
+    const WORKFLOW_CALL_TYPE = 'WORKFLOW';
+    let workflowCalls = {};        // 저장된 워크플로우 실행 노드의 호출관계 {호출하는 워크플로우코드: [실행하는 워크플로우코드...]}
     let pluginPathList = [];       // 플러그인 노드에서 고르는 pluginPath 목록 [{pluginId, pluginPath, displayName, ...}]
     const DEFAULT_ERROR_STATUS = 400;
     const BRANCH_ELSE = 'ELSE';               // else 가지를 가리키는 branchId 자리값
@@ -1628,6 +1631,8 @@
     /* ================= Workflow list (left sidebar) ================= */
 
     function getWorkflowList() {
+        loadWorkflowCalls();
+
         httpClient.get(`/${APPLICATION_ID}/console/api/workflow`, {},
             function(response){
                 workflowListData = response;
@@ -1803,7 +1808,8 @@
               resetContent();
           },
           function(error){
-              alert('error');
+              const body = error && error.responseJSON;
+              alert((body && body.message) ? body.message : "에러 발생하였습니다.");
           }
         );
     }
@@ -2240,6 +2246,90 @@
     function removeDomainChip(domain) {
         currentDomainList = currentDomainList.filter(item => item.domain !== domain);
         renderDomainChips();
+    }
+
+    /* ================= Workflow call node =================
+       다른 워크플로우를 실행하는 노드. 기능코드(functionName)가 실행할 워크플로우코드다.
+       A 가 B 를, B 가 A 를 실행하면 끝없이 돌므로, 지금 워크플로우를 (거쳐서) 실행하는 워크플로우는 고를 수 없게 막는다.
+       최종 판정은 저장할 때 서버가 한다. */
+
+    function loadWorkflowCalls() {
+        httpClient.get(`/${APPLICATION_ID}/console/api/workflow/calls`, {},
+            function(response) {
+                workflowCalls = (response && response.calls) || {};
+            },
+            function(error) {
+                workflowCalls = {};
+            }
+        );
+    }
+
+    // code 를 직접 또는 거쳐서 실행하는 워크플로우들. 편집중인 워크플로우의 저장된 호출은 캔버스 내용으로 바뀌므로 뺀다.
+    function workflowCallersOf(code) {
+        const reverse = {};
+        for (const [caller, callees] of Object.entries(workflowCalls)) {
+            if (caller === code) continue;
+            for (const callee of callees) {
+                (reverse[callee] = reverse[callee] || []).push(caller);
+            }
+        }
+
+        const result = new Set();
+        const queue = [code];
+        while (queue.length) {
+            for (const caller of (reverse[queue.shift()] || [])) {
+                if (caller !== code && !result.has(caller)) {
+                    result.add(caller);
+                    queue.push(caller);
+                }
+            }
+        }
+        return result;
+    }
+
+    function renderDrawerWorkflowFields(node) {
+        const currentCode = $("#workflowCode").val() || '';
+        const callers = currentCode ? workflowCallersOf(currentCode) : new Set();
+
+        const $select = $("#drawerWorkflowCode");
+        $select.empty().append($('<option value=""></option>').text('실행할 워크플로우 선택'));
+
+        const workflows = [...workflowListData].sort((a, b) => (a.workflowCode || '').localeCompare(b.workflowCode || ''));
+        for (const w of workflows) {
+            let reason = '';
+            if (w.workflowCode === currentCode) reason = '현재 워크플로우';
+            else if (callers.has(w.workflowCode)) reason = '순환 참조';
+
+            $select.append($('<option></option>').val(w.workflowCode)
+                .text(`${w.displayName || w.workflowCode} (${w.workflowCode})${reason ? ' - ' + reason : ''}`)
+                .prop('disabled', !!reason));
+        }
+
+        const exists = workflows.some(w => w.workflowCode === node.functionName);
+        $select.val(exists ? node.functionName : '');
+
+        let note = '';
+        if (node.functionName && !exists) {
+            note = `없는 워크플로우입니다: ${node.functionName}`;
+        }
+        else if (node.functionName && (node.functionName === currentCode || callers.has(node.functionName))) {
+            note = `순환 호출이 됩니다: ${node.functionName} 는 이 워크플로우를 실행합니다.`;
+        }
+        $("#drawerWorkflowNote").toggle(!!note).text(note);
+    }
+
+    function onDrawerWorkflowChange() {
+        if (!activeNodeId) return;
+        const node = getNode(activeNodeId);
+        if (!node) return;
+
+        const code = $("#drawerWorkflowCode").val() || '';
+        const workflow = workflowListData.find(w => w.workflowCode === code);
+
+        node.functionName = code;
+        node.displayName = workflow ? (workflow.displayName || workflow.workflowCode) : defaultDisplayName(WORKFLOW_CALL_TYPE);
+        $("#drawerWorkflowNote").hide();
+        updateStepItemView(activeNodeId);
     }
 
     /* ================= Plugin node ================= */
@@ -2756,6 +2846,7 @@
     function defaultDisplayName(functionType) {
         if (functionType === CONDITION_TYPE) return '조건분기';
         if (functionType === ERROR_MESSAGE_TYPE) return '에러메시지';
+        if (functionType === WORKFLOW_CALL_TYPE) return '(워크플로우 선택필요)';
         return '(기능생성필요)';
     }
 
@@ -3267,7 +3358,7 @@
                 <div class="step-body">
                     <div class="step-message">
                         <span class="step-message-type message-in">IN</span>
-                        <span class="step-message-id" name="view-requestMessageId">${escapeHtml(node.requestMessageId)}</span>
+                        <span class="step-message-id" name="view-requestMessageId">${escapeHtml(stepMessageText(node, 'in'))}</span>
                     </div>
                     <div class="step-function">
                         <span class="step-function-img">
@@ -3280,7 +3371,7 @@
                     </div>
                     <div class="step-message">
                         <span class="step-message-type message-out">OUT</span>
-                        <span class="step-message-id" name="view-responseMessageId">${escapeHtml(node.responseMessageId)}</span>
+                        <span class="step-message-id" name="view-responseMessageId">${escapeHtml(stepMessageText(node, 'out'))}</span>
                     </div>
                 </div>
                 <span class="step-tools">
@@ -3395,8 +3486,8 @@
 
         const $item = $(`#${STEP_ITEM_ID_PREFIX}${nodeId}`);
 
-        $item.find(`[name="view-requestMessageId"]`).text(node.requestMessageId || '');
-        $item.find(`[name="view-responseMessageId"]`).text(node.responseMessageId || '');
+        $item.find(`[name="view-requestMessageId"]`).text(stepMessageText(node, 'in'));
+        $item.find(`[name="view-responseMessageId"]`).text(stepMessageText(node, 'out'));
         $item.find(`[name="view-functionName"]`).text(node.functionName || '');
         $item.find(`[name="view-displayName"]`).text(node.displayName || '');
         $item.find(`[name="view-functionType"]`).attr('src', getFunctionIconPath(node.functionType));
@@ -3411,6 +3502,14 @@
         if (isErrorMessageNode(node)) {
             $item.find(`[name="view-errorLines"]`).html(errorLinesHtml(node));
         }
+    }
+
+    // 워크플로우 실행 노드는 메시지ID 를 따로 두지 않고 메시지 저장소를 통째로 넘기고 받는다.
+    function stepMessageText(node, direction) {
+        if (node.functionType === WORKFLOW_CALL_TYPE) {
+            return direction === 'in' ? '전체 메시지' : '실행한 워크플로우의 응답';
+        }
+        return (direction === 'in' ? node.requestMessageId : node.responseMessageId) || '';
     }
 
     function getFunctionTypeInfo(functionType) {
@@ -3854,6 +3953,7 @@
         const isCondition = node.functionType === CONDITION_TYPE;
         const isErrorMessage = node.functionType === ERROR_MESSAGE_TYPE;
         const isPlugin = node.functionType === PLUGIN_TYPE;
+        const isWorkflowCall = node.functionType === WORKFLOW_CALL_TYPE;
 
         $("#drawerTitle").text(isCondition ? '조건분기 설정' : (isErrorMessage ? '에러메시지 설정' : '노드 설정'));
         $("#drawerTypeChip img").attr('src', info.icon || '');
@@ -3865,14 +3965,19 @@
         // 조건분기는 실행할 기능도, 내보낼 메시지도 없다.
         // 에러메시지는 거기에 더해 읽을 요청메시지도 없다. 응답 내용은 contents 에 적은 메시지ID로 고른다.
         // 플러그인 노드는 기능코드(=pluginPath)를 직접 치지 않고 플러그인과 pluginPath 를 골라서 정한다.
-        $("#drawerFunctionNameField").toggle(!isCondition && !isErrorMessage && !isPlugin);
+        // 워크플로우 실행 노드는 실행할 워크플로우를 목록에서 고르고, 메시지 저장소를 통째로 주고받아 메시지ID 가 없다.
+        $("#drawerFunctionNameField").toggle(!isCondition && !isErrorMessage && !isPlugin && !isWorkflowCall);
         $("#drawerPluginField").toggle(isPlugin);
         if (isPlugin) {
             renderDrawerPluginFields(node);
         }
-        $("#drawerMessageFields").toggle(!isErrorMessage);
+        $("#drawerWorkflowField").toggle(isWorkflowCall);
+        if (isWorkflowCall) {
+            renderDrawerWorkflowFields(node);
+        }
+        $("#drawerMessageFields").toggle(!isErrorMessage && !isWorkflowCall);
         $("#drawerResponseMessageField").toggle(!isCondition);
-        $("#drawerFunctionSettingButton").toggle(!isCondition && !isErrorMessage);
+        $("#drawerFunctionSettingButton").toggle(!isCondition && !isErrorMessage && !isWorkflowCall);
         $("#drawerConditionField").toggle(isCondition);
         $("#drawerErrorResponseField").toggle(isErrorMessage);
 
@@ -4203,6 +4308,11 @@
                             <label style="margin-top:8px;">pluginPath</label>
                             <select id="drawerPluginPath" class="form-control form-control-sm" onchange="onDrawerPluginPathChange()"></select>
                             <div class="wf-field-help" id="drawerPluginMissing" style="display:none;color:#dc2626;"></div>
+                        </div>
+                        <div class="wf-field" id="drawerWorkflowField" style="display:none;">
+                            <label>실행할 워크플로우<span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">지금까지의 메시지를 모두 넘겨 선택한 워크플로우를 실행하고, 그 워크플로우의 응답 메시지를 같은 메시지ID로 받아 다음 노드로 이어갑니다. 실행한 워크플로우가 실패하면 그 에러응답으로 끝납니다.<br>인증·권한·IP·도메인 검사는 처음 호출된 워크플로우에서만 합니다. 이 워크플로우를 (거쳐서) 실행하는 워크플로우는 순환 호출이 되므로 고를 수 없습니다.</span></span></label>
+                            <select id="drawerWorkflowCode" class="form-control form-control-sm" onchange="onDrawerWorkflowChange()"></select>
+                            <div class="wf-field-help" id="drawerWorkflowNote" style="display:none;color:#dc2626;"></div>
                         </div>
                         <div class="wf-field-row" id="drawerMessageFields">
                             <div class="wf-field">

@@ -10,8 +10,6 @@ import java.util.*;
  * 흐름은 오직 연결정보(WorkflowEdge)로만 정해진다. orderNum 은 빌더의 표시 순서일 뿐 실행 순서가 아니다.
  */
 public class WorkflowGraph {
-    public static final int MAX_EXECUTE_STEP = 1000; // 최대 실행 노드 수 설정
-
     private final Map<String, WorkflowNode> nodes;
     private final Map<String, List<WorkflowEdge>> outgoingEdges;
     private final Map<String, List<WorkflowCondition>> conditions;

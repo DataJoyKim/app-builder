@@ -65,6 +65,11 @@ public class WorkflowNode {
         return FunctionType.ERROR_MESSAGE.equals(functionType);
     }
 
+    // 다른 워크플로우를 실행하는 노드. 기능코드(functionName)가 실행할 워크플로우코드다.
+    public boolean isWorkflowCall() {
+        return FunctionType.WORKFLOW.equals(functionType);
+    }
+
     public boolean isFile() {
         return FunctionType.FILE.equals(functionType);
     }

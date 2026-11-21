@@ -119,6 +119,24 @@ class DslValidatorTest {
     }
 
     @Test
+    void 워크플로우_실행_노드는_있는_워크플로우를_가리켜야_하고_순환하면_오류다() {
+        Map<String, String> files = new LinkedHashMap<>();
+        put(files, DslFolder.WORKFLOW, "A", workflow(List.of(node("n1", "WORKFLOW", "B")), List.of(), List.of(), List.of()));
+        put(files, DslFolder.WORKFLOW, "B", workflow(List.of(node("n1", "WORKFLOW", "A")), List.of(), List.of(), List.of()));
+        put(files, DslFolder.WORKFLOW, "C", workflow(List.of(node("n1", "WORKFLOW", "A"), node("n2", "WORKFLOW", "NO_WF")), List.of(), List.of(), List.of()));
+        put(files, DslFolder.WORKFLOW, "D", workflow(List.of(node("n1", "WORKFLOW", "D")), List.of(), List.of(), List.of()));
+
+        List<String> errors = errors(validator.validate(APP, files));
+
+        assertTrue(errors.stream().anyMatch(m -> m.contains("/A.json") && m.contains("[A → B → A]")), errors.toString());
+        assertTrue(errors.stream().anyMatch(m -> m.contains("/B.json") && m.contains("[B → A → B]")), errors.toString());
+        assertTrue(errors.stream().anyMatch(m -> m.contains("/D.json") && m.contains("[D → D]")), errors.toString());
+        // C 는 순환에 들어가 있지 않다. 없는 워크플로우를 가리키는 것만 오류다
+        assertTrue(errors.stream().anyMatch(m -> m.contains("/C.json") && m.contains("[NO_WF]")), errors.toString());
+        assertFalse(errors.stream().anyMatch(m -> m.contains("/C.json") && m.contains("순환")), errors.toString());
+    }
+
+    @Test
     void 사이트_파일명은_site_로_고정이다() {
         Map<String, String> files = new LinkedHashMap<>();
         files.put(DslFolder.SITE.filePath(APP, "layout"), DslJson.write(DslJson.document(DslFolder.SITE)));

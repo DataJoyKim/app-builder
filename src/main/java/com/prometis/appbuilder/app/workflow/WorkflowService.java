@@ -13,12 +13,14 @@ import com.prometis.core.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@EnableConfigurationProperties(WorkflowProperties.class)
 public class WorkflowService {
     private final WorkflowRepository workflowRepository;
     private final WorkflowNodeRepository workflowNodeRepository;
@@ -29,6 +31,8 @@ public class WorkflowService {
     private final ConditionEvaluator conditionEvaluator;
     private final WorkflowGuard workflowGuard;
     private final ApplicationGuard applicationGuard;
+    // 최대 실행 노드 수, 워크플로우 실행 노드의 최대 호출 깊이 (platform.workflow)
+    private final WorkflowProperties workflowProperties;
 
     public ResponseMessage execute(
             HttpServletRequest request,
@@ -44,7 +48,9 @@ public class WorkflowService {
 
             AuthenticatedUser user = workflowGuard.check(request, applicationId, workflow);
 
-            return executeFunction(requestMessage, user, createGraph(workflow));
+            List<String> callChain = new ArrayList<>(List.of(workflow.getWorkflowCode()));
+
+            return executeFunction(requestMessage, user, createGraph(workflow), callChain);
         }
         catch (BusinessException e) {
             return ResponseMessage.createErrorMessage(e.getStatus(), e.getCode(), e.getMsg());
@@ -75,21 +81,29 @@ public class WorkflowService {
 
     // 시작 노드부터 연결정보(WorkflowEdge)를 따라가며 실행한다.
     // 조건분기 노드는 걸린 조건의 가지 하나로만 이어지므로 나머지 가지의 노드는 실행되지 않는다.
+    // callChain: 지금 실행중인 워크플로우까지의 호출 경로. 워크플로우 실행 노드의 순환 호출을 막는 데 쓴다.
     private ResponseMessage executeFunction(
             RequestMessage requestMessage,
             AuthenticatedUser user,
-            WorkflowGraph graph
+            WorkflowGraph graph,
+            List<String> callChain
     ) throws BusinessException {
         Map<String, List<Map<String, Object>>> messageStorage = requestMessage.getBody();
+        if(messageStorage == null) {
+            messageStorage = new HashMap<>();
+            requestMessage.setBody(messageStorage);
+        }
 
-        List<WorkflowNode> executedFunctions = new ArrayList<>();
+        // 응답에 담을 메시지ID. 노드의 응답메시지ID와, 워크플로우 실행 노드가 받아온 하위 워크플로우의 응답 메시지ID 들이다.
+        Set<String> responseMessageIds = new LinkedHashSet<>();
+        int executedCnt = 0;
         int failureCnt = 0;
         int step = 0;
 
         WorkflowNode current = graph.getStartNode();
 
         while(current != null) {
-            if(++step > WorkflowGraph.MAX_EXECUTE_STEP) {
+            if(++step > workflowProperties.maxExecuteStep()) {
                 throw new BusinessException(WorkflowErrorMessage.EXCEED_MAX_EXECUTE_STEP);
             }
 
@@ -108,6 +122,25 @@ public class WorkflowService {
                 return errorResponseOf(graph, current, messageStorage);
             }
 
+            if(current.isWorkflowCall()) {
+                ResponseMessage callResponse = callWorkflow(requestMessage, user, current, messageStorage, callChain);
+
+                // 실행한 워크플로우가 실패하면(에러메시지 노드 포함) 그 에러응답으로 이 워크플로우도 끝낸다.
+                if(!com.prometis.appbuilder.app.dto.ResultType.SUCCESS.equals(callResponse.getResultType())) {
+                    return callResponse;
+                }
+
+                // 하위 워크플로우의 응답 메시지를 같은 메시지ID로 메시지 저장소에 담아 뒤의 노드가 이어서 쓴다.
+                if(callResponse.getContents() != null) {
+                    messageStorage.putAll(callResponse.getContents());
+                    responseMessageIds.addAll(callResponse.getContents().keySet());
+                }
+                executedCnt++;
+
+                current = graph.next(current, BranchType.DEFAULT);
+                continue;
+            }
+
             NodeExecutor executor = nodeExecutorFactory.instance(current.getFunctionType());
 
             NodeResult result = executor.execute(user, current.getFunctionName(), requestMessage.getHeader(), params);
@@ -117,20 +150,63 @@ public class WorkflowService {
             }
 
             messageStorage.put(current.getResponseMessageId(), result.getResults());
-            executedFunctions.add(current);
+            responseMessageIds.add(current.getResponseMessageId());
+            executedCnt++;
 
             current = graph.next(current, BranchType.DEFAULT);
         }
 
         if(failureCnt == 0) {
-            return ResponseMessage.createSuccessMessage(createResponseData(executedFunctions, messageStorage));
+            return ResponseMessage.createSuccessMessage(createResponseData(responseMessageIds, messageStorage));
         }
-        else if(failureCnt < executedFunctions.size()) {
+        else if(failureCnt < executedCnt) {
             return ResponseMessage.createErrorMessage(500, "E-EXE-002", "에러가 발생되었습니다.", messageStorage);
         }
         else {
             return ResponseMessage.createErrorMessage(500, "E-EXE-001", "에러가 발생되었습니다.", messageStorage);
         }
+    }
+
+    /**
+     * 워크플로우 실행(WORKFLOW) 노드. 기능코드(functionName)의 워크플로우를 같은 애플리케이션에서 찾아 이어서 실행한다.
+     * 하위 워크플로우는 지금까지의 메시지 저장소 사본을 요청 본문으로 받으므로, 자기가 읽는 메시지ID 를 그대로 찾는다.
+     * 호출한 워크플로우 안에서의 실행이라 인증, 권한, IP, 도메인 검사는 처음 호출된 워크플로우에서 한 번만 한다.
+     * 콘솔 저장에서 순환 호출을 막지만, 저장 뒤에 워크플로우가 바뀌는 경우를 위해 실행할 때도 호출 경로로 한 번 더 막는다.
+     */
+    private ResponseMessage callWorkflow(
+            RequestMessage requestMessage,
+            AuthenticatedUser user,
+            WorkflowNode node,
+            Map<String, List<Map<String, Object>>> messageStorage,
+            List<String> callChain
+    ) throws BusinessException {
+        String targetCode = node.getFunctionName();
+        if(callChain.contains(targetCode)) {
+            throw new BusinessException(WorkflowErrorMessage.CIRCULAR_WORKFLOW_CALL);
+        }
+        if(callChain.size() >= workflowProperties.maxCallDepth()) {
+            throw new BusinessException(WorkflowErrorMessage.EXCEED_MAX_CALL_DEPTH);
+        }
+
+        String applicationId = requestMessage.getHeader().getApplicationId();
+        Workflow target = workflowRepository.findByApplicationIdAndWorkflowCode(applicationId, targetCode)
+                .orElseThrow(() -> new BusinessException(WorkflowErrorMessage.NOT_FOUND_CALL_WORKFLOW));
+
+        RequestMessage.Header header = new RequestMessage.Header();
+        header.setWorkflowCode(targetCode);
+        header.setObjectCode(requestMessage.getHeader().getObjectCode());
+        header.setLocaleCode(requestMessage.getHeader().getLocaleCode());
+        header.setApplicationId(applicationId);
+        header.setFiles(requestMessage.getHeader().getFiles());
+
+        RequestMessage callRequest = new RequestMessage();
+        callRequest.setHeader(header);
+        callRequest.setBody(new HashMap<>(messageStorage));
+
+        List<String> nextChain = new ArrayList<>(callChain);
+        nextChain.add(targetCode);
+
+        return executeFunction(callRequest, user, createGraph(target), nextChain);
     }
 
     // 조건은 if, else if ... 순서대로 판정해서 처음 참이 된 가지로 흐른다. 전부 거짓이면 else 가지로 흐른다.
@@ -171,12 +247,12 @@ public class WorkflowService {
     }
 
     private static Map<String, List<Map<String, Object>>> createResponseData(
-            List<WorkflowNode> functions,
+            Set<String> responseMessageIds,
             Map<String, List<Map<String, Object>>> messageStorage
     ) {
         Map<String, List<Map<String, Object>>> responseData = new HashMap<>();
-        for(WorkflowNode func : functions) {
-            responseData.put(func.getResponseMessageId(), messageStorage.get(func.getResponseMessageId()));
+        for(String responseMessageId : responseMessageIds) {
+            responseData.put(responseMessageId, messageStorage.get(responseMessageId));
         }
 
         return responseData;

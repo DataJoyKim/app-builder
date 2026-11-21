@@ -342,6 +342,52 @@ class WorkflowSaveIntegrationTest {
                 .filter(w -> w.getWorkflowCode().equals("TEST1000_R05")).count());
     }
 
+    private Map<String,Object> callParams(String id, String code, String... callees) {
+        Map<String,Object> params = emptyWorkflowParams(id, code, code);
+        List<Map<String,Object>> nodes = new ArrayList<>();
+        for(int i = 0; i < callees.length; i++) {
+            nodes.add(node("node-" + (i + 1), "WORKFLOW", callees[i], i + 1));
+        }
+        params.put("workflowNodes", nodes);
+        return params;
+    }
+
+    private String messageOf(ResponseEntity<?> response) {
+        return String.valueOf(((Map<?, ?>) response.getBody()).get("message"));
+    }
+
+    @Test
+    public void 워크플로우_실행_노드는_순환되거나_없는_워크플로우를_가리키면_저장하지않는다() {
+        assertEquals(HttpStatus.OK, workflowRestController.save("ehr", callParams("", "CALL_C")).getStatusCode());
+        assertEquals(HttpStatus.OK, workflowRestController.save("ehr", callParams("", "CALL_B", "CALL_C")).getStatusCode());
+        assertEquals(HttpStatus.OK, workflowRestController.save("ehr", callParams("", "CALL_A", "CALL_B")).getStatusCode());
+
+        Workflow c = workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "CALL_C").orElseThrow();
+
+        // C -> A 는 A -> B -> C -> A 순환이다. 막힌 저장은 아무것도 바꾸지 않는다
+        ResponseEntity<?> cycle = workflowRestController.save("ehr", callParams(String.valueOf(c.getId()), "CALL_C", "CALL_A"));
+        assertEquals(HttpStatus.BAD_REQUEST, cycle.getStatusCode());
+        assertTrue(messageOf(cycle).contains("CALL_C → CALL_A → CALL_B → CALL_C"), messageOf(cycle));
+        assertTrue(workflowNodeRepository.findByWorkflowId(c.getId()).isEmpty());
+
+        ResponseEntity<?> self = workflowRestController.save("ehr", callParams(String.valueOf(c.getId()), "CALL_C", "CALL_C"));
+        assertEquals(HttpStatus.BAD_REQUEST, self.getStatusCode());
+
+        ResponseEntity<?> missing = workflowRestController.save("ehr", callParams("", "CALL_D", "NO_WF"));
+        assertEquals(HttpStatus.BAD_REQUEST, missing.getStatusCode());
+        assertTrue(workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "CALL_D").isEmpty());
+
+        // 순환이 아닌 공유 호출(A -> C, B -> C)은 된다
+        Workflow a = workflowRepository.findByApplicationIdAndWorkflowCode("ehr", "CALL_A").orElseThrow();
+        assertEquals(HttpStatus.OK, workflowRestController.save("ehr", callParams(String.valueOf(a.getId()), "CALL_A", "CALL_B", "CALL_C")).getStatusCode());
+
+        // 다른 워크플로우가 실행하고 있는 워크플로우는 지우지 않는다
+        ResponseEntity<?> delete = workflowRestController.delete("ehr", c.getId());
+        assertEquals(HttpStatus.BAD_REQUEST, delete.getStatusCode());
+        assertTrue(messageOf(delete).contains("CALL_A") && messageOf(delete).contains("CALL_B"), messageOf(delete));
+        assertTrue(workflowRepository.findById(c.getId()).isPresent());
+    }
+
     @Test
     public void 저장된_워크플로우의_ID는_바뀌지않고_이름만_바뀐다() {
         workflowRestController.save("ehr", emptyWorkflowParams("", "TEST1000_R06", "처음 이름"));

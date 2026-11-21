@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44" role="img" aria-label="워크플로우 실행">
+    <rect width="44" height="44" rx="9" fill="#0E7490"/>
+    <rect x="9" y="11" width="10" height="8" rx="2" fill="none" stroke="#ffffff" stroke-width="2.3"/>
+    <rect x="25" y="25" width="10" height="8" rx="2" fill="none" stroke="#ffffff" stroke-width="2.3"/>
+    <path d="M14 19 V29 H25" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linejoin="round"/>
+    <path d="M28 10 L33 15 L28 20" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M19 15 H33" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round"/>
+</svg>

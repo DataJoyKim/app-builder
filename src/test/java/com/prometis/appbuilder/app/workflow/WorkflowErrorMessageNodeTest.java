@@ -67,7 +67,8 @@ class WorkflowErrorMessageNodeTest {
                 nodeExecutorFactory,
                 new ConditionEvaluator(new ScriptEngine()),
                 mock(WorkflowGuard.class),
-                mock(ApplicationGuard.class)
+                mock(ApplicationGuard.class),
+                WorkflowProperties.defaults()
         );
 
         // n1(조건분기) -- if grade === 'F' --> n2(에러메시지) --> n4(SQL, 에러 뒤에 이어져 있어도 실행되면 안 된다)

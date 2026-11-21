@@ -2,6 +2,7 @@ package com.prometis.appbuilder.console.app.deploy.dsl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.prometis.appbuilder.app.workflow.WorkflowCallGraph;
 import org.quartz.CronExpression;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,8 @@ public class DslValidator {
             "SQL", DslFolder.QUERY,
             "REST_CLIENT", DslFolder.REST_CLIENT,
             "MESSAGE_PROCESSOR", DslFolder.MESSAGE_PROCESSOR,
-            "NOTIFICATION", DslFolder.NOTIFICATION
+            "NOTIFICATION", DslFolder.NOTIFICATION,
+            "WORKFLOW", DslFolder.WORKFLOW
     );
 
     /**
@@ -55,6 +57,7 @@ public class DslValidator {
 
         checkRestApiRoutes(context);
         checkMenuCycles(context);
+        checkWorkflowCalls(context);
 
         return context.issues;
     }
@@ -471,6 +474,27 @@ public class DslValidator {
                 current = text(menus.get(current).node, "parentMenuCd");
             }
         }
+    }
+
+    // 워크플로우 실행(WORKFLOW) 노드가 자기 자신이나 자기를 (거쳐서) 실행하는 워크플로우를 실행하면 끝없이 돈다
+    private void checkWorkflowCalls(Context context) {
+        Map<String, Document> workflows = context.byFolder.getOrDefault(DslFolder.WORKFLOW, Map.of());
+
+        WorkflowCallGraph graph = new WorkflowCallGraph();
+        workflows.forEach((workflowCode, document) -> {
+            for(JsonNode workflowNode : array(document.node, "nodes")) {
+                if("WORKFLOW".equals(text(workflowNode, "functionType"))) {
+                    graph.add(workflowCode, text(workflowNode, "functionName"));
+                }
+            }
+        });
+
+        workflows.forEach((workflowCode, document) -> {
+            List<String> cycle = graph.findCycle(workflowCode);
+            if(!cycle.isEmpty()) {
+                context.error(document.path, "워크플로우 실행 노드가 순환 호출됩니다. [" + WorkflowCallGraph.format(cycle) + "]");
+            }
+        });
     }
 
     private void requireReference(Document document, String field, String id, DslFolder target, Context context) {

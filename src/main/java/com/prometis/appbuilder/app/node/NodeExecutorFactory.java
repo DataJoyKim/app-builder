@@ -26,6 +26,8 @@ public class NodeExecutorFactory {
             case NOTIFICATION -> notificationExecutor;
             case FILE -> fileExecutor;
             case PLUGIN -> pluginExecutor;
+            // WORKFLOW 는 다른 워크플로우의 그래프를 이어서 실행해야 하므로 WorkflowService 가 직접 실행한다.
+            case WORKFLOW -> throw new IllegalArgumentException("WORKFLOW 노드는 FunctionExecutor 로 실행할 수 없습니다.");
             // CONDITION 은 데이터를 만들어내는 기능이 아니라 흐름을 가르는 제어 노드라서
             // FunctionExecutor 가 아니라 WorkflowService 가 직접 판정한다.
             case CONDITION -> throw new IllegalArgumentException("CONDITION 노드는 FunctionExecutor 로 실행할 수 없습니다.");

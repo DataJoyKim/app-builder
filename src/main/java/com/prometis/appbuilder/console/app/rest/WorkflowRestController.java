@@ -6,6 +6,7 @@ import com.prometis.appbuilder.app.node.code.FunctionType;
 import com.prometis.appbuilder.app.workflow.access.HostMatcher;
 import com.prometis.appbuilder.app.util.DataTypeUtil;
 import com.prometis.appbuilder.app.workflow.Workflow;
+import com.prometis.appbuilder.app.workflow.WorkflowCallGraph;
 import com.prometis.appbuilder.app.workflow.WorkflowPermission;
 import com.prometis.appbuilder.app.workflow.WorkflowPermissionRepository;
 import com.prometis.appbuilder.app.workflow.WorkflowCondition;
@@ -26,9 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @RestController("console.WorkflowRestController")
 @RequestMapping("/{applicationId}/console/api/workflow")
@@ -85,14 +84,32 @@ public class WorkflowRestController {
             return badRequest("워크플로우 이름을 입력하세요.");
         }
 
-        Workflow workflow;
-
-        if (id == null) {
-            ResponseEntity<?> invalidCode = validateNewCode(applicationId, (String) workflowParams.get("workflowCode"));
+        // 기존 워크플로우는 저장된 코드를 쓴다 (코드는 생성 후 바뀌지 않는다).
+        Workflow existing = null;
+        String workflowCode;
+        if(id == null) {
+            workflowCode = (String) workflowParams.get("workflowCode");
+            ResponseEntity<?> invalidCode = validateNewCode(applicationId, workflowCode);
             if(invalidCode != null) {
                 return invalidCode;
             }
+        }
+        else {
+            existing = repository.findById(id)
+                    .filter(owned -> applicationId.equals(owned.getApplicationId()))
+                    .orElseThrow();
+            workflowCode = existing.getWorkflowCode();
+        }
 
+        // 워크플로우 실행 노드도 저장을 시작하기 전에 본다 (엔티티를 고친 뒤에 막으면 트랜잭션이 그대로 커밋된다).
+        ResponseEntity<?> invalidCall = validateWorkflowCalls(applicationId, workflowCode, workflowNodeParams);
+        if(invalidCall != null) {
+            return invalidCall;
+        }
+
+        Workflow workflow;
+
+        if (id == null) {
             workflow = Workflow.builder()
                     .applicationId(applicationId)
                     .workflowCode((String) workflowParams.get("workflowCode"))
@@ -102,9 +119,7 @@ public class WorkflowRestController {
                     .build();
         }
         else {
-            workflow = repository.findById(id)
-                    .filter(owned -> applicationId.equals(owned.getApplicationId()))
-                    .orElseThrow();
+            workflow = existing;
 
             // 워크플로우 코드는 생성 후 바꾸지 않는다. 요청에 다른 코드가 와도 무시한다.
             workflow.update(
@@ -247,6 +262,67 @@ public class WorkflowRestController {
         return ResponseEntity.ok(savedWorkflow);
     }
 
+    /**
+     * 워크플로우 실행(WORKFLOW) 노드 검사. 실행할 워크플로우가 이 애플리케이션에 있어야 하고,
+     * 자기 자신이나 자기를 (거쳐서) 실행하는 워크플로우를 실행하면 순환 호출이 되므로 막는다.
+     */
+    private ResponseEntity<?> validateWorkflowCalls(String applicationId, String workflowCode, List<Map<String,Object>> workflowNodeParams) {
+        List<String> callees = new ArrayList<>();
+        for(Map<String,Object> param : (workflowNodeParams == null ? List.<Map<String,Object>>of() : workflowNodeParams)) {
+            if(!FunctionType.WORKFLOW.name().equals(param.get("functionType"))) {
+                continue;
+            }
+
+            String callee = (String) param.get("functionName");
+            if(callee == null || callee.isBlank()) {
+                return badRequest("워크플로우 실행 노드에 실행할 워크플로우를 선택하세요.");
+            }
+            if(callee.equals(workflowCode)) {
+                return badRequest("워크플로우 실행 노드에서 자기 자신을 실행할 수 없습니다. [" + callee + "]");
+            }
+            if(repository.findByApplicationIdAndWorkflowCode(applicationId, callee).isEmpty()) {
+                return badRequest("워크플로우 실행 노드가 가리키는 워크플로우가 없습니다. [" + callee + "]");
+            }
+            callees.add(callee);
+        }
+
+        if(callees.isEmpty()) {
+            return null;
+        }
+
+        WorkflowCallGraph graph = loadCallGraph(applicationId);
+        graph.replace(workflowCode, callees);
+
+        List<String> cycle = graph.findCycle(workflowCode);
+        if(!cycle.isEmpty()) {
+            return badRequest("워크플로우 실행 노드가 순환 호출됩니다. [" + WorkflowCallGraph.format(cycle) + "]");
+        }
+
+        return null;
+    }
+
+    private WorkflowCallGraph loadCallGraph(String applicationId) {
+        WorkflowCallGraph graph = new WorkflowCallGraph();
+        for(Object[] call : workflowNodeRepository.findWorkflowCalls(applicationId, FunctionType.WORKFLOW)) {
+            graph.add((String) call[0], (String) call[1]);
+        }
+        return graph;
+    }
+
+    /**
+     * 워크플로우 실행 노드의 호출관계. 빌더가 순환이 되는 워크플로우를 선택 목록에서 막는 데 쓴다.
+     * calls: 호출하는 워크플로우코드 -> 실행하는 워크플로우코드들
+     */
+    @GetMapping("/calls")
+    public ResponseEntity<?> calls(@PathVariable("applicationId") String applicationId) {
+        Map<String, List<String>> calls = new TreeMap<>();
+        for(Object[] call : workflowNodeRepository.findWorkflowCalls(applicationId, FunctionType.WORKFLOW)) {
+            calls.computeIfAbsent((String) call[0], key -> new ArrayList<>()).add((String) call[1]);
+        }
+
+        return ResponseEntity.ok(Map.of("calls", calls));
+    }
+
     private static String resolveNodeId(String nodeId, int nodeSeq) {
         return (nodeId == null || nodeId.isBlank()) ? "node-" + nodeSeq : nodeId;
     }
@@ -271,6 +347,17 @@ public class WorkflowRestController {
         Workflow workflow = repository.findById(id)
                 .filter(owned -> applicationId.equals(owned.getApplicationId()))
                 .orElseThrow(RuntimeException::new);
+
+        // 다른 워크플로우의 실행 노드가 가리키고 있으면 그 워크플로우가 조용히 깨지므로 지우지 않는다.
+        Set<String> callers = new TreeSet<>();
+        for(Object[] call : workflowNodeRepository.findWorkflowCalls(applicationId, FunctionType.WORKFLOW)) {
+            if(workflow.getWorkflowCode().equals(call[1]) && !workflow.getWorkflowCode().equals(call[0])) {
+                callers.add((String) call[0]);
+            }
+        }
+        if(!callers.isEmpty()) {
+            return badRequest("다른 워크플로우의 워크플로우 실행 노드가 사용중이라 삭제할 수 없습니다. " + callers);
+        }
 
         workflowNodeRepository.deleteByWorkflowId(workflow.getId());
         workflowEdgeRepository.deleteByWorkflowId(workflow.getId());

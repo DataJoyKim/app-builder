@@ -67,7 +67,7 @@ public class RestApiDocumentService {
         document.put("responseMessageIds", responseMessageIdsOf(workflow.get()));
 
         List<Map<String, Object>> errorResponses = new ArrayList<>();
-        for(WorkflowErrorResponse errorResponse : workflowErrorResponseRepository.findByWorkflowId(workflow.get().getId())) {
+        for(WorkflowErrorResponse errorResponse : errorResponsesOf(workflow.get())) {
             Map<String, Object> error = new LinkedHashMap<>();
             error.put("status", WorkflowErrorResponse.resolveStatus(errorResponse.getStatus()));
             error.put("code", errorResponse.getCode());
@@ -90,13 +90,18 @@ public class RestApiDocumentService {
     }
 
     // 성공 응답의 contents 는 실행된 노드들의 응답메시지ID 로 채워진다. 조건분기/에러메시지 노드는 응답을 만들지 않는다.
+    // 워크플로우 실행 노드는 실행한 워크플로우의 응답 메시지를 그대로 받아오므로 그 워크플로우의 것까지 모은다.
     private List<String> responseMessageIdsOf(Workflow workflow) {
         LinkedHashSet<String> responseMessageIds = new LinkedHashSet<>();
-        List<WorkflowNode> nodes = new ArrayList<>(workflowNodeRepository.findByWorkflowId(workflow.getId()));
-        nodes.sort(Comparator.comparing(WorkflowNode::getOrderNum, Comparator.nullsLast(Comparator.naturalOrder())));
+        List<WorkflowNode> nodes = new ArrayList<>();
+        for(Workflow reachable : reachableWorkflowsOf(workflow)) {
+            List<WorkflowNode> workflowNodes = new ArrayList<>(workflowNodeRepository.findByWorkflowId(reachable.getId()));
+            workflowNodes.sort(Comparator.comparing(WorkflowNode::getOrderNum, Comparator.nullsLast(Comparator.naturalOrder())));
+            nodes.addAll(workflowNodes);
+        }
 
         for(WorkflowNode node : nodes) {
-            if(node.isCondition() || node.isErrorMessage()) {
+            if(node.isCondition() || node.isErrorMessage() || node.isWorkflowCall()) {
                 continue;
             }
 
@@ -106,6 +111,38 @@ public class RestApiDocumentService {
         }
 
         return new ArrayList<>(responseMessageIds);
+    }
+
+    // 실행한 워크플로우의 에러메시지 노드 응답도 그대로 돌아온다.
+    private List<WorkflowErrorResponse> errorResponsesOf(Workflow workflow) {
+        List<WorkflowErrorResponse> errorResponses = new ArrayList<>();
+        for(Workflow reachable : reachableWorkflowsOf(workflow)) {
+            errorResponses.addAll(workflowErrorResponseRepository.findByWorkflowId(reachable.getId()));
+        }
+        return errorResponses;
+    }
+
+    // 워크플로우 자신과, 워크플로우 실행 노드로 (거쳐서) 실행되는 워크플로우들. 순환이 있어도 한 번씩만 담는다.
+    private List<Workflow> reachableWorkflowsOf(Workflow workflow) {
+        Map<String, Workflow> reachable = new LinkedHashMap<>();
+        Deque<Workflow> queue = new ArrayDeque<>(List.of(workflow));
+        reachable.put(workflow.getWorkflowCode(), workflow);
+
+        while(!queue.isEmpty()) {
+            Workflow current = queue.poll();
+            for(WorkflowNode node : workflowNodeRepository.findByWorkflowId(current.getId())) {
+                if(!node.isWorkflowCall() || reachable.containsKey(node.getFunctionName())) {
+                    continue;
+                }
+                workflowRepository.findByApplicationIdAndWorkflowCode(workflow.getApplicationId(), node.getFunctionName())
+                        .ifPresent(callee -> {
+                            reachable.put(callee.getWorkflowCode(), callee);
+                            queue.add(callee);
+                        });
+            }
+        }
+
+        return new ArrayList<>(reachable.values());
     }
 
     // 모든 API 가 공통으로 돌려줄 수 있는 오류.

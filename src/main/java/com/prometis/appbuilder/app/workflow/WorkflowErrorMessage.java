@@ -17,6 +17,9 @@ public enum WorkflowErrorMessage implements ErrorMessage {
     NOT_ALLOWED_DOMAIN(403, "E-WORKFLOW-012", "허용되지않은 도메인에서의 접근입니다."),
     NOT_FOUND_APP(404, "E-WORKFLOW-013", "애플리케이션이 존재하지않습니다."),
     FAILED_AUTHENTICATION(401, "E-WORKFLOW-014", "인증 실패하였습니다."),
+    CIRCULAR_WORKFLOW_CALL(500, "E-WORKFLOW-015", "워크플로우 실행 노드가 순환 호출되었습니다. 관리자에게 문의해주세요."),
+    EXCEED_MAX_CALL_DEPTH(500, "E-WORKFLOW-016", "워크플로우 실행 노드의 호출 단계가 너무 깊습니다. 관리자에게 문의해주세요."),
+    NOT_FOUND_CALL_WORKFLOW(500, "E-WORKFLOW-017", "워크플로우 실행 노드가 가리키는 워크플로우가 존재하지않습니다. 관리자에게 문의해주세요."),
     ;
     private Integer status;
     private String errorCode;

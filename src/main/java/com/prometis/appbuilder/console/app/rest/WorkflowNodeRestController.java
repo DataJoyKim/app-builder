@@ -19,6 +19,8 @@ import com.prometis.appbuilder.app.query.QueryRepository;
 import com.prometis.appbuilder.app.restclient.RestClient;
 import com.prometis.appbuilder.app.restclient.RestClientRepository;
 import com.prometis.appbuilder.app.util.DataTypeUtil;
+import com.prometis.appbuilder.app.workflow.Workflow;
+import com.prometis.appbuilder.app.workflow.WorkflowRepository;
 import com.prometis.appbuilder.console.app.AppConsoleWorkflowScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -53,6 +55,8 @@ public class WorkflowNodeRestController {
     private FileHandlerRepository fileHandlerRepository;
     @Autowired
     private PluginPathRepository pluginPathRepository;
+    @Autowired
+    private WorkflowRepository workflowRepository;
     @Autowired
     private AppConsoleWorkflowScope appConsoleWorkflowScope;
 
@@ -204,6 +208,12 @@ public class WorkflowNodeRestController {
                 displayName = (path.getDisplayName() == null || path.getDisplayName().isBlank())
                         ? path.getPlugin().getPluginId() + " : " + path.getPluginPath()
                         : path.getDisplayName();
+            }
+        }
+        else if(FunctionType.WORKFLOW.equals(w.getFunctionType())) {
+            Optional<Workflow> func = workflowRepository.findByApplicationIdAndWorkflowCode(applicationId, w.getFunctionName());
+            if(func.isPresent()){
+                displayName = func.get().getDisplayName();
             }
         }
         else if(FunctionType.CONDITION.equals(w.getFunctionType())) {
