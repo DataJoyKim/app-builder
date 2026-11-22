@@ -635,12 +635,12 @@
                     "dots": false
                 },
                 "multiple": false,
+                // 저장은 트리 전체를 한 번에 하므로(save) 저장 전의 새 메뉴 아래에도 메뉴를 만들 수 있다.
+                // 삭제 예정(D) 메뉴 아래로는 만들거나 옮기지 않는다 (함께 지워진다)
                 "check_callback": function (op, node, parent, pos, more) {
-                    if (op === "create_node") {
-                        if (parent && parent.data && parent.data.status === "C") {
-                            alert("상위 메뉴를 저장 후에 생성가능합니다.");
-                            return false;
-                        }
+                    if ((op === "create_node" || op === "move_node") && parent && parent.data && parent.data.status === "D") {
+                        if (op === "create_node") alert("삭제할 메뉴 아래에는 메뉴를 추가할 수 없습니다.");
+                        return false;
                     }
                     return true;
                 },
@@ -863,7 +863,8 @@
         $('#menuDetailEmpty').show();
         $('#menuDetailForm').hide();
         $('#menuBreadcrumb').text('메뉴를 선택하세요');
-        $('#btnSaveMenu, #btnDeleteSelectedMenu').prop('disabled', true);
+        // 저장은 트리 전체를 저장하므로 메뉴를 선택하지 않아도 누를 수 있다
+        $('#btnDeleteSelectedMenu').prop('disabled', true);
     }
 
     function renderSelectedNode(node, tree) {
@@ -943,74 +944,80 @@
         }
     }
 
+    /**
+     * 트리의 모든 메뉴를 위에서부터 모은다. 상위 메뉴는 트리 노드 키(parentKey)로 가리키고,
+     * 순서는 지금 트리에 보이는 위치다. 삭제(D)한 메뉴의 하위 메뉴는 함께 지워지므로 보내지 않는다.
+     */
+    function collectMenuTree() {
+        const tree = $('#'+MENU_TREE_ID).jstree(true);
+        const items = [];
+
+        (function walk(parentNode, parentKey) {
+            parentNode.children.forEach(function(childId, index) {
+                const node = tree.get_node(childId);
+                const d = node.data || {};
+                items.push({
+                    key: node.id,
+                    id: d.status === 'C' || isEmpty(d.id) ? null : d.id,
+                    parentKey: parentKey,
+                    status: d.status || '',
+                    menuCd: d.menuCd || '',
+                    menuNm: d.menuNm || '',
+                    objectCode: d.objectCode || '',
+                    icon: ifEmpty(d.icon, null),
+                    orderNum: index
+                });
+                if (d.status !== 'D') {
+                    walk(node, node.id);
+                }
+            });
+        })(tree.get_node('#'), null);
+
+        return items;
+    }
+
+    // 저장: 트리에서 추가/수정/삭제/이동한 메뉴를 모두 한 번에 저장한다 (하나라도 틀리면 아무것도 저장되지 않는다)
     function save() {
-        const status = $('#status').val();
-        const id = $('#id').val();
+        // 입력 중인 값이 노드에 반영되지 않았을 수 있어 한 번 더 맞춘다
+        if (selectedNodeId && !isEmpty($('#status').val())) {
+            syncFieldToNode();
+        }
 
-        if (status === 'C') {
-            insertContent();
-        }
-        else if (status === 'U') {
-            updateContent(id);
-        }
-        else if (status === 'D') {
-            deleteContent();
-        }
-        else {
+        const items = collectMenuTree();
+        const changed = items.filter(item => item.status === 'C' || item.status === 'U' || item.status === 'D');
+        if (changed.length === 0) {
             alert('변경된 내용이 없습니다.');
+            return;
         }
-    }
 
-    function insertContent() {
-        httpClient.post(`/${APPLICATION_ID}/console/api/menu`, {}, getContent(),
+        const invalid = changed.find(item => item.status !== 'D' && (isEmpty(item.menuCd.trim()) || isEmpty(item.menuNm.trim())));
+        if (invalid) {
+            alert(`메뉴코드와 메뉴명을 입력해주세요. (${invalid.menuNm || invalid.menuCd || '새 메뉴'})`);
+            $('#'+MENU_TREE_ID).jstree(true).deselect_all(true);
+            $('#'+MENU_TREE_ID).jstree(true).select_node(invalid.key);
+            return;
+        }
+
+        const count = s => changed.filter(item => item.status === s).length;
+        // 주의: 템플릿 안의 스크립트라 대괄호 두 개를 붙여 쓰면 Thymeleaf 인라인 표현식으로 읽힌다. 띄워 쓴다
+        const summary = [ ['추가', count('C')], ['수정', count('U')], ['삭제', count('D')] ]
+            .filter(c => c[1] > 0).map(c => `${c[0]} ${c[1]}건`).join(', ');
+        if (!confirm(`${summary}을 저장하시겠습니까?` + (count('D') > 0 ? '\n삭제하는 메뉴의 하위 메뉴와 메뉴접근권한도 함께 삭제됩니다.' : ''))) {
+            return;
+        }
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/menu/tree`, {}, items,
             function(response){
                 alert('저장완료되었습니다.');
                 getList();
             },
             function(error){
-                alert('error');
+                const message = error && error.responseJSON && error.responseJSON.message;
+                alert(message || '저장하는데 실패하였습니다.');
             }
         );
     }
 
-    function updateContent(id) {
-        httpClient.put(`/${APPLICATION_ID}/console/api/menu/${id}`, {}, getContent(),
-            function(response){
-                alert('저장완료되었습니다.');
-                getList();
-            },
-            function(error){
-                alert('error');
-            }
-        );
-    }
-
-    function deleteContent() {
-        const id = $('#id').val();
-
-        httpClient.delete(`/${APPLICATION_ID}/console/api/menu/${id}`, {},
-            function(response){
-                alert('삭제 처리 완료되었습니다.');
-                getList();
-            },
-            function(error){
-                alert('error');
-            }
-        );
-    }
-
-    function getContent() {
-        return {
-            status: $('#status').val(),
-            id: $('#id').val(),
-            menuCd: $('#menuCd').val(),
-            menuNm: $('#menuNm').val(),
-            objectCode: $('#objectCode').val(),
-            parentMenuCd: $('#parentMenuCd').val(),
-            icon: ifEmpty($('#icon').val(), null),
-            orderNum: $('#orderNum').val()
-        };
-    }
 
     function setContent(params) {
         $('#status').val(params.status);
@@ -1209,7 +1216,7 @@
                 <div class="menu-breadcrumb" id="menuBreadcrumb">메뉴를 선택하세요</div>
                 <div class="menu-detail-actions">
                     <button type="button" onclick="getList()"><i class="fas fa-undo"></i> 복원</button>
-                    <button type="button" id="btnSaveMenu" class="btn-primary" onclick="save()" disabled><i class="fas fa-save"></i> 저장</button>
+                    <button type="button" id="btnSaveMenu" class="btn-primary" onclick="save()" title="트리에서 추가/수정/삭제/이동한 메뉴를 모두 저장합니다"><i class="fas fa-save"></i> 저장</button>
                     <button type="button" id="btnDeleteSelectedMenu" class="btn-danger" onclick="deleteMenuFromToolbar()" disabled><i class="fas fa-trash"></i> 삭제</button>
                 </div>
             </div>

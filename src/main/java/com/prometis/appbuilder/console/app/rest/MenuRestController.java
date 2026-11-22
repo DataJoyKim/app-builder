@@ -5,6 +5,7 @@ import com.prometis.appbuilder.app.view.ViewObjectRepository;
 import com.prometis.appbuilder.app.view.domain.Menu;
 import com.prometis.appbuilder.app.view.domain.ViewObject;
 import com.prometis.appbuilder.app.view.dto.MenuDto;
+import com.prometis.appbuilder.console.app.menu.MenuTreeSaveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +23,28 @@ public class MenuRestController {
     private MenuRepository repository;
     @Autowired
     private ViewObjectRepository viewObjectRepository;
+    @Autowired
+    private MenuTreeSaveService menuTreeSaveService;
 
     @GetMapping("/tree")
     public ResponseEntity<?> getList(@PathVariable("applicationId") String applicationId) {
         List<MenuDto> results = MenuDto.of(repository.findAllTree(applicationId), applicationId);
 
         return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
+    /**
+     * 트리 전체 저장 (콘솔 Menu 화면의 저장 버튼). 화면의 추가/수정/삭제/순서 변경을 한 트랜잭션으로 반영한다.
+     */
+    @PostMapping("/tree")
+    public ResponseEntity<?> saveTree(@PathVariable("applicationId") String applicationId,
+                                      @RequestBody List<MenuTreeSaveService.MenuItem> items) {
+        try {
+            return ResponseEntity.ok(menuTreeSaveService.save(applicationId, items));
+        }
+        catch (MenuTreeSaveService.MenuSaveException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")
