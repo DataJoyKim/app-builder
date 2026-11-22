@@ -17,6 +17,33 @@
                 object-fit: cover;
                 transition: width .3s ease-in-out, height .3s ease-in-out;
             }
+            /* 상단 바의 상위 메뉴(root menu). 많으면 가로로 스크롤한다 */
+            .root-menu-nav {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+                min-width: 0;
+                scrollbar-width: none;
+            }
+            .root-menu-nav::-webkit-scrollbar { display: none; }
+            .root-menu-nav .nav-link {
+                position: relative;
+                white-space: nowrap;
+            }
+            .root-menu-nav .nav-link.active {
+                color: #007bff;
+                font-weight: 600;
+            }
+            .root-menu-nav .nav-link.active::after {
+                content: '';
+                position: absolute;
+                left: .75rem;
+                right: .75rem;
+                bottom: 0;
+                height: 2px;
+                border-radius: 2px;
+                background: #007bff;
+            }
             /* 사이드바를 접으면 폭(약 58px)보다 큰 이미지가 잘리므로 AdminLTE 기본 크기로 줄인다. 마우스를 올려 펼치면 다시 커진다 */
             .sidebar-mini.sidebar-collapse .main-sidebar:not(:hover):not(.sidebar-focused) #profile .user-panel img.profile-img-sized {
                 width: 2.1rem;
@@ -34,6 +61,8 @@
                         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
                     </li>
                 </ul>
+                <!-- 상위 메뉴: 누르면 사이드바의 상위 메뉴 선택(#rootMenu)이 그 값으로 바뀌고 하위 메뉴가 나온다 (selectRootMenu) -->
+                <ul class="navbar-nav root-menu-nav" id="rootMenuNav" aria-label="상위 메뉴"></ul>
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="logout(null, `/${APPLICATION_ID}/login`); return false;" role="button" title="로그아웃">
@@ -131,14 +160,15 @@
 
                 setLayout();
 
+                // 사이드바의 상위 메뉴 선택과 상단 바의 상위 메뉴는 같은 값을 가리킨다. 어느 쪽에서 골라도 둘 다 맞춘다
                 $('#rootMenu').on('change', function() {
-                    var selectedValue = $(this).val();
-                    if(selectedValue == null || selectedValue == '') {
-                        $("#menu").html('');
-                    }
-                    else {
-                        setMenuTree(selectedValue);
-                    }
+                    selectRootMenu($(this).val());
+                });
+
+                // 상단 바 링크는 href="#" 이라 AdminLTE(iframe 모드)가 탭으로 열지 않는다
+                $('#rootMenuNav').on('click', 'a.nav-link', function(e) {
+                    e.preventDefault();
+                    selectRootMenu(String($(this).attr('data-menu-cd')));
                 });
 
                 $('#companyList').on('change', function() {
@@ -254,6 +284,29 @@
                         if($companyList.val() == null) {
                             $companyList.prop('selectedIndex', -1);
                         }
+
+                        // 회사가 하나뿐이면 고를 것이 없으므로 선택 영역을 숨기고, 아직 그 회사가 아니면 자동으로 선택한다.
+                        // 회사 변경은 페이지를 다시 불러오므로, 변경 뒤에도 선택이 안 되는 경우 무한 새로고침이 되지 않게 한 번만 시도한다
+                        if(companyList.length === 1) {
+                            const onlyCompany = companyList[0].companyCode;
+                            const autoSelectKey = `companyAutoSelect:${APPLICATION_ID}`;
+
+                            if(response.companyCode === onlyCompany) {
+                                $("#companySelectArea").hide();
+                                try { sessionStorage.removeItem(autoSelectKey); } catch (e) { }
+                            }
+                            else {
+                                let tried = false;
+                                try { tried = sessionStorage.getItem(autoSelectKey) === onlyCompany; } catch (e) { tried = true; }
+
+                                if(!tried) {
+                                    try { sessionStorage.setItem(autoSelectKey, onlyCompany); } catch (e) { }
+                                    $("#companySelectArea").hide();
+                                    changeCompany(onlyCompany);
+                                }
+                                // 이미 시도했는데도 선택되지 않았으면 선택 영역을 그대로 두어 사용자가 고를 수 있게 한다
+                            }
+                        }
                     }
                     else {
                         $companyList.append($('<option></option>').val("").text("대상이없습니다."));
@@ -279,19 +332,32 @@
                 });
             }
 
+            let MENU_TREE_REQUEST = 0;
+
+            function menuPageUrl(menu) {
+                // menuCd 는 화면 접근 로그에 어느 메뉴에서 열었는지 남기려고 붙인다
+                return `/${APPLICATION_ID}/pages/` + menu.objectCode + '?menuCd=' + encodeURIComponent(menu.menuCd);
+            }
+
+            // 상위 메뉴를 사이드바 선택 상자(#rootMenu)와 상단 바(#rootMenuNav) 두 곳에 채운다
             function setRootMenu() {
                 $.ajax({
                   type: 'GET',
                   url: `/${APPLICATION_ID}/api/menu/root`,
                   success: function(response) {
-                    let shtml = '';
+                    const rootMenus = response || [];
+                    const $select = $("#rootMenu").empty();
+                    const $nav = $("#rootMenuNav").empty();
 
-                    shtml += '<option value="">선택</option>';
-                    for(let i=0; i<response.length; i++) {
-                        shtml += '<option value="'+response[i].menuCd+'">' +response[i].menuNm + '</option>';
-                    }
+                    $select.append($('<option></option>').val('').text('선택'));
+                    rootMenus.forEach(function(menu) {
+                        $select.append($('<option></option>').val(menu.menuCd).text(menu.menuNm));
 
-                    $("#rootMenu").html(shtml);
+                        const $link = $('<a class="nav-link" href="#"></a>')
+                            .attr('data-menu-cd', menu.menuCd)
+                            .text(menu.menuNm);
+                        $nav.append($('<li class="nav-item"></li>').append($link));
+                    });
                   },
                   error: function(error) {
                     alert('에러가 발생하였습니다.');
@@ -299,18 +365,36 @@
                 });
             }
 
+            // 상위 메뉴 선택: 선택 상자 값과 상단 바 표시를 맞추고 사이드바에 하위 메뉴를 나열한다. 빈 값이면 사이드바를 비운다
+            function selectRootMenu(menuCd) {
+                const value = menuCd || '';
+                $("#rootMenu").val(value);
+
+                $("#rootMenuNav a.nav-link").removeClass('active').removeAttr('aria-current');
+                if(value) {
+                    $(`#rootMenuNav a.nav-link[data-menu-cd="${CSS.escape(value)}"]`).addClass('active').attr('aria-current', 'true');
+                    setMenuTree(value);
+                }
+                else {
+                    MENU_TREE_REQUEST++;
+                    $("#menu").html('');
+                }
+            }
+
             function setMenuTree(rootMenuCd) {
+                // 빠르게 다른 상위 메뉴를 고르면 늦게 온 이전 응답은 버린다
+                const requestNo = ++MENU_TREE_REQUEST;
                 $.ajax({
                   type: 'GET',
                   url: `/${APPLICATION_ID}/api/menu/tree`,
                   data: {"parentMenuCd":rootMenuCd},
                   success: function(response) {
-                  console.log('response',response);
-                    let shtml = '';
-                      for(let i=0; i<response.length; i++) {
-                          shtml += getMenuHtml(response[i]);
-                      }
+                    if(requestNo !== MENU_TREE_REQUEST) return;
 
+                    let shtml = '';
+                    for(let i=0; i<response.length; i++) {
+                        shtml += getMenuHtml(response[i]);
+                    }
                     $("#menu").html(shtml);
                   },
                   error: function(error) {
@@ -320,10 +404,7 @@
             }
 
             function getMenuHtml(menu) {
-                // menuCd 는 화면 접근 로그에 어느 메뉴에서 열었는지 남기려고 붙인다
-                const menuPath = (menu.objectCode != null)
-                    ? `/${APPLICATION_ID}/pages/` + menu.objectCode + '?menuCd=' + encodeURIComponent(menu.menuCd)
-                    : '#';
+                const menuPath = (menu.objectCode != null) ? menuPageUrl(menu) : '#';
                 const menuItemClass = 'nav-icon ' + menu.icon;
 
                 let shtml = '';

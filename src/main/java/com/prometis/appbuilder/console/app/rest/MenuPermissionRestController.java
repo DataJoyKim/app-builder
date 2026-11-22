@@ -26,9 +26,23 @@ public class MenuPermissionRestController {
 
         String permissionCode = (String) params.get("permissionCode");
 
-        List<MenuPermission> results = repository.findByPermissionCodeAndMenu_ApplicationId(permissionCode, applicationId);
+        // 엔티티를 그대로 내보내면 Menu.children ↔ Menu.parentMenu 가 서로를 끝없이 직렬화한다(JSON 깊이 초과). 화면에 필요한 값만 담는다
+        List<MenuPermissionResponse> results = repository.findByPermissionCodeAndMenu_ApplicationId(permissionCode, applicationId).stream()
+                .map(MenuPermissionResponse::of)
+                .toList();
 
         return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
+    public record MenuPermissionResponse(Long id, String permissionCode, String menuCd, String menuNm) {
+        static MenuPermissionResponse of(MenuPermission menuPermission) {
+            Menu menu = menuPermission.getMenu();
+            return new MenuPermissionResponse(
+                    menuPermission.getId(),
+                    menuPermission.getPermissionCode(),
+                    menu == null ? null : menu.getMenuCd(),
+                    menu == null ? null : menu.getMenuNm());
+        }
     }
 
     @PostMapping("")

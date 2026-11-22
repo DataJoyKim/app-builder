@@ -701,8 +701,8 @@
                 function(response){
                     MENU_PERMISSION_LIST = (response || []).map(item => ({
                         id: item.id,
-                        menuCd: item.menu && item.menu.menuCd,
-                        menuNm: item.menu && item.menu.menuNm
+                        menuCd: item.menuCd,
+                        menuNm: item.menuNm
                     }));
                     renderMenuPermissionList();
                 },
