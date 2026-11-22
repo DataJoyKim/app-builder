@@ -320,7 +320,10 @@
             }
 
             function getMenuHtml(menu) {
-                const menuPath = (menu.objectCode != null) ? `/${APPLICATION_ID}/pages/` + menu.objectCode : '#';
+                // menuCd 는 화면 접근 로그에 어느 메뉴에서 열었는지 남기려고 붙인다
+                const menuPath = (menu.objectCode != null)
+                    ? `/${APPLICATION_ID}/pages/` + menu.objectCode + '?menuCd=' + encodeURIComponent(menu.menuCd)
+                    : '#';
                 const menuItemClass = 'nav-icon ' + menu.icon;
 
                 let shtml = '';

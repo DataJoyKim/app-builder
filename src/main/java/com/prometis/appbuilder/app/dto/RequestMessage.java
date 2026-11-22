@@ -1,6 +1,7 @@
 package com.prometis.appbuilder.app.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.prometis.appbuilder.app.workflow.code.WorkflowTrigger;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,5 +27,9 @@ public class RequestMessage {
         // multipart/form-data 로 올라온 업로드 파일.
         @JsonIgnore
         private List<MultipartFile> files;
+
+        // 실행 경로(실행 로그용). Rest API/스케줄러가 서버에서 채우고, 비어 있으면 WEB 이다. 클라이언트가 바꾸지 못하게 JSON 으로는 받지 않는다.
+        @JsonIgnore
+        private WorkflowTrigger trigger;
     }
 }

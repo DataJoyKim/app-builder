@@ -16,30 +16,61 @@
     <a class="nav-link bg-light" href="#" data-widget="iframe-fullscreen"><i class="fas fa-expand"></i></a>
 </div>
 
-<div class="tab-empty" th:fragment="index-content">
+<div class="tab-empty app-home" th:fragment="index-content">
     <style>
+        /* AdminLTE iframe 모드는 .tab-empty 에 창 높이만큼 고정 높이를 주고 내용을 세로 가운데(flex center)로 둔다.
+           대시보드는 그보다 길어서 위아래로 넘쳐 footer 와 겹치므로, 위에서부터 쌓고 이 영역 안에서 스크롤한다.
+           display 는 건드리지 않는다 (탭이 열리면 AdminLTE 가 display 로 이 영역을 숨긴다) */
+        .content-wrapper.iframe-mode .tab-empty.app-home {
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            /* AdminLTE(IFrame._fixHeight)가 넣는 인라인 height 는 화면이 다 그려지기 전 높이라 footer 를 덮는다.
+               아래 스크립트가 footer 위까지 남은 높이를 재서 --app-home-height 로 넣고, !important 로 인라인 값을 이긴다 */
+            height: var(--app-home-height, auto) !important;
+        }
+        .app-home > .app-usage { padding-top: 16px; padding-bottom: 8px; }
         .app-usage .info-box { min-height: 72px; margin-bottom: 12px; }
         .app-usage .info-box-icon { width: 56px; font-size: 1.4rem; }
         .app-usage .info-box-number { font-size: 1.4rem; }
-        .app-usage-section { font-size: 13px; font-weight: 600; color: #6c757d; margin: 8px 0 6px; }
-        .app-usage-list { list-style: none; padding: 0; margin: 0 0 12px; }
+        .app-usage-list { list-style: none; padding: 0; margin: 0; }
         .app-usage-list li { display: flex; justify-content: space-between; padding: 6px 2px; border-bottom: 1px solid #f1f3f5; }
         .app-usage-list li:last-child { border-bottom: none; }
         .app-usage-list .value { font-weight: 600; }
         .app-usage-list .empty { color: #adb5bd; justify-content: center; }
         .app-usage-recent .meta { font-size: 12px; color: #6c757d; }
+        /* 활동 추이: 차트 색은 역할별 토큰으로 두고 JS 가 읽는다 (성공 = 계열 1, 실패 = 상태 critical) */
+        .app-activity {
+            --activity-series-1: #2a78d6;
+            --activity-critical: #d03b3b;
+            --activity-surface: #ffffff;
+            --activity-grid: #f1f3f5;
+            --activity-axis: #6c757d;
+        }
+        .app-activity-toolbar { margin: 4px 0 12px; }
+        .app-activity-toolbar h5 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+        .app-activity-toolbar select { width: auto; }
+        .app-activity-stats { display: flex; margin: 0 -4px 12px; }
+        .app-activity-stat { flex: 1 1 0; min-width: 0; padding: 4px; text-align: center; border-right: 1px solid #f1f3f5; }
+        .app-activity-stat:last-child { border-right: none; }
+        .app-activity-stat .number { display: block; font-size: 1.25rem; font-weight: 600; line-height: 1.3; }
+        .app-activity-stat .label { display: block; font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-activity-chart { position: relative; height: 220px; margin-bottom: 12px; }
+        .app-activity-sub { font-size: 13px; font-weight: 600; color: #6c757d; margin: 4px 0 4px; }
+        .app-activity .app-usage-list .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
+        .app-activity .app-usage-list .fail { color: var(--activity-critical); font-weight: 400; font-size: 12px; margin-right: 6px; }
     </style>
-    <div class="container-fluid">
+    <div class="container-fluid app-usage">
         <div class="row">
             <div class="col-12">
-                <div class="card app-usage">
+                <div class="card">
                     <div class="card-header border-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="card-title">애플리케이션 사용현황</h3>
-                            <a href="javascript:void(0);" onclick="loadAppUsage()" title="새로고침"><i class="fas fa-sync-alt"></i></a>
+                            <a href="javascript:void(0);" onclick="loadAppUsage(); loadAppActivity();" title="새로고침"><i class="fas fa-sync-alt"></i></a>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body pb-0">
                         <div class="text-danger mb-2" id="appUsageError" style="display:none;"></div>
 
                         <!-- 핵심 지표 -->
@@ -81,54 +112,117 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <div class="row">
-                            <div class="col-md-6 col-lg-3">
-                                <div class="app-usage-section"><i class="fas fa-user"></i> 사용자</div>
-                                <ul class="app-usage-list">
-                                    <li><span>관리자</span><span class="value" data-usage="users.admins">-</span></li>
-                                    <li><span>일반 사용자</span><span class="value" data-usage="users.members">-</span></li>
-                                    <li><span>최근 7일 접속</span><span class="value" data-usage="users.activeLast7Days">-</span></li>
-                                    <li><span>최근 30일 접속</span><span class="value" data-usage="users.activeLast30Days">-</span></li>
-                                    <li><span>최근 30일 가입</span><span class="value" data-usage="users.joinedLast30Days">-</span></li>
-                                    <li><span>접속한 적 있는 사용자</span><span class="value" data-usage="users.loggedIn">-</span></li>
-                                    <li><span>아직 접속하지 않은 사용자</span><span class="value" data-usage="users.neverLoggedIn">-</span></li>
-                                    <li id="appUsageWithoutCompany"><span>회사 미지정 사용자</span><span class="value" data-usage="users.withoutCompany">-</span></li>
-                                </ul>
+        <!-- 활동 추이: 워크플로우 실행 로그 / 화면 접근 로그 -->
+        <div class="app-activity">
+            <div class="app-activity-toolbar d-flex justify-content-between align-items-center">
+                <h5>활동 추이</h5>
+                <select class="form-control form-control-sm" id="appActivityDays" onchange="loadAppActivity()" aria-label="기간">
+                    <option value="7">최근 7일</option>
+                    <option value="14" selected>최근 14일</option>
+                    <option value="30">최근 30일</option>
+                </select>
+            </div>
+            <div class="text-danger mb-2" id="appActivityError" style="display:none;"></div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title"><i class="fas fa-project-diagram mr-1"></i> 워크플로우 실행 추이</h3></div>
+                        <div class="card-body">
+                            <div class="app-activity-stats">
+                                <div class="app-activity-stat"><span class="number" data-activity="workflow.total">-</span><span class="label">실행</span></div>
+                                <div class="app-activity-stat"><span class="number" id="appActivityFailureRate">-</span><span class="label">실패율</span></div>
+                                <div class="app-activity-stat"><span class="number" id="appActivityAvgDuration">-</span><span class="label">평균 처리시간</span></div>
+                                <div class="app-activity-stat"><span class="number" data-activity="workflow.users">-</span><span class="label">실행 사용자</span></div>
                             </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="app-usage-section"><i class="fas fa-envelope-open-text"></i> 가입·초대</div>
-                                <ul class="app-usage-list">
-                                    <li><span>가입 방식</span><span class="value" id="appUsageJoinPolicy">-</span></li>
-                                    <li><span>진행중인 초대</span><span class="value" data-usage="membership.invitationsPending">-</span></li>
-                                    <li><span>만료된 초대</span><span class="value" data-usage="membership.invitationsExpired">-</span></li>
-                                    <li><span>수락된 초대</span><span class="value" data-usage="membership.invitationsAccepted">-</span></li>
-                                    <li><span>최근 30일 초대 수락</span><span class="value" data-usage="membership.acceptedLast30Days">-</span></li>
-                                </ul>
+                            <div class="app-activity-chart"><canvas id="appActivityWorkflowChart" role="img" aria-label="일별 워크플로우 실행 수 (성공/실패)"></canvas></div>
+                            <div class="app-activity-sub">많이 실행된 워크플로우</div>
+                            <ul class="app-usage-list" id="appActivityTopWorkflows"><li class="empty">-</li></ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title"><i class="fas fa-desktop mr-1"></i> 화면 접근 추이</h3></div>
+                        <div class="card-body">
+                            <div class="app-activity-stats">
+                                <div class="app-activity-stat"><span class="number" data-activity="view.total">-</span><span class="label">화면 접근</span></div>
+                                <div class="app-activity-stat"><span class="number" data-activity="view.today">-</span><span class="label">오늘 접근</span></div>
+                                <div class="app-activity-stat"><span class="number" data-activity="view.users">-</span><span class="label">접근 사용자</span></div>
+                                <div class="app-activity-stat"><span class="number" data-activity="view.denied">-</span><span class="label">거부된 접근</span></div>
                             </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="app-usage-section"><i class="fas fa-cubes"></i> 구성 요소</div>
-                                <ul class="app-usage-list">
-                                    <li><span>화면</span><span class="value" data-usage="resources.viewObjects">-</span></li>
-                                    <li><span>메뉴</span><span class="value" data-usage="resources.menus">-</span></li>
-                                    <li><span>워크플로우</span><span class="value" data-usage="resources.workflows">-</span></li>
-                                    <li><span>Rest API</span><span class="value" data-usage="resources.restApis">-</span></li>
-                                    <li><span>스케줄 작업</span><span class="value" data-usage="resources.schedulerJobs">-</span></li>
-                                    <li><span>데이터베이스</span><span class="value" data-usage="resources.databases">-</span></li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="app-usage-section"><i class="fas fa-sitemap"></i> 조직</div>
-                                <ul class="app-usage-list">
-                                    <li><span>회사</span><span class="value" data-usage="organization.companies">-</span></li>
-                                    <li><span>사용자 그룹</span><span class="value" data-usage="organization.userGroups">-</span></li>
-                                </ul>
-                                <div class="app-usage-section"><i class="fas fa-history"></i> 최근 가입</div>
-                                <ul class="app-usage-list app-usage-recent" id="appUsageRecentJoins">
-                                    <li class="empty">-</li>
-                                </ul>
+                            <div class="app-activity-chart"><canvas id="appActivityViewChart" role="img" aria-label="일별 화면 접근 수"></canvas></div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="app-activity-sub">많이 연 화면</div>
+                                    <ul class="app-usage-list" id="appActivityTopViews"><li class="empty">-</li></ul>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="app-activity-sub">많이 쓴 메뉴</div>
+                                    <ul class="app-usage-list" id="appActivityTopMenus"><li class="empty">-</li></ul>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title"><i class="fas fa-user mr-1"></i> 사용자</h3></div>
+                    <div class="card-body py-2">
+                        <ul class="app-usage-list">
+                            <li><span>관리자</span><span class="value" data-usage="users.admins">-</span></li>
+                            <li><span>일반 사용자</span><span class="value" data-usage="users.members">-</span></li>
+                            <li><span>최근 7일 접속</span><span class="value" data-usage="users.activeLast7Days">-</span></li>
+                            <li><span>최근 30일 접속</span><span class="value" data-usage="users.activeLast30Days">-</span></li>
+                            <li><span>최근 30일 가입</span><span class="value" data-usage="users.joinedLast30Days">-</span></li>
+                            <li><span>접속한 적 있는 사용자</span><span class="value" data-usage="users.loggedIn">-</span></li>
+                            <li><span>아직 접속하지 않은 사용자</span><span class="value" data-usage="users.neverLoggedIn">-</span></li>
+                            <li id="appUsageWithoutCompany"><span>회사 미지정 사용자</span><span class="value" data-usage="users.withoutCompany">-</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title"><i class="fas fa-cubes mr-1"></i> 구성 요소</h3></div>
+                    <div class="card-body py-2">
+                        <ul class="app-usage-list">
+                            <li><span>화면</span><span class="value" data-usage="resources.viewObjects">-</span></li>
+                            <li><span>메뉴</span><span class="value" data-usage="resources.menus">-</span></li>
+                            <li><span>워크플로우</span><span class="value" data-usage="resources.workflows">-</span></li>
+                            <li><span>Rest API</span><span class="value" data-usage="resources.restApis">-</span></li>
+                            <li><span>스케줄 작업</span><span class="value" data-usage="resources.schedulerJobs">-</span></li>
+                            <li><span>데이터베이스</span><span class="value" data-usage="resources.databases">-</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title"><i class="fas fa-sitemap mr-1"></i> 조직</h3></div>
+                    <div class="card-body py-2">
+                        <ul class="app-usage-list">
+                            <li><span>회사</span><span class="value" data-usage="organization.companies">-</span></li>
+                            <li><span>사용자 그룹</span><span class="value" data-usage="organization.userGroups">-</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title"><i class="fas fa-history mr-1"></i> 최근 가입</h3></div>
+                    <div class="card-body py-2">
+                        <ul class="app-usage-list app-usage-recent" id="appUsageRecentJoins">
+                            <li class="empty">-</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -136,7 +230,6 @@
     </div>
     <script>
         // 이 조각은 jQuery/Application.js 보다 먼저 들어가므로 순수 JS로 쓰고, DOM 이 준비된 뒤에 부른다.
-        const APP_USAGE_JOIN_POLICY = {INVITE_ONLY: '초대만', APPROVAL: '승인 후 가입', OPEN: '바로 가입'};
         const APP_USAGE_AUTHORITY = {APPLICATION_ADMIN: '관리자', APPLICATION_USER: '사용자'};
 
         function appUsageValue(data, path) {
@@ -157,9 +250,6 @@
                 const value = appUsageValue(data, el.getAttribute('data-usage'));
                 el.textContent = value == null ? '-' : Number(value).toLocaleString();
             });
-
-            const policy = data.membership.joinPolicy;
-            document.getElementById('appUsageJoinPolicy').textContent = APP_USAGE_JOIN_POLICY[policy] || policy || '-';
 
             // 회사가 없는 애플리케이션은 모든 사용자가 회사 미지정이라 의미가 없으므로 숨긴다.
             document.getElementById('appUsageWithoutCompany').style.display = data.organization.companies > 0 ? '' : 'none';
@@ -207,6 +297,194 @@
         }
 
         document.addEventListener('DOMContentLoaded', loadAppUsage);
+
+        // 대시보드 영역 높이 = 창 높이 - 영역 위쪽 위치 - footer 높이. 넘치는 내용은 영역 안에서 스크롤한다.
+        function fitAppHome() {
+            const home = document.querySelector('.tab-empty.app-home');
+            if (!home || home.offsetParent === null) return; // 탭이 열려 숨겨진 동안은 잴 수 없다
+            const footer = document.querySelector('.main-footer');
+            const top = home.getBoundingClientRect().top + window.scrollY;
+            const available = window.innerHeight - top - (footer ? footer.offsetHeight : 0);
+            home.style.setProperty('--app-home-height', Math.max(available, 200) + 'px');
+        }
+
+        document.addEventListener('DOMContentLoaded', fitAppHome);
+        window.addEventListener('load', fitAppHome);
+        window.addEventListener('resize', fitAppHome);
+        // AdminLTE 가 레이아웃을 잡은 뒤(지연 실행)와, 탭을 모두 닫아 이 영역이 다시 보일 때도 맞춘다
+        setTimeout(fitAppHome, 300);
+        document.addEventListener('click', function() { setTimeout(fitAppHome, 100); });
+    </script>
+    <script src="/plugins/chart.js/Chart.min.js"></script>
+    <script>
+        // 활동 추이 (GET /{applicationId}/console/api/dashboard/activity?days=)
+        const appActivityCharts = {};
+
+        function appActivityToken(name) {
+            const root = document.querySelector('.app-activity');
+            return getComputedStyle(root).getPropertyValue(name).trim();
+        }
+
+        function appActivityNumber(value) {
+            return value == null ? '-' : Number(value).toLocaleString();
+        }
+
+        function appActivityDuration(ms) {
+            if (ms == null) return '-';
+            return ms < 1000 ? Math.round(ms) + 'ms' : (ms / 1000).toFixed(1) + 's';
+        }
+
+        function appActivityLabel(date) {
+            // 'yyyy-MM-dd' -> 'MM-dd'
+            return String(date).substring(5);
+        }
+
+        // rows: [{name, title, value, fail}] fail 이 있으면 값 앞에 실패 수를 작게 붙인다
+        function appActivityList(id, rows, emptyText) {
+            const list = document.getElementById(id);
+            list.innerHTML = '';
+            if (!rows.length) {
+                const li = document.createElement('li');
+                li.className = 'empty';
+                li.textContent = emptyText;
+                list.appendChild(li);
+                return;
+            }
+            rows.forEach(function(row) {
+                const li = document.createElement('li');
+                const name = document.createElement('span');
+                name.className = 'name';
+                name.textContent = row.name;
+                if (row.title) name.title = row.title;
+                const right = document.createElement('span');
+                right.className = 'text-nowrap';
+                if (row.fail) {
+                    const fail = document.createElement('span');
+                    fail.className = 'fail';
+                    fail.textContent = '실패 ' + appActivityNumber(row.fail);
+                    right.appendChild(fail);
+                }
+                const value = document.createElement('span');
+                value.className = 'value';
+                value.textContent = appActivityNumber(row.value);
+                right.appendChild(value);
+                li.appendChild(name);
+                li.appendChild(right);
+                list.appendChild(li);
+            });
+        }
+
+        function appActivityChartOptions(showLegend, stacked) {
+            const axis = appActivityToken('--activity-axis');
+            return {
+                maintainAspectRatio: false,
+                legend: {display: showLegend, position: 'top', align: 'end', labels: {boxWidth: 10, fontColor: axis}},
+                tooltips: {mode: 'index', intersect: false},
+                hover: {mode: 'index', intersect: false},
+                scales: {
+                    xAxes: [{stacked: stacked, gridLines: {display: false}, ticks: {fontColor: axis, maxRotation: 0, autoSkip: true, maxTicksLimit: 10}}],
+                    yAxes: [{
+                        stacked: stacked,
+                        gridLines: {color: appActivityToken('--activity-grid'), zeroLineColor: appActivityToken('--activity-grid'), drawBorder: false},
+                        ticks: {beginAtZero: true, precision: 0, maxTicksLimit: 5, fontColor: axis}
+                    }]
+                }
+            };
+        }
+
+        function appActivityDraw(id, config) {
+            if (typeof Chart === 'undefined') return;
+            if (appActivityCharts[id]) appActivityCharts[id].destroy();
+            appActivityCharts[id] = new Chart(document.getElementById(id), config);
+        }
+
+        function renderAppActivity(data) {
+            document.querySelectorAll('.app-activity [data-activity]').forEach(function(el) {
+                el.textContent = appActivityNumber(appUsageValue(data, el.getAttribute('data-activity')));
+            });
+
+            const wf = data.workflow;
+            document.getElementById('appActivityFailureRate').textContent =
+                wf.total > 0 ? (wf.failure * 100 / wf.total).toFixed(1) + '%' : '-';
+            document.getElementById('appActivityAvgDuration').textContent = appActivityDuration(wf.avgDurationMs);
+
+            const surface = appActivityToken('--activity-surface');
+
+            // 워크플로우: 일별 성공/실패 누적 막대. 실패는 상태색(critical)이고 범례에 이름이 함께 나온다.
+            appActivityDraw('appActivityWorkflowChart', {
+                type: 'bar',
+                data: {
+                    labels: wf.daily.map(function(d) { return appActivityLabel(d.date); }),
+                    datasets: [
+                        {
+                            label: '성공',
+                            data: wf.daily.map(function(d) { return d.success; }),
+                            backgroundColor: appActivityToken('--activity-series-1'),
+                            borderColor: surface, borderWidth: {top: 2}, borderSkipped: 'bottom',
+                            barPercentage: 0.6, categoryPercentage: 0.9
+                        },
+                        {
+                            label: '실패',
+                            data: wf.daily.map(function(d) { return d.failure; }),
+                            backgroundColor: appActivityToken('--activity-critical'),
+                            borderColor: surface, borderWidth: {top: 0}, borderSkipped: 'bottom',
+                            barPercentage: 0.6, categoryPercentage: 0.9
+                        }
+                    ]
+                },
+                options: appActivityChartOptions(true, true)
+            });
+
+            // 화면: 일별 접근 수 선 그래프 (한 계열이라 범례 없이 제목이 이름이다)
+            const view = data.view;
+            const series = appActivityToken('--activity-series-1');
+            appActivityDraw('appActivityViewChart', {
+                type: 'line',
+                data: {
+                    labels: view.daily.map(function(d) { return appActivityLabel(d.date); }),
+                    datasets: [{
+                        label: '화면 접근',
+                        data: view.daily.map(function(d) { return d.allowed; }),
+                        borderColor: series, borderWidth: 2, lineTension: 0.25,
+                        backgroundColor: 'rgba(42, 120, 214, 0.08)', fill: true,
+                        pointRadius: 3, pointHoverRadius: 5, pointHitRadius: 12,
+                        pointBackgroundColor: series, pointBorderColor: surface, pointBorderWidth: 2
+                    }]
+                },
+                options: appActivityChartOptions(false, false)
+            });
+
+            appActivityList('appActivityTopWorkflows', wf.top.map(function(t) {
+                return {name: t.displayName || t.workflowCode, title: t.workflowCode, value: t.count, fail: t.failure};
+            }), '실행 기록이 없습니다.');
+            appActivityList('appActivityTopViews', view.topViews.map(function(t) {
+                return {name: t.objectName || t.objectCode, title: t.objectCode, value: t.count};
+            }), '접근 기록이 없습니다.');
+            appActivityList('appActivityTopMenus', view.topMenus.map(function(t) {
+                return {name: t.menuNm || t.menuCd, title: t.menuCd, value: t.count};
+            }), '메뉴로 연 기록이 없습니다.');
+        }
+
+        function loadAppActivity() {
+            const error = document.getElementById('appActivityError');
+            const days = document.getElementById('appActivityDays').value;
+            fetch('/' + encodeURIComponent(window.APPLICATION_ID) + '/console/api/dashboard/activity?days=' + encodeURIComponent(days),
+                {credentials: 'same-origin'})
+                .then(function(response) {
+                    if (!response.ok) throw new Error(response.status);
+                    return response.json();
+                })
+                .then(function(data) {
+                    error.style.display = 'none';
+                    renderAppActivity(data);
+                })
+                .catch(function() {
+                    error.textContent = '활동 추이를 불러오지 못했습니다.';
+                    error.style.display = '';
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAppActivity);
     </script>
 </div>
 

@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.app.restapi;
 
+import com.prometis.appbuilder.app.workflow.code.WorkflowTrigger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prometis.appbuilder.app.dto.RequestMessage;
@@ -183,6 +184,7 @@ public class RestApiExecuteService {
     private static RequestMessage createRequestMessage(String workflowCode, Map<String, List<Map<String, Object>>> messages) {
         RequestMessage.Header header = new RequestMessage.Header();
         header.setWorkflowCode(workflowCode);
+        header.setTrigger(WorkflowTrigger.REST_API);
 
         RequestMessage requestMessage = new RequestMessage();
         requestMessage.setHeader(header);

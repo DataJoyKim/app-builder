@@ -1,0 +1,532 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<style th:fragment="style">
+    #log-app {
+        padding: 16px;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    #log-app .lg-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #log-app .lg-tabs {
+        display: flex;
+        gap: 4px;
+        padding: 0 12px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #log-app .lg-tab {
+        border: none;
+        background: none;
+        padding: 12px 14px 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+    }
+
+    #log-app .lg-tab i { margin-right: 6px; }
+    #log-app .lg-tab:hover { color: #1f2937; }
+    #log-app .lg-tab.active { color: #1d4ed8; border-bottom-color: #4A90E2; }
+
+    #log-app .lg-filter {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    #log-app .lg-field { display: flex; flex-direction: column; gap: 4px; }
+    #log-app .lg-field label { font-size: 11.5px; font-weight: 600; color: #6b7280; margin: 0; }
+
+    #log-app .lg-field input,
+    #log-app .lg-field select {
+        border: 1px solid #d7dbe0;
+        border-radius: 7px;
+        font-size: 12.5px;
+        padding: 5px 8px;
+        background: #fff;
+        color: #1f2937;
+        height: 31px;
+    }
+
+    #log-app .lg-field input:focus,
+    #log-app .lg-field select:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        outline: none;
+    }
+
+    #log-app .lg-field input[type=text] { width: 150px; }
+    #log-app .lg-period { display: flex; align-items: center; gap: 4px; }
+    #log-app .lg-period span { color: #9199a3; font-size: 12px; }
+
+    #log-app .lg-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #d7dbe0;
+        background: #fff;
+        color: #374151;
+        border-radius: 7px;
+        font-size: 12px;
+        padding: 6px 10px;
+        height: 31px;
+        cursor: pointer;
+    }
+
+    #log-app .lg-btn:hover { background: #f1f3f5; }
+    #log-app .lg-btn:disabled { opacity: .5; cursor: default; }
+    #log-app .lg-btn-primary { background: #4A90E2; border-color: #4A90E2; color: #fff; }
+    #log-app .lg-btn-primary:hover { background: #3d7fce; }
+
+    #log-app .lg-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 16px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    #log-app .lg-table-wrap { overflow-x: auto; }
+
+    #log-app table.lg-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+    #log-app .lg-table th {
+        position: sticky;
+        top: 0;
+        background: #f9fafb;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 11.5px;
+        text-align: left;
+        padding: 8px 10px;
+        border-top: 1px solid #eef0f2;
+        border-bottom: 1px solid #eef0f2;
+        white-space: nowrap;
+    }
+
+    #log-app .lg-table td {
+        padding: 7px 10px;
+        border-bottom: 1px solid #f1f3f5;
+        white-space: nowrap;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+
+    #log-app .lg-table tr.lg-row { cursor: pointer; }
+    #log-app .lg-table tr.lg-row:hover td { background: #fafbfc; }
+    #log-app .lg-table tr.lg-row.open td { background: #eef5ff; }
+    #log-app .lg-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    #log-app .lg-table .sub { color: #9199a3; font-size: 11px; margin-left: 4px; }
+    #log-app .lg-table .muted { color: #9199a3; }
+
+    #log-app .lg-empty {
+        padding: 50px 16px;
+        text-align: center;
+        color: #9199a3;
+        font-size: 12.5px;
+    }
+
+    #log-app .lg-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    #log-app .lg-badge.ok { background: #e8f7ee; color: #127a3a; }
+    #log-app .lg-badge.fail { background: #fdecec; color: #b42323; }
+    #log-app .lg-badge.warn { background: #fff4e0; color: #8a5300; }
+
+    #log-app .lg-detail td {
+        background: #f9fafb;
+        white-space: normal;
+        max-width: none;
+        padding: 10px 16px 12px;
+    }
+
+    #log-app .lg-detail dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 16px;
+        margin: 0;
+        font-size: 12px;
+    }
+
+    #log-app .lg-detail dt { color: #6b7280; font-weight: 600; }
+    #log-app .lg-detail dd { margin: 0; word-break: break-all; }
+
+    #log-app .lg-pager {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+</style>
+<script th:fragment="script">
+        // 탭별 조회 조건과 표 정의. 검색 필드 id 는 'lg-' + key 이다
+        const LOG_TABS = {
+            workflow: {
+                url: 'workflow',
+                fields: ['workflow', 'object', 'user', 'resultType', 'trigger'],
+                columns: 8
+            },
+            view: {
+                url: 'view',
+                fields: ['object', 'menu', 'user', 'result'],
+                columns: 6
+            }
+        };
+        const LOG_TRIGGER = {WEB: '화면/직접 호출', REST_API: 'Rest API', SCHEDULER: '스케줄러'};
+        const LOG_ACCESS = {ALLOWED: '허용', UNAUTHENTICATED: '로그인 필요', FORBIDDEN: '권한 없음'};
+        const LOG_PAGE_SIZE = 50;
+
+        let LOG_TAB = 'workflow';
+        let LOG_PAGE = 0;
+
+        $(document).ready(function() {
+            const today = new Date();
+            const weekAgo = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
+            $('#lg-from').val(logDateValue(weekAgo));
+            $('#lg-to').val(logDateValue(today));
+
+            // 대시보드 등에서 ?tab=view 로 열 수 있다
+            const tab = new URLSearchParams(location.search).get('tab');
+            switchLogTab(LOG_TABS[tab] ? tab : 'workflow');
+
+            $('#log-app .lg-filter').on('keydown', 'input[type=text]', function(e) {
+                if (e.key === 'Enter') searchLog();
+            });
+        });
+
+        function logDateValue(date) {
+            const pad = n => String(n).padStart(2, '0');
+            return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+        }
+
+        function logDateTime(value) {
+            if (!value) return '';
+            // LocalDateTime 은 'yyyy-MM-ddTHH:mm:ss.SSS...' 로 온다
+            return String(value).replace('T', ' ').substring(0, 19);
+        }
+
+        function logText(value) {
+            return value == null || value === '' ? '' : String(value);
+        }
+
+        function switchLogTab(tab) {
+            LOG_TAB = tab;
+            $('#log-app .lg-tab').removeClass('active').attr('aria-selected', 'false');
+            $(`#log-app .lg-tab[data-tab="${tab}"]`).addClass('active').attr('aria-selected', 'true');
+            $('#log-app [data-only]').each(function() {
+                $(this).toggle($(this).attr('data-only') === tab);
+            });
+            searchLog();
+        }
+
+        function searchLog() {
+            LOG_PAGE = 0;
+            loadLog();
+        }
+
+        function moveLogPage(delta) {
+            LOG_PAGE = Math.max(0, LOG_PAGE + delta);
+            loadLog();
+        }
+
+        function loadLog() {
+            const def = LOG_TABS[LOG_TAB];
+            const from = $('#lg-from').val();
+            const to = $('#lg-to').val();
+            if (from && to && from > to) {
+                alert('기간의 시작일이 종료일보다 늦습니다.');
+                return;
+            }
+
+            const params = {from: from, to: to, page: LOG_PAGE, size: LOG_PAGE_SIZE};
+            def.fields.forEach(function(key) {
+                const value = $('#lg-' + LOG_TAB + '-' + key).val();
+                if (value) params[key] = value;
+            });
+
+            httpClient.get(`/${APPLICATION_ID}/console/api/log/${def.url}`, params,
+                function(response) {
+                    renderLog(response);
+                },
+                function(error) {
+                    const message = error && error.responseJSON && error.responseJSON.message;
+                    alert(message || '로그를 불러오지 못했습니다.');
+                }
+            );
+        }
+
+        function renderLog(page) {
+            const rows = page.content || [];
+            const $body = $('#lg-' + LOG_TAB + '-body');
+            $body.empty();
+
+            if (rows.length === 0) {
+                $body.append(`<tr><td colspan="${LOG_TABS[LOG_TAB].columns}" class="lg-empty">조건에 맞는 로그가 없습니다.</td></tr>`);
+            }
+            rows.forEach(function(row) {
+                const $row = LOG_TAB === 'workflow' ? workflowRow(row) : viewRow(row);
+                $row.on('click', function() { toggleLogDetail($row, row); });
+                $body.append($row);
+            });
+
+            const total = page.totalElements || 0;
+            $('#lg-total').text(`총 ${total.toLocaleString()}건`);
+            const totalPages = Math.max(page.totalPages || 0, 1);
+            $('#lg-page').text(`${page.page + 1} / ${totalPages}`);
+            $('#lg-prev').prop('disabled', page.page <= 0);
+            $('#lg-next').prop('disabled', page.page + 1 >= totalPages);
+        }
+
+        function userCell(row) {
+            const $td = $('<td></td>');
+            if (row.userId == null) {
+                $td.addClass('muted').text('익명');
+            } else {
+                $td.text(logText(row.userName));
+                $td.append($('<span class="sub"></span>').text('#' + row.userId));
+            }
+            return $td;
+        }
+
+        function textCell(value, title) {
+            const $td = $('<td></td>').text(logText(value));
+            if (title) $td.attr('title', title);
+            return $td;
+        }
+
+        function badge(kind, text) {
+            return $('<td></td>').append($(`<span class="lg-badge ${kind}"></span>`).text(text));
+        }
+
+        function workflowRow(row) {
+            const success = row.resultType === 'SUCCESS';
+            const $tr = $('<tr class="lg-row"></tr>');
+            $tr.append(textCell(logDateTime(row.executedAt)));
+            $tr.append(textCell(row.workflowCode));
+            $tr.append(textCell(LOG_TRIGGER[row.triggerType] || row.triggerType));
+            $tr.append(textCell(row.objectCode));
+            $tr.append(userCell(row));
+            // 상태색만으로 구분하지 않도록 아이콘과 글자를 함께 쓴다
+            $tr.append(badge(success ? 'ok' : 'fail',
+                (success ? '✓ 성공' : '✕ 실패') + (row.status != null ? ' ' + row.status : '')));
+            $tr.append(textCell(success ? '' : logText(row.code) + (row.message ? ' · ' + row.message : ''), row.message));
+            $tr.append($('<td class="num"></td>').text(row.durationMs == null ? '' : row.durationMs.toLocaleString() + 'ms'));
+            return $tr;
+        }
+
+        function viewRow(row) {
+            const kind = row.accessResult === 'ALLOWED' ? 'ok' : (row.accessResult === 'UNAUTHENTICATED' ? 'warn' : 'fail');
+            const icon = row.accessResult === 'ALLOWED' ? '✓ ' : '✕ ';
+            const $tr = $('<tr class="lg-row"></tr>');
+            $tr.append(textCell(logDateTime(row.accessedAt)));
+            const $menu = textCell(row.menuNm || '');
+            if (!row.menuCd) $menu.addClass('muted').text('메뉴 밖');
+            $tr.append($menu);
+            const $object = textCell(row.objectName || row.objectCode, row.objectCode);
+            $tr.append($object);
+            $tr.append(userCell(row));
+            $tr.append(badge(kind, icon + (LOG_ACCESS[row.accessResult] || row.accessResult)));
+            $tr.append(textCell(row.clientIp));
+            return $tr;
+        }
+
+        function toggleLogDetail($row, row) {
+            const $next = $row.next();
+            if ($next.hasClass('lg-detail')) {
+                $next.remove();
+                $row.removeClass('open');
+                return;
+            }
+
+            const items = LOG_TAB === 'workflow'
+                ? [
+                    ['실행 시각', logDateTime(row.executedAt)],
+                    ['워크플로우', row.workflowCode],
+                    ['실행 경로', LOG_TRIGGER[row.triggerType] || row.triggerType],
+                    ['호출 화면', row.objectCode],
+                    ['사용자', row.userId == null ? '익명' : `${logText(row.userName)} (#${row.userId})`],
+                    ['클라이언트 IP', row.clientIp],
+                    ['결과', `${logText(row.resultType)} / ${logText(row.status)} / ${logText(row.code)}`],
+                    ['메시지', row.message],
+                    ['처리시간', row.durationMs == null ? '' : row.durationMs.toLocaleString() + 'ms']
+                ]
+                : [
+                    ['접근 시각', logDateTime(row.accessedAt)],
+                    ['메뉴', row.menuCd ? `${logText(row.menuNm)} (${row.menuCd})` : '메뉴 밖 (직접 URL, 홈 화면 등)'],
+                    ['화면', `${logText(row.objectName)} (${logText(row.objectCode)})`],
+                    ['화면 유형', row.objectType],
+                    ['사용자', row.userId == null ? '익명' : `${logText(row.userName)} (#${row.userId})`],
+                    ['클라이언트 IP', row.clientIp],
+                    ['결과', LOG_ACCESS[row.accessResult] || row.accessResult]
+                ];
+
+            const $dl = $('<dl></dl>');
+            items.forEach(function(item) {
+                $dl.append($('<dt></dt>').text(item[0]));
+                $dl.append($('<dd></dd>').text(logText(item[1]) || '-'));
+            });
+            const $detail = $(`<tr class="lg-detail"><td colspan="${LOG_TABS[LOG_TAB].columns}"></td></tr>`);
+            $detail.find('td').append($dl);
+            $row.addClass('open').after($detail);
+        }
+
+        function resetLogFilter() {
+            $('#log-app .lg-filter input[type=text], #log-app .lg-filter select').val('');
+            searchLog();
+        }
+    </script>
+<div id="log-app" th:fragment="view">
+    <div class="lg-panel">
+        <div class="lg-tabs" role="tablist">
+            <button type="button" class="lg-tab" data-tab="workflow" role="tab" onclick="switchLogTab('workflow')">
+                <i class="fas fa-project-diagram"></i>워크플로우 실행 로그
+            </button>
+            <button type="button" class="lg-tab" data-tab="view" role="tab" onclick="switchLogTab('view')">
+                <i class="fas fa-desktop"></i>화면 접근 로그
+            </button>
+        </div>
+
+        <div class="lg-filter">
+            <div class="lg-field">
+                <label for="lg-from">기간</label>
+                <div class="lg-period">
+                    <input type="date" id="lg-from">
+                    <span>~</span>
+                    <input type="date" id="lg-to" aria-label="기간 종료일">
+                </div>
+            </div>
+
+            <!-- 워크플로우 실행 로그 조건 -->
+            <div class="lg-field" data-only="workflow">
+                <label for="lg-workflow-workflow">워크플로우 코드</label>
+                <input type="text" id="lg-workflow-workflow" autocomplete="off">
+            </div>
+            <div class="lg-field" data-only="workflow">
+                <label for="lg-workflow-object">호출 화면 코드</label>
+                <input type="text" id="lg-workflow-object" autocomplete="off">
+            </div>
+            <div class="lg-field" data-only="workflow">
+                <label for="lg-workflow-user">사용자</label>
+                <input type="text" id="lg-workflow-user" placeholder="이름 또는 사용자 ID" autocomplete="off">
+            </div>
+            <div class="lg-field" data-only="workflow">
+                <label for="lg-workflow-resultType">결과</label>
+                <select id="lg-workflow-resultType">
+                    <option value="">전체</option>
+                    <option value="SUCCESS">성공</option>
+                    <option value="ERROR">실패</option>
+                </select>
+            </div>
+            <div class="lg-field" data-only="workflow">
+                <label for="lg-workflow-trigger">실행 경로</label>
+                <select id="lg-workflow-trigger">
+                    <option value="">전체</option>
+                    <option value="WEB">화면/직접 호출</option>
+                    <option value="REST_API">Rest API</option>
+                    <option value="SCHEDULER">스케줄러</option>
+                </select>
+            </div>
+
+            <!-- 화면 접근 로그 조건 -->
+            <div class="lg-field" data-only="view">
+                <label for="lg-view-menu">메뉴</label>
+                <input type="text" id="lg-view-menu" placeholder="메뉴 코드 또는 이름" autocomplete="off">
+            </div>
+            <div class="lg-field" data-only="view">
+                <label for="lg-view-object">화면</label>
+                <input type="text" id="lg-view-object" placeholder="화면 코드 또는 이름" autocomplete="off">
+            </div>
+            <div class="lg-field" data-only="view">
+                <label for="lg-view-user">사용자</label>
+                <input type="text" id="lg-view-user" placeholder="이름 또는 사용자 ID" autocomplete="off">
+            </div>
+            <div class="lg-field" data-only="view">
+                <label for="lg-view-result">결과</label>
+                <select id="lg-view-result">
+                    <option value="">전체</option>
+                    <option value="ALLOWED">허용</option>
+                    <option value="UNAUTHENTICATED">로그인 필요</option>
+                    <option value="FORBIDDEN">권한 없음</option>
+                </select>
+            </div>
+
+            <button type="button" class="lg-btn lg-btn-primary" onclick="searchLog()"><i class="fas fa-search"></i>조회</button>
+            <button type="button" class="lg-btn" onclick="resetLogFilter()"><i class="fas fa-undo"></i>조건 초기화</button>
+        </div>
+
+        <div class="lg-summary">
+            <span id="lg-total">-</span>
+            <span>행을 누르면 상세 내용을 봅니다 · 최근 순</span>
+        </div>
+
+        <div class="lg-table-wrap" data-only="workflow">
+            <table class="lg-table">
+                <thead>
+                <tr>
+                    <th>실행 시각</th>
+                    <th>워크플로우</th>
+                    <th>실행 경로</th>
+                    <th>호출 화면</th>
+                    <th>사용자</th>
+                    <th>결과</th>
+                    <th>오류</th>
+                    <th style="text-align:right">처리시간</th>
+                </tr>
+                </thead>
+                <tbody id="lg-workflow-body"></tbody>
+            </table>
+        </div>
+
+        <div class="lg-table-wrap" data-only="view">
+            <table class="lg-table">
+                <thead>
+                <tr>
+                    <th>접근 시각</th>
+                    <th>메뉴</th>
+                    <th>화면</th>
+                    <th>사용자</th>
+                    <th>결과</th>
+                    <th>클라이언트 IP</th>
+                </tr>
+                </thead>
+                <tbody id="lg-view-body"></tbody>
+            </table>
+        </div>
+
+        <div class="lg-pager">
+            <button type="button" class="lg-btn" id="lg-prev" onclick="moveLogPage(-1)"><i class="fas fa-chevron-left"></i>이전</button>
+            <span id="lg-page">-</span>
+            <button type="button" class="lg-btn" id="lg-next" onclick="moveLogPage(1)">다음<i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</div>
+</html>

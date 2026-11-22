@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.app.workflow;
 
+import com.prometis.appbuilder.app.workflow.log.WorkflowExecutionLogService;
 import com.prometis.appbuilder.app.dto.RequestMessage;
 import com.prometis.appbuilder.app.dto.ResponseMessage;
 import com.prometis.appbuilder.app.dto.ResultType;
@@ -69,7 +70,8 @@ class WorkflowCallNodeTest {
                 new ConditionEvaluator(new ScriptEngine()),
                 workflowGuard,
                 mock(ApplicationGuard.class),
-                WorkflowProperties.defaults()
+                WorkflowProperties.defaults(),
+                mock(WorkflowExecutionLogService.class)
         );
     }
 

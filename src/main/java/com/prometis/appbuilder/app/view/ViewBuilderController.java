@@ -3,6 +3,8 @@ package com.prometis.appbuilder.app.view;
 import com.prometis.appbuilder.app.view.code.ObjectType;
 import com.prometis.appbuilder.app.view.domain.Layout;
 import com.prometis.appbuilder.app.view.domain.ViewObject;
+import com.prometis.appbuilder.app.view.log.ViewAccessResult;
+import com.prometis.appbuilder.security.domain.AuthenticatedUser;
 import com.prometis.appbuilder.platform.application.ApplicationGuard;
 import com.prometis.appbuilder.platform.application.ApplicationNotFoundException;
 import com.prometis.core.exception.BusinessException;
@@ -14,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/{applicationId}")
@@ -69,7 +72,9 @@ public class ViewBuilderController {
             HttpServletRequest request,
             Model model,
             @PathVariable("applicationId") String applicationId,
-            @PathVariable("objectCode") String objectCode
+            @PathVariable("objectCode") String objectCode,
+            // 앱 화면의 메뉴 링크가 붙여 보낸다. 접근 로그에 어느 메뉴에서 열었는지 남기는 데만 쓴다.
+            @RequestParam(value = "menuCd", required = false) String menuCd
     ) {
         try {
             applicationGuard.check(applicationId);
@@ -83,17 +88,22 @@ public class ViewBuilderController {
             return "error/error404";
         }
 
+        AuthenticatedUser user;
         try {
-            viewGuard.check(request, applicationId, viewObject);
+            user = viewGuard.check(request, applicationId, viewObject);
         }
         catch (BusinessException e) {
             if(e.getStatus() == 401) {
+                viewObjectService.recordAccess(request, applicationId, viewObject, menuCd, null, ViewAccessResult.UNAUTHENTICATED);
                 return appLogin(model, applicationId);
             }
             else {
+                viewObjectService.recordAccess(request, applicationId, viewObject, menuCd, null, ViewAccessResult.FORBIDDEN);
                 return "error/error403";
             }
         }
+
+        viewObjectService.recordAccess(request, applicationId, viewObject, menuCd, user, ViewAccessResult.ALLOWED);
 
         model.addAttribute("objectCode",objectCode);
 

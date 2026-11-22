@@ -1,5 +1,6 @@
 package com.prometis.appbuilder.app.scheduler;
 
+import com.prometis.appbuilder.app.workflow.code.WorkflowTrigger;
 import com.prometis.appbuilder.app.dto.RequestMessage;
 import com.prometis.appbuilder.app.dto.ResponseMessage;
 import com.prometis.appbuilder.app.dto.ResultType;
@@ -98,6 +99,7 @@ public class WorkflowSchedulerJob implements Job {
 
         RequestMessage.Header header = new RequestMessage.Header();
         header.setWorkflowCode(workflowCode);
+        header.setTrigger(WorkflowTrigger.SCHEDULER);
         requestMessage.setHeader(header);
 
         Map<String, List<Map<String, Object>>> body;

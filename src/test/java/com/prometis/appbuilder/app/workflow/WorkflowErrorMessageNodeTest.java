@@ -1,6 +1,7 @@
 package com.prometis.appbuilder.app.workflow;
 
 
+import com.prometis.appbuilder.app.workflow.log.WorkflowExecutionLogService;
 import com.prometis.appbuilder.app.node.*;
 import com.prometis.appbuilder.app.node.code.ResultType;
 import com.prometis.appbuilder.app.dto.RequestMessage;
@@ -68,7 +69,8 @@ class WorkflowErrorMessageNodeTest {
                 new ConditionEvaluator(new ScriptEngine()),
                 mock(WorkflowGuard.class),
                 mock(ApplicationGuard.class),
-                WorkflowProperties.defaults()
+                WorkflowProperties.defaults(),
+                mock(WorkflowExecutionLogService.class)
         );
 
         // n1(조건분기) -- if grade === 'F' --> n2(에러메시지) --> n4(SQL, 에러 뒤에 이어져 있어도 실행되면 안 된다)

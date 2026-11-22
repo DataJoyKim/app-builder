@@ -6,6 +6,7 @@ import com.prometis.appbuilder.app.executor.script.ScriptEngineExecuteException;
 import com.prometis.appbuilder.app.node.*;
 import com.prometis.appbuilder.app.node.code.ResultType;
 import com.prometis.appbuilder.app.workflow.code.BranchType;
+import com.prometis.appbuilder.app.workflow.log.WorkflowExecutionLogService;
 import com.prometis.appbuilder.platform.application.ApplicationGuard;
 import com.prometis.appbuilder.platform.application.ApplicationNotFoundException;
 import com.prometis.appbuilder.security.domain.AuthenticatedUser;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -33,32 +35,66 @@ public class WorkflowService {
     private final ApplicationGuard applicationGuard;
     // 최대 실행 노드 수, 워크플로우 실행 노드의 최대 호출 깊이 (platform.workflow)
     private final WorkflowProperties workflowProperties;
+    private final WorkflowExecutionLogService workflowExecutionLogService;
 
+    /**
+     * 워크플로우를 실행하고, 결과(성공/실패/거부)와 상관없이 실행 로그를 남긴다.
+     * 없는 애플리케이션으로 온 요청만 남기지 않는다(로그의 애플리케이션이 실제로 있어야 하므로).
+     */
     public ResponseMessage execute(
             HttpServletRequest request,
             HttpServletResponse response,
             String applicationId,
             RequestMessage requestMessage
     ) {
+        LocalDateTime executedAt = LocalDateTime.now();
+        long startedNanos = System.nanoTime();
+        AuthenticatedUser user = null;
+        ResponseMessage result;
+
         try {
             applicationGuard.check(applicationId);
-
-            Workflow workflow = findWorkflow(applicationId, requestMessage);
-            requestMessage.getHeader().setApplicationId(applicationId);
-
-            AuthenticatedUser user = workflowGuard.check(request, applicationId, workflow);
-
-            List<String> callChain = new ArrayList<>(List.of(workflow.getWorkflowCode()));
-
-            return executeFunction(requestMessage, user, createGraph(workflow), callChain);
-        }
-        catch (BusinessException e) {
-            return ResponseMessage.createErrorMessage(e.getStatus(), e.getCode(), e.getMsg());
         }
         catch (ApplicationNotFoundException e) {
             WorkflowErrorMessage errorCode = WorkflowErrorMessage.NOT_FOUND_APP;
             return ResponseMessage.createErrorMessage(errorCode.getStatus(), errorCode.getCode(), errorCode.getMsg());
         }
+
+        try {
+            Workflow workflow = findWorkflow(applicationId, requestMessage);
+            requestMessage.getHeader().setApplicationId(applicationId);
+
+            user = workflowGuard.check(request, applicationId, workflow);
+
+            List<String> callChain = new ArrayList<>(List.of(workflow.getWorkflowCode()));
+
+            result = executeFunction(requestMessage, user, createGraph(workflow), callChain);
+        }
+        catch (BusinessException e) {
+            result = ResponseMessage.createErrorMessage(e.getStatus(), e.getCode(), e.getMsg());
+        }
+        catch (RuntimeException e) {
+            // 예상하지 못한 예외는 그대로 올려 보내되, 실패한 실행으로 로그는 남긴다.
+            ResponseMessage failed = ResponseMessage.createErrorMessage(500, "E-EXCEPTION", e.getClass().getSimpleName() + ": " + e.getMessage());
+            recordExecution(request, applicationId, requestMessage, user, failed, executedAt, startedNanos);
+            throw e;
+        }
+
+        recordExecution(request, applicationId, requestMessage, user, result, executedAt, startedNanos);
+        return result;
+    }
+
+    private void recordExecution(
+            HttpServletRequest request,
+            String applicationId,
+            RequestMessage requestMessage,
+            AuthenticatedUser user,
+            ResponseMessage result,
+            LocalDateTime executedAt,
+            long startedNanos
+    ) {
+        long durationMs = (System.nanoTime() - startedNanos) / 1_000_000;
+        workflowExecutionLogService.record(request, applicationId, requestMessage, user, result, executedAt, durationMs);
     }
 
     private Workflow findWorkflow(String applicationId, RequestMessage requestMessage) throws BusinessException {

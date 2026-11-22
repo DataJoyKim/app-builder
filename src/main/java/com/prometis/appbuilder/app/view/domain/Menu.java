@@ -37,7 +37,7 @@ public class Menu {
 
     public void processing() {
         if(this.icon == null) {
-            this.icon = (isLeafNode()) ? "far fa-circle" : "fa fa-folder";
+            this.icon = (isLeafNode()) ? "fas fa-caret-right" : "fa fa-folder";
         }
 
         for(Menu child : children) {
