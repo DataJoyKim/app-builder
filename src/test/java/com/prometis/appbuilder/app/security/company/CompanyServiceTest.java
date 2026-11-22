@@ -1,6 +1,9 @@
 package com.prometis.appbuilder.app.security.company;
 
+import com.prometis.appbuilder.app.security.appuser.AppUser;
+import com.prometis.appbuilder.app.security.appuser.AppUserRepository;
 import com.prometis.appbuilder.app.security.usergroup.UserGroup;
+import com.prometis.appbuilder.app.security.usergroup.UserGroupService;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupRepository;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupUser;
 import com.prometis.appbuilder.app.security.usergroup.UserGroupUserRepository;
@@ -16,7 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@Import(CompanyService.class)
+@Import({CompanyService.class, UserGroupService.class})
 class CompanyServiceTest {
     @Autowired
     CompanyService companyService;
@@ -86,5 +89,41 @@ class CompanyServiceTest {
         company("ehr", "C001", "본사");
 
         assertTrue(companyService.getUserCompanies("ehr", user.getId()).isEmpty());
+    }
+
+    @Autowired
+    AppUserRepository appUserRepository;
+    @Autowired
+    UserGroupService userGroupService;
+
+    private void allUsers(UserGroup group) {
+        userGroupUserRepository.save(UserGroupUser.builder().userGroup(group).allUsers(true).build());
+    }
+
+    @Test
+    void 모든_사용자가_매핑된_그룹은_애플리케이션_사용자에게만_적용된다() {
+        User member = userRepository.save(User.builder().loginId("all-member").userName("멤버").password("pw").email("all-member@test.com").build());
+        User outsider = userRepository.save(User.builder().loginId("all-outsider").userName("외부").password("pw").email("all-outsider@test.com").build());
+        appUserRepository.save(AppUser.builder().applicationId("ehr").userId(member.getId()).authority(AppUser.AUTHORITY_APPLICATION_USER).build());
+
+        company("ehr", "C001", "본사");
+        company("ehr", "C002", "자회사");
+
+        UserGroup everyone = group("ehr", "C001", "EVERYONE");
+        allUsers(everyone);
+        allUsers(group("crm", "C001", "CRM_EVERYONE"));   // 다른 애플리케이션 → 적용 안 됨
+        UserGroup hr = group("ehr", "C002", "HR");
+        join(member, hr);
+        join(member, everyone);                          // 직접도 매핑 → 한 번만
+
+        List<String> memberGroups = userGroupService.getAppliedUserGroups("ehr", member.getId()).stream().map(UserGroup::getCode).toList();
+        assertEquals(2, memberGroups.size());
+        assertTrue(memberGroups.containsAll(List.of("EVERYONE", "HR")));
+        assertEquals(List.of("C001", "C002"),
+                companyService.getUserCompanies("ehr", member.getId()).stream().map(Company::getCompanyCode).toList());
+
+        // 애플리케이션 사용자가 아니면 "모든 사용자" 그룹도 받지 않는다
+        assertTrue(userGroupService.getAppliedUserGroups("ehr", outsider.getId()).isEmpty());
+        assertTrue(companyService.getUserCompanies("ehr", outsider.getId()).isEmpty());
     }
 }

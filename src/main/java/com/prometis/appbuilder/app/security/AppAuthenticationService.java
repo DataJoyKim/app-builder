@@ -40,13 +40,11 @@ public class AppAuthenticationService {
         LocalDateTime now = LocalDateTime.now();
         appUserRepository.recordAccess(applicationId, authenticatedUser.getUserId(), now, now.minusMinutes(ACCESS_RECORD_INTERVAL_MINUTES));
 
-        // 사용자 권한 부여
-        List<UserGroupUser> userGroupUsers = userGroupService.getUserGroupUser(authenticatedUser.getUserId());
+        // 사용자 권한 부여: 직접 매핑된 그룹 + "모든 사용자"가 매핑된 그룹. 둘 다 지금 선택한 회사의 그룹만 적용한다
+        List<UserGroup> userGroups = userGroupService.getAppliedUserGroups(applicationId, authenticatedUser.getUserId());
 
-        for(UserGroupUser userGroupUser : userGroupUsers) {
-            UserGroup userGroup = userGroupUser.getUserGroup();
+        for(UserGroup userGroup : userGroups) {
             if(
-                userGroup == null ||
                 !applicationId.equals(userGroup.getApplicationId()) ||
                 session.getCompanyCode() == null ||
                 !session.getCompanyCode().equals(userGroup.getCompanyCode())

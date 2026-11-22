@@ -1,8 +1,7 @@
 package com.prometis.appbuilder.app.security.company;
 
 import com.prometis.appbuilder.app.security.usergroup.UserGroup;
-import com.prometis.appbuilder.app.security.usergroup.UserGroupUser;
-import com.prometis.appbuilder.app.security.usergroup.UserGroupUserRepository;
+import com.prometis.appbuilder.app.security.usergroup.UserGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +14,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CompanyService {
     private final CompanyRepository companyRepository;
-    private final UserGroupUserRepository userGroupUserRepository;
+    private final UserGroupService userGroupService;
 
     /**
      * 사용자가 속한 사용자 그룹들의 회사 (중복 제거, 순서(orderNum) 순).
      * 그룹에 적힌 회사코드라도 Company 로 등록되지 않은 회사는 빠진다.
      */
     public List<Company> getUserCompanies(String applicationId, Long userId) {
-        Set<String> companyCodes = userGroupUserRepository.findByUserIdAndUserGroupApplicationId(userId, applicationId).stream()
-                .map(UserGroupUser::getUserGroup)
-                .filter(Objects::nonNull)
+        // "모든 사용자"가 매핑된 그룹도 이 사용자의 그룹이므로 그 회사도 고를 수 있다 (UserGroupService.getAppliedUserGroups)
+        Set<String> companyCodes = userGroupService.getAppliedUserGroups(applicationId, userId).stream()
                 .map(UserGroup::getCompanyCode)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());

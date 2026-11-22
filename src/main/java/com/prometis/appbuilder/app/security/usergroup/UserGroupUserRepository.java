@@ -11,4 +11,9 @@ public interface UserGroupUserRepository extends JpaRepository<UserGroupUser, Lo
 
     // 한 애플리케이션의 사용자 그룹에 들어가 있는 소속만
     List<UserGroupUser> findByUserIdAndUserGroupApplicationId(Long userId, String applicationId);
+
+    // 한 애플리케이션에서 "모든 사용자"가 매핑된 그룹들의 매핑
+    List<UserGroupUser> findByAllUsersTrueAndUserGroupApplicationId(String applicationId);
+
+    boolean existsByUserGroupIdAndAllUsersTrue(Long userGroupId);
 }

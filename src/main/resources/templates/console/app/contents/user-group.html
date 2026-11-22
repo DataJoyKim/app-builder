@@ -1146,13 +1146,14 @@
     function getUserGroupUser(userGroupId) {
         httpClient.get(`/${APPLICATION_ID}/console/api/user-group/user/${userGroupId}`, {},
             function(response){
-                for(let i=0; i<response.length; i++) {
-                    response[i].userId = response[i].user.id;
-                    response[i].userName = response[i].user.userName;
-                    response[i].userLoginId = response[i].user.loginId;
-                }
-
-                UG_USER_LIST = response;
+                // 응답: {id, allUsers, userId, userName, loginId}. "모든 사용자" 행은 allUsers=true 이고 사용자 값이 없다
+                UG_USER_LIST = (response || []).map(item => ({
+                    id: item.id,
+                    allUsers: item.allUsers === true,
+                    userId: item.userId,
+                    userName: item.userName,
+                    userLoginId: item.loginId
+                }));
                 renderUserGroupUserList();
             },
             function(error){
@@ -1165,12 +1166,38 @@
         const $body = $("#ugUserList");
         $body.empty();
 
+        // "모든 사용자"는 그룹당 하나라서 이미 있으면 추가 버튼을 막는다
+        const hasAllUsers = UG_USER_LIST.some(item => item.allUsers);
+        $("#ugAllUsersBtn").prop('disabled', hasAllUsers)
+            .attr('title', hasAllUsers ? '이미 모든 사용자가 추가되어 있습니다.' : '이 애플리케이션의 모든 사용자에게 이 그룹을 적용합니다.');
+
         if(UG_USER_LIST.length === 0) {
             $body.append('<div class="rel-empty">등록된 사용자가 없습니다.</div>');
             return;
         }
 
         for(const item of UG_USER_LIST) {
+            if(item.allUsers) {
+                const $all = $(`
+                    <div class="rel-row" data-id="${item.id}">
+                        <div class="rel-row-main">
+                            <div class="rel-row-field"><span class="rel-field-label">사용자명</span><span class="rel-field-value"><i class="fas fa-users mr-1"></i>모든 사용자</span></div>
+                            <div class="rel-row-field"><span class="rel-field-label">적용</span><span class="rel-field-value">이 애플리케이션의 모든 사용자</span></div>
+                        </div>
+                        <div class="rel-row-actions">
+                            <button type="button" class="rel-icon-btn danger" title="삭제"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `);
+                $all.find('.rel-icon-btn.danger').on('click', function() {
+                    if(confirm('모든 사용자를 삭제하시겠습니까?\n직접 추가된 사용자만 이 그룹의 권한을 받게 됩니다.')) {
+                        deleteUserGroupUser($("#id").val(), item);
+                    }
+                });
+                $body.append($all);
+                continue;
+            }
+
             const $row = $(`
                 <div class="rel-row" data-id="${item.id}">
                     <div class="rel-row-main">
@@ -1240,6 +1267,28 @@
         }
 
         cancelUserGroupUserEdit();
+    }
+
+    function addAllUsersToUserGroup() {
+        const userGroupId = $("#id").val();
+        if(!userGroupId) {
+            alert('먼저 사용자그룹을 저장해주세요.');
+            return;
+        }
+        if(!confirm('이 애플리케이션의 모든 사용자에게 이 사용자그룹(과 권한)을 적용하시겠습니까?')) return;
+
+        httpClient.post(`/${APPLICATION_ID}/console/api/user-group/user`, {},
+            {
+                userGroupId: userGroupId,
+                allUsers: true
+            },
+            function(response){
+                getUserGroupUser(userGroupId);
+            },
+            function(error){
+                alertError(error);
+            }
+        );
     }
 
     function insertUserGroupUser(userGroupId, item) {
@@ -1550,6 +1599,8 @@
                                     <div class="rel-add-actions">
                                         <button type="button" class="ds-btn ds-btn-primary" id="ugUserSubmitBtn" onclick="submitUserGroupUser()"><i class="fas fa-plus"></i>추가</button>
                                         <button type="button" class="ds-btn d-none" id="ugUserCancelBtn" onclick="cancelUserGroupUserEdit()">취소</button>
+                                        <button type="button" class="ds-btn" id="ugAllUsersBtn" onclick="addAllUsersToUserGroup()"><i class="fas fa-users"></i>모든 사용자 추가</button>
+                                        <span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">"모든 사용자"를 추가하면 이 애플리케이션의 모든 사용자가 이 그룹에 속한 것으로 보고 그룹의 권한을 받습니다.<br>다른 그룹처럼 사용자가 이 그룹의 회사를 선택했을 때 적용되고, 그 회사는 모든 사용자의 회사 선택 목록에 나옵니다.</span></span>
                                     </div>
                                 </div>
                                 <div class="rel-list" id="ugUserList"></div>
