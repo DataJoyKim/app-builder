@@ -25,6 +25,7 @@ class ComponentFactory {
                 "layout": new Layout(this.optionPanel),
                 'barline-chart':new BarLineChart(this.optionPanel),
                 'pie-chart':new PieChart(this.optionPanel),
+                'metric':new Metric(this.optionPanel),
                 "custom-html": new CustomHtml(this.optionPanel)
             };
     }

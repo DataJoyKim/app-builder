@@ -2,9 +2,9 @@
 <style th:fragment="style">
     #ip-management-app {
         padding: 16px;
-        background: #f7f8fa;
+        background: #f7f7f7;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        color: #1f2937;
+        color: #242323;
     }
 
     #ip-management-app .ip-layout {
@@ -16,7 +16,7 @@
     #ip-management-app .ip-list-panel,
     #ip-management-app .ip-detail-panel {
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 12px;
         overflow: hidden;
     }
@@ -38,8 +38,8 @@
         justify-content: space-between;
         gap: 10px;
         padding: 12px 16px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         flex-wrap: wrap;
     }
 
@@ -47,14 +47,14 @@
         margin: 0;
         font-size: 14px;
         font-weight: 700;
-        color: #1f2937;
+        color: #242323;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
     #ip-management-app .ip-panel-header h3 i {
-        color: #4A90E2;
+        color: #6b6b6b;
     }
 
     #ip-management-app .ip-panel-tools {
@@ -67,9 +67,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         background: #fff;
-        color: #374151;
+        color: #3d3d3d;
         border-radius: 7px;
         font-size: 12px;
         padding: 5px 10px;
@@ -78,17 +78,17 @@
     }
 
     #ip-management-app .ip-btn:hover {
-        background: #f1f3f5;
+        background: #f2f2f2;
     }
 
     #ip-management-app .ip-btn-primary {
-        background: #4A90E2;
-        border-color: #4A90E2;
+        background: #242323;
+        border-color: #242323;
         color: #fff;
     }
 
     #ip-management-app .ip-btn-primary:hover {
-        background: #3d7fce;
+        background: #3a3939;
     }
 
     #ip-management-app .ip-btn-danger {
@@ -102,7 +102,7 @@
     #ip-management-app .ip-list-search {
         position: relative;
         padding: 10px 12px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #ip-management-app .ip-list-search i {
@@ -110,13 +110,13 @@
         left: 22px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9199a3;
+        color: #999999;
         font-size: 12px;
     }
 
     #ip-management-app .ip-list-search input {
         width: 100%;
-        border: 1px solid #e1e4e8;
+        border: 1px solid #e3e3e3;
         border-radius: 8px;
         padding: 7px 10px 7px 28px;
         font-size: 12.5px;
@@ -124,7 +124,7 @@
     }
 
     #ip-management-app .ip-list-search input:focus {
-        border-color: #4A90E2;
+        border-color: #a3a3a3;
     }
 
     #ip-management-app .ip-list-body {
@@ -138,17 +138,17 @@
         justify-content: space-between;
         gap: 10px;
         padding: 10px 14px;
-        border-bottom: 1px solid #f2f4f6;
+        border-bottom: 1px solid #f3f3f3;
         cursor: pointer;
     }
 
     #ip-management-app .ip-list-item:hover {
-        background: #f8fafc;
+        background: #f8f8f8;
     }
 
     #ip-management-app .ip-list-item.selected {
-        background: #eef5fd;
-        box-shadow: inset 3px 0 0 #4A90E2;
+        background: #f2f2f2;
+        box-shadow: inset 3px 0 0 #555555;
     }
 
     #ip-management-app .ip-list-item-main {
@@ -161,7 +161,7 @@
     #ip-management-app .ip-list-item-name {
         font-size: 13px;
         font-weight: 600;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -176,9 +176,9 @@
     #ip-management-app .ip-count-chip {
         flex: 0 0 auto;
         font-size: 11px;
-        color: #4A90E2;
-        background: #eef5fd;
-        border: 1px solid #d5e6fa;
+        color: #6b6b6b;
+        background: #f2f2f2;
+        border: 1px solid #dcdcdc;
         border-radius: 999px;
         padding: 2px 9px;
         white-space: nowrap;
@@ -187,7 +187,7 @@
     #ip-management-app .ip-list-empty {
         padding: 36px 16px;
         text-align: center;
-        color: #9199a3;
+        color: #999999;
         font-size: 12.5px;
     }
 
@@ -195,7 +195,7 @@
         display: block;
         font-size: 22px;
         margin-bottom: 8px;
-        color: #cbd2da;
+        color: #cfcfcf;
     }
 
     #ip-management-app .ip-detail-body {
@@ -203,7 +203,7 @@
     }
 
     #ip-management-app .ip-section {
-        border: 1px solid #edeff2;
+        border: 1px solid #ececec;
         border-radius: 10px;
         margin-bottom: 14px;
         overflow: hidden;
@@ -214,15 +214,15 @@
         align-items: center;
         gap: 8px;
         padding: 9px 14px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         font-size: 12.5px;
         font-weight: 700;
-        color: #374151;
+        color: #3d3d3d;
     }
 
     #ip-management-app .ip-section-header i {
-        color: #4A90E2;
+        color: #6b6b6b;
     }
 
     #ip-management-app .ip-section-header .ip-panel-tools {
@@ -243,7 +243,7 @@
     #ip-management-app .ip-section-grid label {
         font-size: 12px;
         font-weight: 600;
-        color: #4b5563;
+        color: #555555;
         margin-bottom: 4px;
     }
 
@@ -260,24 +260,24 @@
     }
 
     #ip-management-app table.ip-table th {
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         padding: 8px 10px;
         text-align: left;
         font-weight: 600;
-        color: #4b5563;
+        color: #555555;
         white-space: nowrap;
     }
 
     #ip-management-app table.ip-table td {
-        border-bottom: 1px solid #f2f4f6;
+        border-bottom: 1px solid #f3f3f3;
         padding: 6px 10px;
         vertical-align: middle;
     }
 
     #ip-management-app table.ip-table input[type=text] {
         width: 100%;
-        border: 1px solid #e1e4e8;
+        border: 1px solid #e3e3e3;
         border-radius: 6px;
         padding: 5px 8px;
         font-size: 12.5px;
@@ -285,7 +285,7 @@
     }
 
     #ip-management-app table.ip-table input[type=text]:focus {
-        border-color: #4A90E2;
+        border-color: #a3a3a3;
     }
 
     #ip-management-app table.ip-table .ip-row-ip input {
@@ -295,7 +295,7 @@
     #ip-management-app .ip-table-empty {
         padding: 26px 16px;
         text-align: center;
-        color: #9199a3;
+        color: #999999;
         font-size: 12.5px;
     }
 
@@ -309,7 +309,7 @@
     #ip-management-app .ip-detail-empty {
         padding: 60px 16px;
         text-align: center;
-        color: #9199a3;
+        color: #999999;
         font-size: 13px;
     }
 
@@ -317,7 +317,7 @@
         display: block;
         font-size: 26px;
         margin-bottom: 10px;
-        color: #cbd2da;
+        color: #cfcfcf;
     }
 </style>
 <script th:fragment="script">

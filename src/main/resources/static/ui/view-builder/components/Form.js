@@ -76,13 +76,13 @@ class Form extends ViewObject {
                 transition: border-color .12s ease;
             }
             .vb-item[data-type="${this.componentId()}"]:hover {
-                border-color: #4A90E2;
+                border-color: #9a9a9a;
             }
             .vb-item[data-type="${this.componentId()}"] .vb-builder-tag {
                 position: absolute;
                 top: 4px;
                 left: 4px;
-                background: #4A90E2;
+                background: #6b6b6b;
                 color: #fff;
                 font-size: 9px;
                 font-weight: 700;

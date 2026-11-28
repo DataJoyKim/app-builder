@@ -1,0 +1,124 @@
+/*
+ * 콘솔 화면 공통 톤 (n8n 풍 중립 회색). 콘솔 content.html(app/platform) 에서만 불러온다.
+ * 앱 화면(view-builder-template)에는 들어가지 않으므로 생성된 페이지의 Bootstrap 색은 그대로다.
+ * 강조색은 #242323, 포커스/선택은 회색. 화면빌더 캔버스(#canvas) 안은 실제 앱 화면과 같게 보이도록 제외한다
+ * (:where 로 감싸 Bootstrap 과 같은 우선순위를 유지 — 화면별 스타일을 덮지 않는다).
+ */
+:root {
+    --console-primary: #242323;
+    --console-primary-hover: #3a3939;
+    --console-focus-border: #a3a3a3;
+    --console-focus-ring: rgba(36, 35, 35, .08);
+    --console-soft-bg: #f2f2f2;
+}
+
+/* ---- 버튼 ---- */
+.btn-primary:where(:not(#canvas *)),
+.btn-primary:where(:not(#canvas *)):disabled,
+.btn-primary.disabled:where(:not(#canvas *)){
+    background-color: var(--console-primary);
+    border-color: var(--console-primary);
+    color: #fff;
+}
+
+.btn-primary:where(:not(#canvas *)):hover,
+.btn-primary:where(:not(#canvas *)):focus,
+.btn-primary.focus:where(:not(#canvas *)),
+.btn-primary:where(:not(#canvas *)):not(:disabled):not(.disabled):active,
+.btn-primary:where(:not(#canvas *)):not(:disabled):not(.disabled).active,
+.show:where(:not(#canvas *)) > .btn-primary.dropdown-toggle{
+    background-color: var(--console-primary-hover);
+    border-color: var(--console-primary-hover);
+    color: #fff;
+}
+
+.btn-primary:where(:not(#canvas *)):focus,
+.btn-primary.focus:where(:not(#canvas *)),
+.btn-outline-primary:where(:not(#canvas *)):focus,
+.btn-outline-primary.focus:where(:not(#canvas *)){
+    box-shadow: 0 0 0 3px var(--console-focus-ring);
+}
+
+.btn-outline-primary:where(:not(#canvas *)){
+    color: var(--console-primary);
+    border-color: #c4c4c4;
+}
+
+.btn-outline-primary:where(:not(#canvas *)):hover,
+.btn-outline-primary:where(:not(#canvas *)):not(:disabled):not(.disabled):active,
+.btn-outline-primary:where(:not(#canvas *)):not(:disabled):not(.disabled).active{
+    background-color: var(--console-primary);
+    border-color: var(--console-primary);
+    color: #fff;
+}
+
+/* ---- 텍스트 / 배경 / 배지 ---- */
+.text-primary:where(:not(#canvas *)){ color: var(--console-primary) !important; }
+.bg-primary:where(:not(#canvas *)){ background-color: var(--console-primary) !important; }
+.badge-primary:where(:not(#canvas *)){ background-color: var(--console-primary); }
+
+a:where(:not(#canvas *)){ color: #3d3d3d; }
+a:where(:not(#canvas *)):hover{ color: var(--console-primary); }
+
+/* ---- 입력 포커스 ---- */
+.form-control:where(:not(#canvas *)):focus,
+.custom-select:where(:not(#canvas *)):focus{
+    border-color: var(--console-focus-border);
+    box-shadow: 0 0 0 3px var(--console-focus-ring);
+}
+
+/* ---- 체크박스 / 라디오 / 스위치 ---- */
+.custom-control-input:where(:not(#canvas *)):checked ~ .custom-control-label::before{
+    background-color: var(--console-primary);
+    border-color: var(--console-primary);
+}
+
+.custom-control-input:where(:not(#canvas *)):focus ~ .custom-control-label::before{
+    box-shadow: 0 0 0 3px var(--console-focus-ring);
+}
+
+.custom-control-input:where(:not(#canvas *)):focus:not(:checked) ~ .custom-control-label::before{
+    border-color: var(--console-focus-border);
+}
+
+input[type=checkbox]:where(:not(#canvas *)),
+input[type=radio]:where(:not(#canvas *)){
+    accent-color: var(--console-primary);
+}
+
+/* ---- 탭 / 페이지네이션 / 드롭다운 ---- */
+.nav-pills:where(:not(#canvas *)) .nav-link.active,
+.nav-pills:where(:not(#canvas *)) .show > .nav-link{
+    background-color: var(--console-primary);
+}
+
+.nav-tabs:where(:not(#canvas *)) .nav-link.active{
+    color: var(--console-primary);
+}
+
+.page-item.active:where(:not(#canvas *)) .page-link{
+    background-color: var(--console-primary);
+    border-color: var(--console-primary);
+}
+
+.page-link:where(:not(#canvas *)),
+.page-link:where(:not(#canvas *)):hover{
+    color: #3d3d3d;
+}
+
+.dropdown-item.active:where(:not(#canvas *)),
+.dropdown-item:where(:not(#canvas *)):active{
+    background-color: var(--console-soft-bg);
+    color: var(--console-primary);
+}
+
+/* ---- jstree 선택/hover ---- */
+.jstree-default:where(:not(#canvas *)) .jstree-clicked{
+    background: #ececec;
+    box-shadow: inset 0 0 0 1px #d4d4d4;
+}
+
+.jstree-default:where(:not(#canvas *)) .jstree-hovered{
+    background: #f4f4f4;
+    box-shadow: inset 0 0 0 1px #e3e3e3;
+}

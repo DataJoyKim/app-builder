@@ -47,7 +47,7 @@ class Layout extends ViewObject {
                 cursor: pointer;
                 width: 100%;
                 min-height: 90%;
-                border: 1px dashed #d7dbe0;
+                border: 1px dashed #d9d9d9;
                 border-radius: 10px;
                 padding-bottom: 50px;
             }

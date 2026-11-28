@@ -38,7 +38,8 @@ class ComponentPanel {
             ]},
             {name: '차트', icon: 'fas fa-chart-bar', items: [
                 {id: 'barline-chart', label: 'Bar/Line', icon: 'fas fa-chart-bar', description: '막대/선 그래프 차트'},
-                {id: 'pie-chart', label: 'Pie', icon: 'fas fa-chart-pie', description: '원형(파이/도넛) 차트'}
+                {id: 'pie-chart', label: 'Pie', icon: 'fas fa-chart-pie', description: '원형(파이/도넛) 차트'},
+                {id: 'metric', label: 'Metric', icon: 'fas fa-tachometer-alt', description: '대시보드 지표(KPI) 카드: 큰 숫자, 증감, 추이 그래프'}
             ]},
             {name: '버튼', icon: 'far fa-hand-pointer', items: [
                 {id: 'button', label: 'Button', icon: 'far fa-hand-pointer', description: '클릭 가능한 버튼'}

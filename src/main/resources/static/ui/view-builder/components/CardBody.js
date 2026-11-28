@@ -54,19 +54,19 @@ class CardBody extends ViewObject {
                 min-height: 54px;
                 height: auto;
                 margin: 5px;
-                border: 1px dashed #c7cbd1;
+                border: 1px dashed #cacaca;
                 border-radius: 8px;
                 transition: border-color .12s ease, background-color .12s ease;
             }
             .vb-item[data-type="${this.componentId()}"]:hover {
-                border-color: #4A90E2;
-                background-color: #fafbfc;
+                border-color: #9a9a9a;
+                background-color: #fafafa;
             }
             .vb-item[data-type="${this.componentId()}"] .vb-builder-tag {
                 position: absolute;
                 top: 4px;
                 left: 4px;
-                background: #4A90E2;
+                background: #6b6b6b;
                 color: #fff;
                 font-size: 9px;
                 font-weight: 700;

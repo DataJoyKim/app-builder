@@ -2,9 +2,9 @@
 <style th:fragment="style">
     #rest-api-app {
         padding: 16px;
-        background: #f7f8fa;
+        background: #f7f7f7;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        color: #1f2937;
+        color: #242323;
     }
 
     #rest-api-app .ds-layout {
@@ -16,7 +16,7 @@
     #rest-api-app .ds-list-panel,
     #rest-api-app .ds-detail-panel {
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 12px;
         overflow: hidden;
     }
@@ -38,8 +38,8 @@
         justify-content: space-between;
         gap: 10px;
         padding: 12px 16px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         flex-wrap: wrap;
     }
 
@@ -47,14 +47,14 @@
         margin: 0;
         font-size: 14px;
         font-weight: 700;
-        color: #1f2937;
+        color: #242323;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
     #rest-api-app .ds-panel-header h3 i {
-        color: #4A90E2;
+        color: #6b6b6b;
     }
 
     #rest-api-app .ds-panel-tools {
@@ -68,9 +68,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         background: #fff;
-        color: #374151;
+        color: #3d3d3d;
         border-radius: 7px;
         font-size: 12px;
         padding: 5px 10px;
@@ -80,7 +80,7 @@
     }
 
     #rest-api-app .ds-btn:hover {
-        background: #f1f3f5;
+        background: #f2f2f2;
     }
 
     #rest-api-app .ds-btn:disabled {
@@ -89,13 +89,13 @@
     }
 
     #rest-api-app .ds-btn-primary {
-        background: #4A90E2;
-        border-color: #4A90E2;
+        background: #242323;
+        border-color: #242323;
         color: #fff;
     }
 
     #rest-api-app .ds-btn-primary:hover {
-        background: #3d7fce;
+        background: #3a3939;
     }
 
     #rest-api-app .ds-btn-danger {
@@ -109,7 +109,7 @@
     #rest-api-app .ds-list-search {
         position: relative;
         padding: 10px 12px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #rest-api-app .ds-list-search i {
@@ -117,7 +117,7 @@
         left: 22px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9199a3;
+        color: #999999;
         font-size: 12px;
         pointer-events: none;
     }
@@ -126,14 +126,14 @@
         width: 100%;
         box-sizing: border-box;
         padding: 7px 10px 7px 28px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         font-size: 12.5px;
     }
 
     #rest-api-app .ds-list-search input:focus {
-        border-color: #4A90E2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        border-color: #a3a3a3;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.07);
         outline: none;
     }
 
@@ -148,19 +148,19 @@
         align-items: flex-start;
         gap: 10px;
         padding: 11px 16px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
         border-left: 3px solid transparent;
         cursor: pointer;
         transition: background-color .12s ease;
     }
 
     #rest-api-app .ds-list-item:hover {
-        background: #fafbfc;
+        background: #fafafa;
     }
 
     #rest-api-app .ds-list-item.selected {
-        background: #eef5ff;
-        border-left-color: #4A90E2;
+        background: #f2f2f2;
+        border-left-color: #555555;
     }
 
     #rest-api-app .ds-list-item-main {
@@ -174,14 +174,14 @@
     #rest-api-app .ds-list-item-name {
         font-size: 13px;
         font-weight: 600;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     #rest-api-app .ds-list-item.selected .ds-list-item-name {
-        color: #1d4ed8;
+        color: #242323;
     }
 
     #rest-api-app .ds-list-item-endpoint {
@@ -194,7 +194,7 @@
     #rest-api-app .ds-list-item-path {
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 11.5px;
-        color: #4b5563;
+        color: #555555;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -202,7 +202,7 @@
 
     #rest-api-app .ds-list-item-sub {
         font-size: 10.5px;
-        color: #9199a3;
+        color: #999999;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -222,8 +222,8 @@
     }
 
     #rest-api-app .ds-list-item-status.off {
-        background: #f3f4f6;
-        color: #6b7280;
+        background: #f3f3f3;
+        color: #6f6f6f;
     }
 
     #rest-api-app .ds-list-empty {
@@ -233,14 +233,14 @@
         justify-content: center;
         gap: 8px;
         padding: 50px 16px;
-        color: #9199a3;
+        color: #999999;
         font-size: 12.5px;
         text-align: center;
     }
 
     #rest-api-app .ds-list-empty i {
         font-size: 22px;
-        color: #d7dbe0;
+        color: #d9d9d9;
     }
 
     /* HTTP 메소드 뱃지. 목록과 상세 호출주소에서 같이 쓴다. */
@@ -258,7 +258,7 @@
     }
 
     #rest-api-app .method-badge.GET { background: #ecfdf5; color: #047857; }
-    #rest-api-app .method-badge.POST { background: #eff6ff; color: #1d4ed8; }
+    #rest-api-app .method-badge.POST { background: #eaf2fb; color: #3d6ea8; }
     #rest-api-app .method-badge.PUT { background: #fffbeb; color: #b45309; }
     #rest-api-app .method-badge.DELETE { background: #fef2f2; color: #b91c1c; }
 
@@ -267,7 +267,7 @@
         align-items: center;
         gap: 10px;
         padding: 12px 16px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
         flex-wrap: wrap;
     }
 
@@ -278,15 +278,15 @@
         align-items: center;
         gap: 8px;
         padding: 7px 10px;
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
+        background: #f8f8f8;
+        border: 1px solid #e6e6e6;
         border-radius: 8px;
     }
 
     #rest-api-app .endpoint-url-text {
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 12.5px;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -301,8 +301,8 @@
         display: flex;
         gap: 2px;
         padding: 8px 16px 0;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #rest-api-app .ds-tabs .nav-link {
@@ -311,7 +311,7 @@
         padding: 8px 16px;
         font-size: 12.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         background: transparent;
         display: flex;
         align-items: center;
@@ -320,8 +320,8 @@
 
     #rest-api-app .ds-tabs .nav-link.active {
         background: #fff;
-        color: #1d4ed8;
-        box-shadow: inset 0 -2px 0 #4A90E2;
+        color: #242323;
+        box-shadow: inset 0 -2px 0 #242323;
     }
 
     #rest-api-app .tab-count {
@@ -330,14 +330,14 @@
         min-width: 18px;
         padding: 1px 5px;
         border-radius: 999px;
-        background: #eef0f2;
-        color: #6b7280;
+        background: #ebebeb;
+        color: #6f6f6f;
         text-align: center;
     }
 
     #rest-api-app .ds-tabs .nav-link.active .tab-count {
-        background: #dbeafe;
-        color: #1d4ed8;
+        background: #e6e6e6;
+        color: #242323;
     }
 
     #rest-api-app .ds-detail-body {
@@ -357,7 +357,7 @@
     #rest-api-app label.field-label {
         font-size: 11.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         margin-bottom: 5px;
         display: block;
     }
@@ -365,25 +365,25 @@
     #rest-api-app .form-control {
         width: 100%;
         box-sizing: border-box;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         font-size: 13px;
         padding: 6px 10px;
         background: #fff;
-        color: #1f2937;
+        color: #242323;
         height: auto;
     }
 
     #rest-api-app .form-control:focus {
-        border-color: #4A90E2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        border-color: #a3a3a3;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.07);
         outline: none;
     }
 
     #rest-api-app .form-control:disabled,
     #rest-api-app .form-control[readonly] {
-        background: #f8fafc;
-        color: #6b7280;
+        background: #f8f8f8;
+        color: #6f6f6f;
     }
 
     #rest-api-app .input-prefix-group {
@@ -395,13 +395,13 @@
         display: flex;
         align-items: center;
         padding: 0 10px;
-        background: #f1f3f5;
-        border: 1px solid #d7dbe0;
+        background: #f2f2f2;
+        border: 1px solid #d9d9d9;
         border-right: none;
         border-radius: 7px 0 0 7px;
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 12px;
-        color: #6b7280;
+        color: #6f6f6f;
         white-space: nowrap;
     }
 
@@ -418,7 +418,7 @@
     #rest-api-app .field-help {
         margin-top: 5px;
         font-size: 11px;
-        color: #9199a3;
+        color: #999999;
         line-height: 1.5;
     }
 
@@ -441,7 +441,7 @@
     #rest-api-app .section-title {
         font-size: 12.5px;
         font-weight: 700;
-        color: #374151;
+        color: #3d3d3d;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -449,13 +449,13 @@
 
     #rest-api-app .section-desc {
         font-size: 11.5px;
-        color: #9199a3;
+        color: #999999;
         font-weight: 400;
     }
 
     /* 파라미터 편집 표. 행마다 입력칸이 있고, 본문은 들여쓰기로 트리를 보여준다. */
     #rest-api-app .param-table-wrap {
-        border: 1px solid #eef0f2;
+        border: 1px solid #ebebeb;
         border-radius: 8px;
         overflow-x: auto;
     }
@@ -468,18 +468,18 @@
     }
 
     #rest-api-app .param-table th {
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         padding: 7px 6px;
         font-size: 11px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         text-align: left;
         white-space: nowrap;
     }
 
     #rest-api-app .param-table td {
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
         padding: 5px 6px;
         vertical-align: middle;
     }
@@ -489,7 +489,7 @@
     }
 
     #rest-api-app .param-table tr:hover td {
-        background: #fafbfc;
+        background: #fafafa;
     }
 
     #rest-api-app .param-table .form-control {
@@ -510,7 +510,7 @@
     #rest-api-app .param-empty {
         padding: 18px;
         text-align: center;
-        color: #9199a3;
+        color: #999999;
         font-size: 12px;
     }
 
@@ -522,13 +522,13 @@
 
     #rest-api-app .tree-indent {
         flex: 0 0 auto;
-        color: #c0c4cc;
+        color: #c4c4c4;
         font-size: 11px;
         text-align: right;
     }
 
     #rest-api-app .icon-btn {
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         background: #fff;
         border-radius: 6px;
         width: 26px;
@@ -537,13 +537,13 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: #374151;
+        color: #3d3d3d;
         font-size: 11px;
         vertical-align: middle;
     }
 
     #rest-api-app .icon-btn:hover {
-        background: #f1f3f5;
+        background: #f2f2f2;
     }
 
     #rest-api-app .icon-btn.danger {
@@ -564,16 +564,16 @@
         gap: 8px;
         padding: 10px 12px;
         border-radius: 8px;
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
+        background: #f8f8f8;
+        border: 1px solid #e6e6e6;
         font-size: 12px;
-        color: #4b5563;
+        color: #555555;
         line-height: 1.6;
         margin-bottom: 14px;
     }
 
     #rest-api-app .notice i {
-        color: #4A90E2;
+        color: #6b6b6b;
         margin-top: 3px;
     }
 
@@ -593,8 +593,8 @@
         gap: 12px;
         flex-wrap: wrap;
         padding: 12px;
-        background: #fbfbfc;
-        border: 1px solid #eef0f2;
+        background: #fafafa;
+        border: 1px solid #ebebeb;
         border-radius: 8px;
         margin-bottom: 14px;
     }
@@ -655,8 +655,8 @@
         font-weight: 600;
         padding: 1px 7px;
         border-radius: 4px;
-        background: #f1f3f5;
-        color: #4b5563;
+        background: #f2f2f2;
+        color: #555555;
     }
 
     #rest-api-app .status-chip {
@@ -709,8 +709,8 @@
         align-items: center;
         gap: 8px;
         padding: 8px 10px;
-        border: 1px solid #e5e7eb;
-        background: #f8fafc;
+        border: 1px solid #e6e6e6;
+        background: #f8f8f8;
         border-radius: 8px;
         margin-bottom: 12px;
     }
@@ -720,14 +720,14 @@
         min-width: 0;
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 12px;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     #rest-api-app .test-block {
-        border: 1px solid #eef0f2;
+        border: 1px solid #ebebeb;
         border-radius: 8px;
         margin-bottom: 12px;
         overflow: hidden;
@@ -739,11 +739,11 @@
         justify-content: space-between;
         gap: 8px;
         padding: 7px 10px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         font-size: 12px;
         font-weight: 700;
-        color: #374151;
+        color: #3d3d3d;
     }
 
 
@@ -760,7 +760,7 @@
 
     #rest-api-app .test-param-table td {
         padding: 5px 10px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
         vertical-align: middle;
         font-size: 12px;
     }
@@ -777,7 +777,7 @@
 
     #rest-api-app .test-param-name {
         font-family: "SFMono-Regular", Consolas, monospace;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -791,7 +791,7 @@
     #rest-api-app .test-empty {
         padding: 10px;
         font-size: 12px;
-        color: #9199a3;
+        color: #999999;
     }
 
     #rest-api-app .test-body {
@@ -804,7 +804,7 @@
     }
 
     #rest-api-app .test-body:focus {
-        box-shadow: inset 0 0 0 2px rgba(74, 144, 226, .35);
+        box-shadow: inset 0 0 0 2px rgba(36, 35, 35, 0.21);
     }
 
     #rest-api-app .test-response-toolbar {
@@ -938,7 +938,7 @@
     /* ============ API 문서 ============ */
     #rest-api-app #docView {
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 12px;
         overflow: hidden;
     }
@@ -948,8 +948,8 @@
         align-items: center;
         gap: 12px;
         padding: 10px 16px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         flex-wrap: wrap;
     }
 
@@ -963,7 +963,7 @@
     }
 
     #rest-api-app .doc-toolbar h3 i {
-        color: #4A90E2;
+        color: #6b6b6b;
     }
 
     #rest-api-app .doc-toolbar-tools {
@@ -983,14 +983,14 @@
         left: 10px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9199a3;
+        color: #999999;
         font-size: 12px;
     }
 
     #rest-api-app .doc-search input {
         width: 240px;
         padding: 5px 10px 5px 28px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         font-size: 12.5px;
     }
@@ -1000,7 +1000,7 @@
         align-items: center;
         gap: 5px;
         font-size: 12px;
-        color: #4b5563;
+        color: #555555;
         margin: 0;
         cursor: pointer;
         font-weight: 500;
@@ -1014,10 +1014,10 @@
 
     #rest-api-app .doc-nav {
         flex: 0 0 280px;
-        border-right: 1px solid #eef0f2;
+        border-right: 1px solid #ebebeb;
         overflow-y: auto;
         padding: 8px 0;
-        background: #fcfcfd;
+        background: #fcfcfc;
     }
 
     #rest-api-app .doc-nav-item {
@@ -1025,13 +1025,13 @@
         align-items: flex-start;
         gap: 8px;
         padding: 8px 14px;
-        color: #374151;
+        color: #3d3d3d;
         text-decoration: none;
         cursor: pointer;
     }
 
     #rest-api-app .doc-nav-item:hover {
-        background: #f1f5f9;
+        background: #f2f2f2;
         text-decoration: none;
     }
 
@@ -1043,7 +1043,7 @@
         font-size: 12.5px;
         font-weight: 600;
         align-items: center;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
         margin-bottom: 4px;
     }
 
@@ -1065,7 +1065,7 @@
     #rest-api-app .doc-nav-path {
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 11px;
-        color: #6b7280;
+        color: #6f6f6f;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1081,7 +1081,7 @@
 
     #rest-api-app .doc-section {
         padding: 22px 0 26px 0;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
         max-width: 1100px;
     }
 
@@ -1116,7 +1116,7 @@
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 15px;
         font-weight: 600;
-        color: #111827;
+        color: #242323;
         word-break: break-all;
     }
 
@@ -1135,8 +1135,8 @@
         font-weight: 700;
         padding: 2px 8px;
         border-radius: 999px;
-        background: #f3f4f6;
-        color: #6b7280;
+        background: #f3f3f3;
+        color: #6f6f6f;
     }
 
     #rest-api-app .doc-api-name {
@@ -1148,20 +1148,20 @@
     #rest-api-app .doc-subtitle {
         font-size: 13.5px;
         font-weight: 700;
-        color: #1f2937;
+        color: #242323;
         margin: 20px 0 8px 0;
     }
 
     #rest-api-app .doc-desc {
         font-size: 13px;
-        color: #4b5563;
+        color: #555555;
         line-height: 1.7;
         margin: 0 0 8px 0;
     }
 
     #rest-api-app .doc-note {
         font-size: 12px;
-        color: #6b7280;
+        color: #6f6f6f;
     }
 
     #rest-api-app .doc-warning {
@@ -1177,26 +1177,26 @@
     }
 
     #rest-api-app .doc-meta dt {
-        color: #6b7280;
+        color: #6f6f6f;
         font-weight: 600;
     }
 
     #rest-api-app .doc-meta dd {
         margin: 0;
-        color: #1f2937;
+        color: #242323;
     }
 
     #rest-api-app .doc-content code {
         font-family: "SFMono-Regular", Consolas, monospace;
         font-size: 12px;
-        color: #1f2937;
-        background: #f3f4f6;
+        color: #242323;
+        background: #f3f3f3;
         padding: 1px 5px;
         border-radius: 4px;
     }
 
     #rest-api-app .doc-table-wrap {
-        border: 1px solid #eef0f2;
+        border: 1px solid #ebebeb;
         border-radius: 8px;
         overflow-x: auto;
     }
@@ -1208,20 +1208,20 @@
     }
 
     #rest-api-app .doc-table th {
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         padding: 7px 10px;
         font-size: 11.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         text-align: left;
         white-space: nowrap;
     }
 
     #rest-api-app .doc-table td {
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
         padding: 7px 10px;
-        color: #374151;
+        color: #3d3d3d;
         vertical-align: top;
     }
 
@@ -1236,13 +1236,13 @@
     }
 
     #rest-api-app .doc-muted {
-        color: #9ca3af;
+        color: #a0a0a0;
     }
 
     #rest-api-app .doc-example-label {
         font-size: 11.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         margin: 12px 0 6px 0;
     }
 
@@ -1261,7 +1261,7 @@
 
     #rest-api-app .doc-empty {
         padding: 40px 0;
-        color: #9199a3;
+        color: #999999;
         font-size: 13px;
     }
 

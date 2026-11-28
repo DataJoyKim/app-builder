@@ -128,7 +128,7 @@ class Toggle extends ViewObject {
                 transition: background-color .12s ease;
             }
             .vb-item[data-type="${this.componentId()}"]:hover {
-                background-color: #fafbfc;
+                background-color: #fafafa;
             }
         `;
     }

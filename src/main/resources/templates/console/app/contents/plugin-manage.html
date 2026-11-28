@@ -2,9 +2,9 @@
 <style th:fragment="style">
     #plugin-app {
         padding: 16px;
-        background: #f7f8fa;
+        background: #f7f7f7;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        color: #1f2937;
+        color: #242323;
     }
 
     #plugin-app .ds-layout {
@@ -16,7 +16,7 @@
     #plugin-app .ds-list-panel,
     #plugin-app .ds-detail-panel {
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 12px;
         overflow: hidden;
     }
@@ -38,8 +38,8 @@
         justify-content: space-between;
         gap: 10px;
         padding: 12px 16px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         flex-wrap: wrap;
     }
 
@@ -53,7 +53,7 @@
     }
 
     #plugin-app .ds-panel-header h3 i {
-        color: #4A90E2;
+        color: #6b6b6b;
     }
 
     #plugin-app .ds-panel-tools {
@@ -66,7 +66,7 @@
     #plugin-app .ds-btn-divider {
         width: 1px;
         align-self: stretch;
-        background: #e5e7eb;
+        background: #e6e6e6;
         margin: 0 2px;
     }
 
@@ -74,9 +74,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         background: #fff;
-        color: #374151;
+        color: #3d3d3d;
         border-radius: 7px;
         font-size: 12px;
         padding: 5px 10px;
@@ -84,22 +84,22 @@
         transition: background-color .12s ease;
     }
 
-    #plugin-app .ds-btn:hover { background: #f1f3f5; }
+    #plugin-app .ds-btn:hover { background: #f2f2f2; }
     #plugin-app .ds-btn:disabled { opacity: .45; cursor: not-allowed; }
 
     #plugin-app .ds-btn-primary {
-        background: #4A90E2;
-        border-color: #4A90E2;
+        background: #242323;
+        border-color: #242323;
         color: #fff;
     }
 
-    #plugin-app .ds-btn-primary:hover { background: #3d7fce; }
+    #plugin-app .ds-btn-primary:hover { background: #3a3939; }
     #plugin-app .ds-btn-danger { color: #dc2626; }
     #plugin-app .ds-btn-danger:hover { background: #fef2f2; }
 
     #plugin-app .ds-count {
         font-size: 11.5px;
-        color: #6b7280;
+        color: #6f6f6f;
     }
 
     #plugin-app .ds-list-body {
@@ -113,16 +113,16 @@
         align-items: center;
         gap: 10px;
         padding: 11px 16px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
         border-left: 3px solid transparent;
         cursor: pointer;
     }
 
-    #plugin-app .ds-list-item:hover { background: #fafbfc; }
+    #plugin-app .ds-list-item:hover { background: #fafafa; }
 
     #plugin-app .ds-list-item.selected {
-        background: #eef5ff;
-        border-left-color: #4A90E2;
+        background: #f2f2f2;
+        border-left-color: #555555;
     }
 
     #plugin-app .ds-list-item-main {
@@ -143,7 +143,7 @@
 
     #plugin-app .ds-list-item-code {
         font-size: 11px;
-        color: #9199a3;
+        color: #999999;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -155,12 +155,12 @@
         font-weight: 700;
         padding: 3px 9px;
         border-radius: 20px;
-        background: #f1f3f5;
-        color: #6b7280;
+        background: #f2f2f2;
+        color: #6f6f6f;
     }
 
     #plugin-app .pl-chip.started { background: #e7f7ee; color: #15803d; }
-    #plugin-app .pl-chip.stopped { background: #f1f3f5; color: #6b7280; }
+    #plugin-app .pl-chip.stopped { background: #f2f2f2; color: #6f6f6f; }
     #plugin-app .pl-chip.failed { background: #fef2f2; color: #dc2626; }
     #plugin-app .pl-chip.pending { background: #fff7e6; color: #b45309; }
 
@@ -172,7 +172,7 @@
         justify-content: center;
         gap: 8px;
         padding: 50px 16px;
-        color: #9199a3;
+        color: #999999;
         font-size: 12.5px;
         text-align: center;
     }
@@ -180,13 +180,13 @@
     #plugin-app .ds-list-empty i,
     #plugin-app .ds-detail-empty i {
         font-size: 22px;
-        color: #d7dbe0;
+        color: #d9d9d9;
     }
 
     #plugin-app .ds-detail-body { padding: 16px; }
 
     #plugin-app .ds-section {
-        border: 1px solid #eef0f2;
+        border: 1px solid #ebebeb;
         border-radius: 10px;
         margin-bottom: 14px;
         overflow: hidden;
@@ -197,15 +197,15 @@
         align-items: center;
         gap: 8px;
         padding: 10px 14px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         font-weight: 700;
         font-size: 12px;
-        color: #374151;
+        color: #3d3d3d;
         letter-spacing: .03em;
     }
 
-    #plugin-app .ds-section-header i { color: #4A90E2; }
+    #plugin-app .ds-section-header i { color: #6b6b6b; }
 
     #plugin-app .ds-section-header .ds-panel-tools { margin-left: auto; }
 
@@ -219,7 +219,7 @@
     #plugin-app .pl-info dt {
         font-size: 11.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         margin-bottom: 3px;
     }
 
@@ -241,9 +241,9 @@
         text-align: left;
         font-size: 11.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         padding: 8px 10px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
         background: #fff;
     }
 
@@ -262,7 +262,7 @@
 
     #plugin-app .pl-empty-row td {
         text-align: center;
-        color: #9199a3;
+        color: #999999;
         padding: 18px;
     }
 
@@ -405,7 +405,7 @@
             const chip = statusChipOf(plugin);
             $("#infoPluginId").text(plugin.pluginId);
             $("#infoStatus").empty().append($('<span class="pl-chip"></span>').addClass(chip.css).text(chip.text))
-                .append($('<span style="margin-left:6px;font-size:12px;color:#6b7280;"></span>').text(`목표: ${started ? '시작' : '중지'}`));
+                .append($('<span style="margin-left:6px;font-size:12px;color:#6f6f6f;"></span>').text(`목표: ${started ? '시작' : '중지'}`));
             $("#infoVersion").text(plugin.version || '-');
             $("#infoProvider").text(plugin.provider || '-');
             $("#infoRevision").text(plugin.revision);

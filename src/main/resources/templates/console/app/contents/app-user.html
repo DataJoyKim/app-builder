@@ -2,9 +2,9 @@
 <style th:fragment="style">
     #app-user-app {
         padding: 16px;
-        background: #f7f8fa;
+        background: #f7f7f7;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        color: #1f2937;
+        color: #242323;
     }
 
     #app-user-app .ds-layout {
@@ -15,7 +15,7 @@
 
     #app-user-app .ds-panel {
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 12px;
         overflow: hidden;
         display: flex;
@@ -30,8 +30,8 @@
         justify-content: space-between;
         gap: 10px;
         padding: 12px 16px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         flex-wrap: wrap;
     }
 
@@ -39,21 +39,21 @@
         margin: 0;
         font-size: 14px;
         font-weight: 700;
-        color: #1f2937;
+        color: #242323;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
     #app-user-app .ds-panel-header h3 i {
-        color: #4A90E2;
+        color: #6b6b6b;
     }
 
     #app-user-app .ds-count {
         font-size: 11px;
         font-weight: 700;
-        color: #6b7280;
-        background: #f1f3f5;
+        color: #6f6f6f;
+        background: #f2f2f2;
         border-radius: 999px;
         padding: 1px 8px;
     }
@@ -68,9 +68,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         background: #fff;
-        color: #374151;
+        color: #3d3d3d;
         border-radius: 7px;
         font-size: 12px;
         padding: 5px 10px;
@@ -79,17 +79,17 @@
     }
 
     #app-user-app .ds-btn:hover {
-        background: #f1f3f5;
+        background: #f2f2f2;
     }
 
     #app-user-app .ds-btn-primary {
-        background: #4A90E2;
-        border-color: #4A90E2;
+        background: #242323;
+        border-color: #242323;
         color: #fff;
     }
 
     #app-user-app .ds-btn-primary:hover {
-        background: #3d7fce;
+        background: #3a3939;
     }
 
     #app-user-app .ds-btn:disabled {
@@ -102,13 +102,13 @@
     }
 
     #app-user-app .ds-btn-primary:disabled:hover {
-        background: #4A90E2;
+        background: #242323;
     }
 
     #app-user-app .ds-list-search {
         position: relative;
         padding: 10px 12px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #app-user-app .ds-list-search i {
@@ -116,7 +116,7 @@
         left: 22px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9199a3;
+        color: #999999;
         font-size: 12px;
         pointer-events: none;
     }
@@ -125,14 +125,14 @@
         width: 100%;
         box-sizing: border-box;
         padding: 7px 10px 7px 28px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         font-size: 12.5px;
     }
 
     #app-user-app .ds-list-search input:focus {
-        border-color: #4A90E2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        border-color: #a3a3a3;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.07);
         outline: none;
     }
 
@@ -143,10 +143,10 @@
         justify-content: space-between;
         gap: 10px;
         padding: 8px 16px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         font-size: 12px;
-        color: #6b7280;
+        color: #6f6f6f;
     }
 
     #app-user-app .ds-select-bar label {
@@ -155,12 +155,12 @@
         gap: 8px;
         margin: 0;
         font-weight: 600;
-        color: #374151;
+        color: #3d3d3d;
         cursor: pointer;
     }
 
     #app-user-app .ds-select-bar strong {
-        color: #1d4ed8;
+        color: #242323;
     }
 
     #app-user-app .ds-link {
@@ -169,7 +169,7 @@
         padding: 0;
         margin-left: 8px;
         font-size: 12px;
-        color: #6b7280;
+        color: #6f6f6f;
         text-decoration: underline;
         cursor: pointer;
     }
@@ -184,7 +184,7 @@
         align-items: center;
         gap: 10px;
         padding: 10px 16px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
         border-left: 3px solid transparent;
     }
 
@@ -195,12 +195,12 @@
     }
 
     #app-user-app .ds-candidate-list .ds-list-item:hover {
-        background: #fafbfc;
+        background: #fafafa;
     }
 
     #app-user-app .ds-candidate-list .ds-list-item.selected {
-        background: #eef5ff;
-        border-left-color: #4A90E2;
+        background: #f2f2f2;
+        border-left-color: #555555;
     }
 
     #app-user-app .ds-list-item input[type="checkbox"] {
@@ -216,8 +216,8 @@
         width: 30px;
         height: 30px;
         border-radius: 50%;
-        background: #eef5ff;
-        color: #1d4ed8;
+        background: #f2f2f2;
+        color: #242323;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -236,7 +236,7 @@
     #app-user-app .ds-list-item-name {
         font-size: 13px;
         font-weight: 600;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -244,7 +244,7 @@
 
     #app-user-app .ds-list-item-code {
         font-size: 11px;
-        color: #9199a3;
+        color: #999999;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -256,13 +256,13 @@
         font-weight: 700;
         padding: 2px 7px;
         border-radius: 999px;
-        background: #f3f4f6;
-        color: #6b7280;
+        background: #f3f3f3;
+        color: #6f6f6f;
     }
 
     #app-user-app .ds-role.admin {
-        background: #eef5ff;
-        color: #1d4ed8;
+        background: #f2f2f2;
+        color: #242323;
     }
 
     /* 등록된 사용자 행의 권한 변경 / 삭제 */
@@ -270,19 +270,19 @@
         flex: 0 0 auto;
         height: 26px;
         padding: 0 6px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         background: #fff;
         font-size: 12px;
         font-weight: 600;
-        color: #374151;
+        color: #3d3d3d;
         cursor: pointer;
     }
 
     #app-user-app .ds-role-select.admin {
-        border-color: #bcd4f6;
-        background: #eef5ff;
-        color: #1d4ed8;
+        border-color: #d4d4d4;
+        background: #f2f2f2;
+        color: #242323;
     }
 
     /* 소속 회사 선택. 회사가 없는 사용자는 눈에 띄게 */
@@ -302,9 +302,9 @@
         justify-content: space-between;
         gap: 8px;
         padding: 6px 14px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
         font-size: 12px;
-        color: #6b7280;
+        color: #6f6f6f;
     }
 
     #app-user-app .ds-unassigned-filter label {
@@ -321,8 +321,8 @@
     }
 
     #app-user-app .ds-role-select:focus {
-        border-color: #4A90E2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        border-color: #a3a3a3;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.07);
         outline: none;
     }
 
@@ -336,7 +336,7 @@
         border: 1px solid transparent;
         border-radius: 7px;
         background: none;
-        color: #9199a3;
+        color: #999999;
         font-size: 12px;
         cursor: pointer;
         transition: background-color .12s ease, color .12s ease;
@@ -357,7 +357,7 @@
     #app-user-app .ds-icon-btn:disabled:hover {
         background: none;
         border-color: transparent;
-        color: #9199a3;
+        color: #999999;
     }
 
     #app-user-app .ds-me {
@@ -377,14 +377,14 @@
         justify-content: center;
         gap: 8px;
         padding: 50px 16px;
-        color: #9199a3;
+        color: #999999;
         font-size: 12.5px;
         text-align: center;
     }
 
     #app-user-app .ds-list-empty i {
         font-size: 22px;
-        color: #d7dbe0;
+        color: #d9d9d9;
     }
 
     #app-user-app .ds-panel-footer {
@@ -393,13 +393,13 @@
         justify-content: space-between;
         gap: 10px;
         padding: 10px 16px;
-        border-top: 1px solid #eef0f2;
-        background: #fbfbfc;
+        border-top: 1px solid #ebebeb;
+        background: #fafafa;
     }
 
     #app-user-app .ds-hint {
         font-size: 11.5px;
-        color: #9199a3;
+        color: #999999;
     }
 
     /* ---- 탭: 사용자 / 가입 · 초대 ---- */
@@ -409,7 +409,7 @@
         margin: 0 0 16px;
         padding: 0;
         list-style: none;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e6e6e6;
     }
 
     #app-user-app .ds-tabs .nav-link {
@@ -421,14 +421,14 @@
         padding: 9px 16px;
         font-size: 13px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         background: transparent;
     }
 
     #app-user-app .ds-tabs .nav-link.active {
         background: #fff;
-        color: #1d4ed8;
-        box-shadow: inset 0 -2px 0 #4A90E2;
+        color: #242323;
+        box-shadow: inset 0 -2px 0 #242323;
     }
 
     #app-user-app .ds-tab-badge {
@@ -468,7 +468,7 @@
         gap: 4px;
         margin: 0;
         padding: 12px 14px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 10px;
         font-weight: normal;
         cursor: pointer;
@@ -476,13 +476,13 @@
     }
 
     #app-user-app .ds-policy:hover {
-        border-color: #bcd4f6;
+        border-color: #d4d4d4;
     }
 
     #app-user-app .ds-policy:has(input:checked) {
-        border-color: #4A90E2;
-        background: #f7faff;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .10);
+        border-color: #555555;
+        background: #f7f7f7;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.06);
     }
 
     #app-user-app .ds-policy input {
@@ -499,18 +499,18 @@
         padding-right: 20px;
         font-size: 13px;
         font-weight: 700;
-        color: #1f2937;
+        color: #242323;
     }
 
     #app-user-app .ds-policy-title i {
         width: 16px;
-        color: #4A90E2;
+        color: #6b6b6b;
         text-align: center;
     }
 
     #app-user-app .ds-policy-desc {
         font-size: 11.5px;
-        color: #6b7280;
+        color: #6f6f6f;
         line-height: 1.5;
     }
 
@@ -518,7 +518,7 @@
         margin-top: 4px;
         font-size: 11px;
         font-weight: 600;
-        color: #1d4ed8;
+        color: #242323;
     }
 
     #app-user-app .ds-join-options {
@@ -538,13 +538,13 @@
         margin: 0 0 6px;
         font-size: 11.5px;
         font-weight: 700;
-        color: #6b7280;
+        color: #6f6f6f;
     }
 
     #app-user-app .ds-select {
         width: 100%;
         padding: 6px 8px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         font-size: 12.5px;
         background: #fff;
@@ -589,8 +589,8 @@
     }
 
     #app-user-app .ds-channel-tag.off {
-        background: #f3f4f6;
-        color: #6b7280;
+        background: #f3f3f3;
+        color: #6f6f6f;
     }
 
     #app-user-app .ds-channel-tag.approval {
@@ -600,7 +600,7 @@
 
     #app-user-app .ds-section {
         padding: 12px 16px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #app-user-app .ds-section-title {
@@ -611,7 +611,7 @@
         margin-bottom: 8px;
         font-size: 12px;
         font-weight: 700;
-        color: #374151;
+        color: #3d3d3d;
     }
 
     /* 여러 이메일 입력 (칩) */
@@ -624,15 +624,15 @@
         max-height: 140px;
         overflow-y: auto;
         padding: 6px 8px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 8px;
         background: #fff;
         cursor: text;
     }
 
     #app-user-app .ds-email-input:focus-within {
-        border-color: #4A90E2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        border-color: #a3a3a3;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.07);
     }
 
     #app-user-app .ds-email-input input {
@@ -651,8 +651,8 @@
         max-width: 100%;
         padding: 2px 4px 2px 9px;
         border-radius: 999px;
-        background: #eef5ff;
-        color: #1d4ed8;
+        background: #f2f2f2;
+        color: #242323;
         font-size: 12px;
     }
 
@@ -704,7 +704,7 @@
     #app-user-app .ds-invite-result {
         display: none;
         margin-top: 10px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 8px;
         overflow: hidden;
         font-size: 12px;
@@ -716,8 +716,8 @@
         justify-content: space-between;
         gap: 8px;
         padding: 8px 10px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         font-weight: 600;
     }
 
@@ -731,7 +731,7 @@
         align-items: center;
         gap: 8px;
         padding: 6px 10px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
     }
 
     #app-user-app .ds-invite-result-row:last-child {
@@ -771,11 +771,11 @@
         flex: 1 1 auto;
         min-width: 0;
         padding: 6px 8px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 6px;
         background: #fff;
         font-size: 12px;
-        color: #374151;
+        color: #3d3d3d;
     }
 
     #app-user-app .ds-invite-list {
@@ -785,7 +785,7 @@
 
     #app-user-app .ds-invite-meta {
         font-size: 11px;
-        color: #9199a3;
+        color: #999999;
     }
 
     #app-user-app .ds-status {
@@ -794,13 +794,13 @@
         font-weight: 700;
         padding: 2px 7px;
         border-radius: 999px;
-        background: #f3f4f6;
-        color: #6b7280;
+        background: #f3f3f3;
+        color: #6f6f6f;
     }
 
     #app-user-app .ds-status.PENDING {
-        background: #eef5ff;
-        color: #1d4ed8;
+        background: #f2f2f2;
+        color: #242323;
     }
 
     #app-user-app .ds-status.ACCEPTED {
@@ -817,14 +817,14 @@
         display: flex;
         gap: 10px;
         padding: 14px 16px;
-        color: #6b7280;
+        color: #6f6f6f;
         font-size: 12px;
         line-height: 1.6;
     }
 
     #app-user-app .ds-off-note i {
         margin-top: 3px;
-        color: #9ca3af;
+        color: #a0a0a0;
     }
 
     #app-user-app .ds-icon-btn.approve:hover {

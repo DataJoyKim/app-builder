@@ -2,6 +2,7 @@ package com.prometis.appbuilder.console.app.deploy;
 
 import com.prometis.appbuilder.console.app.deploy.dto.DeployCommitRequest;
 import com.prometis.appbuilder.console.app.deploy.dto.DeployGitSettingRequest;
+import com.prometis.appbuilder.console.app.deploy.dto.DeployImportRequest;
 import com.prometis.appbuilder.console.app.deploy.github.GitHubException;
 import com.prometis.appbuilder.security.exception.SecurityBusinessException;
 import com.prometis.appbuilder.security.service.AuthenticationService;
@@ -25,6 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DeployRestController {
     private final DeployService deployService;
+    private final DeployImportService deployImportService;
     private final AuthenticationService authenticationService;
 
     @GetMapping("/setting")
@@ -60,6 +62,18 @@ public class DeployRestController {
             HttpServletRequest httpRequest
     ) {
         return ResponseEntity.ok(deployService.commit(applicationId, request, loginUserNameOf(httpRequest)));
+    }
+
+    // ---- 저장소 DSL 배포 (Deploy > Deploy 화면) ----
+
+    @PostMapping("/import/preview")
+    public ResponseEntity<?> importPreview(@PathVariable("applicationId") String applicationId, @RequestBody DeployImportRequest request) {
+        return ResponseEntity.ok(deployImportService.preview(applicationId, request));
+    }
+
+    @PostMapping("/import/apply")
+    public ResponseEntity<?> importApply(@PathVariable("applicationId") String applicationId, @RequestBody DeployImportRequest request) {
+        return ResponseEntity.ok(deployImportService.apply(applicationId, request));
     }
 
     @ExceptionHandler(DeployException.class)

@@ -295,7 +295,7 @@ public class DeployService {
         return builder.toString();
     }
 
-    private static void checkBranchName(String branch) {
+    static void checkBranchName(String branch) {
         if(!BRANCH.matcher(branch).matches()
                 || branch.contains("..") || branch.contains("//")
                 || branch.startsWith("/") || branch.endsWith("/")

@@ -35,9 +35,9 @@
        안전하다. */
     height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #fafbfc;
+    background: #fafafa;
     overflow: hidden;
-    color: #1f2937;
+    color: #242323;
 }
 
 /* ============ Left / Right panel shells ============ */
@@ -56,7 +56,7 @@
 #app-container #left-panel {
     width: 300px;
     flex: 0 0 300px;
-    border-right: 1px solid #eef0f2;
+    border-right: 1px solid #ebebeb;
     margin-left: 0;
     transition: margin-left .18s ease;
 }
@@ -72,11 +72,11 @@
 #app-container #right-panel {
     width: 380px;
     flex: 0 0 380px;
-    border-left: 1px solid #eef0f2;
+    border-left: 1px solid #ebebeb;
     margin-right: -380px;
     /* 닫힐 때는 밀려나간 뒤에 숨긴다. 닫힌 패널이 Tab으로 focus 되면 안 된다. */
     visibility: hidden;
-    box-shadow: -6px 0 18px rgba(16, 24, 40, .06);
+    box-shadow: -6px 0 18px rgba(0, 0, 0, .06);
     transition: margin-right .18s ease, visibility 0s linear .18s;
 }
 
@@ -102,13 +102,13 @@
     gap: 10px;
     padding: 10px 16px;
     background: #ffffff;
-    border-bottom: 1px solid #eef0f2;
+    border-bottom: 1px solid #ebebeb;
 }
 
 #app-container .vb-sidebar-toggle {
     border: none;
     background: transparent;
-    color: #6b7280;
+    color: #6f6f6f;
     font-size: 16px;
     cursor: pointer;
     padding: 4px 6px;
@@ -116,14 +116,14 @@
 }
 
 #app-container .vb-sidebar-toggle:hover {
-    background: #f1f3f5;
-    color: #374151;
+    background: #f2f2f2;
+    color: #3d3d3d;
 }
 
 /* 옵션 패널이 열려 있는 동안 상단바 토글 버튼을 눌린 상태로 표시 */
 #app-container .vb-sidebar-toggle.is-active {
-    background: #eef5ff;
-    color: #1d4ed8;
+    background: #ececec;
+    color: #242323;
 }
 
 #app-container .vb-title-group {
@@ -137,7 +137,7 @@
 #app-container .vb-title-name {
     font-size: 16px;
     font-weight: 600;
-    color: #1f2937;
+    color: #242323;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -145,7 +145,7 @@
 
 #app-container .vb-title-code {
     font-size: 12px;
-    color: #9199a3;
+    color: #999999;
     white-space: nowrap;
 }
 
@@ -169,8 +169,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    background: #fbfbfc;
-    border-bottom: 1px solid #eef0f2;
+    background: #fafafa;
+    border-bottom: 1px solid #ebebeb;
 }
 
 #app-container .vb-drawer-title {
@@ -179,11 +179,11 @@
     gap: 8px;
     font-size: 13px;
     font-weight: 700;
-    color: #1f2937;
+    color: #242323;
 }
 
 #app-container .vb-drawer-title i {
-    color: #4A90E2;
+    color: #6b6b6b;
     font-size: 12px;
 }
 
@@ -191,14 +191,14 @@
     border: none;
     background: transparent;
     font-size: 20px;
-    color: #9199a3;
+    color: #999999;
     cursor: pointer;
     line-height: 1;
     padding: 0 2px;
 }
 
 #app-container .vb-drawer-close:hover {
-    color: #374151;
+    color: #3d3d3d;
 }
 
 #app-container hr {
@@ -210,16 +210,16 @@
     padding: 10px 14px;
     font-size: 13px;
     font-weight: 700;
-    color: #1f2937;
-    background: #fbfbfc;
-    border-bottom: 1px solid #eef0f2;
+    color: #242323;
+    background: #fafafa;
+    border-bottom: 1px solid #ebebeb;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 #app-container h5 i {
-    color: #4A90E2;
+    color: #6b6b6b;
     font-size: 12px;
 }
 
@@ -231,7 +231,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border-bottom: 1px solid #eef0f2;
+    border-bottom: 1px solid #ebebeb;
 }
 
 #app-container .vb-panel-label {
@@ -239,7 +239,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .03em;
-    color: #9199a3;
+    color: #999999;
     margin: 0;
 }
 
@@ -252,38 +252,38 @@
     width: 100%;
     flex: 1;
     min-width: 0;
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     border-radius: 7px;
     padding: 7px 10px;
     font-size: 13px;
-    color: #1f2937;
+    color: #242323;
 }
 
 #app-container .vb-input:focus {
     outline: none;
-    border-color: #4A90E2;
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+    border-color: #a3a3a3;
+    box-shadow: 0 0 0 3px rgba(36, 35, 35, .08);
 }
 
 #app-container .vb-input-readonly {
-    background: #f8f9fa;
-    color: #6b7280;
+    background: #f8f8f8;
+    color: #6f6f6f;
 }
 
 #app-container .vb-icon-btn {
     flex: 0 0 auto;
     width: 34px;
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     background: #fff;
     border-radius: 7px;
-    color: #374151;
+    color: #3d3d3d;
     cursor: pointer;
 }
 
 #app-container .vb-icon-btn:hover {
-    background: #f1f3f5;
-    border-color: #4A90E2;
-    color: #4A90E2;
+    background: #f2f2f2;
+    border-color: #c4c4c4;
+    color: #242323;
 }
 
 #app-container .vb-object-actions {
@@ -303,27 +303,27 @@
     align-items: center;
     gap: 6px;
     font-size: 12.5px;
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     background: #fff;
     border-radius: 7px;
     padding: 6px 12px;
     cursor: pointer;
-    color: #374151;
+    color: #3d3d3d;
     white-space: nowrap;
 }
 
 #app-container .vb-btn:hover {
-    background: #f1f3f5;
+    background: #f2f2f2;
 }
 
 #app-container .vb-btn.vb-btn-primary {
-    background: #4A90E2;
-    border-color: #4A90E2;
+    background: #242323;
+    border-color: #242323;
     color: #fff;
 }
 
 #app-container .vb-btn.vb-btn-primary:hover {
-    background: #3d7fce;
+    background: #3a3939;
 }
 
 /* ============ Component palette ============ */
@@ -353,15 +353,15 @@
 #app-container .vb-component-search input {
     width: 100%;
     padding: 6px 28px 6px 10px;
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     border-radius: 6px;
     font-size: 12.5px;
 }
 
 #app-container .vb-component-search input:focus {
     outline: none;
-    border-color: #4A90E2;
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+    border-color: #a3a3a3;
+    box-shadow: 0 0 0 3px rgba(36, 35, 35, .08);
 }
 
 #app-container .vb-component-search i {
@@ -369,7 +369,7 @@
     right: 9px;
     top: 50%;
     transform: translateY(-50%);
-    color: #9199a3;
+    color: #999999;
     font-size: 11px;
     pointer-events: none;
 }
@@ -377,18 +377,18 @@
 #app-container .vb-component-toggle-all {
     flex: 0 0 auto;
     width: 30px;
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     background: #fff;
     border-radius: 6px;
-    color: #6b7280;
+    color: #6f6f6f;
     cursor: pointer;
     font-size: 12px;
 }
 
 #app-container .vb-component-toggle-all:hover {
-    background: #f1f3f5;
-    border-color: #4A90E2;
-    color: #4A90E2;
+    background: #f2f2f2;
+    border-color: #c4c4c4;
+    color: #242323;
 }
 
 #app-container .vb-component-list {
@@ -402,19 +402,19 @@
    회전하고 내용은 뚝뚝 끊기는 느낌이었다. grid-template-rows를 0fr↔1fr로 트랜지션하는
    방식으로 바꿔서 화살표 회전과 내용 펼침이 같이 부드럽게 움직이도록 했다. */
 #app-container .vb-category {
-    border: 1px solid #eef0f2;
+    border: 1px solid #ebebeb;
     border-radius: 8px;
     margin-bottom: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
 }
 
 #app-container .vb-category-header {
     padding: 9px 12px;
-    background: #fbfbfc;
+    background: #fafafa;
     font-weight: 600;
     font-size: 12.5px;
-    color: #374151;
+    color: #3d3d3d;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -423,16 +423,16 @@
 }
 
 #app-container .vb-category-header:hover {
-    background: #f1f3f5;
+    background: #f2f2f2;
 }
 
 #app-container .vb-category-header:focus-visible {
-    outline: 2px solid #4A90E2;
+    outline: 2px solid #8a8a8a;
     outline-offset: -2px;
 }
 
 #app-container .vb-category-chevron {
-    color: #9199a3;
+    color: #999999;
     font-size: 10px;
     width: 10px;
     text-align: center;
@@ -444,7 +444,7 @@
 }
 
 #app-container .vb-category-icon {
-    color: #4A90E2;
+    color: #6b6b6b;
     font-size: 12px;
     width: 14px;
     text-align: center;
@@ -485,7 +485,7 @@
     gap: 6px;
     padding: 10px 4px;
     background: #fff;
-    border: 1px solid #eef0f2;
+    border: 1px solid #ebebeb;
     border-radius: 8px;
     text-align: center;
     cursor: grab;
@@ -494,8 +494,8 @@
 }
 
 #app-container .component-item:hover {
-    border-color: #4A90E2;
-    background: #eef5ff;
+    border-color: #c4c4c4;
+    background: #f4f4f4;
 }
 
 #app-container .component-item i,
@@ -510,8 +510,8 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    background: #f5f7fa;
-    color: #4A90E2;
+    background: #f5f5f5;
+    color: #6b6b6b;
     font-size: 15px;
     flex: 0 0 auto;
 }
@@ -524,7 +524,7 @@
     margin: 0;
     font-size: 11px;
     line-height: 1.3;
-    color: #374151;
+    color: #3d3d3d;
     max-width: 100%;
     overflow-wrap: break-word;
 }
@@ -536,8 +536,8 @@
     min-width: 0;
     position: relative;
     overflow: auto;
-    background-color: #fafbfc;
-    background-image: radial-gradient(circle, #d7dce3 1.2px, transparent 1.2px);
+    background-color: #fafafa;
+    background-image: radial-gradient(circle, #d6d6d6 1.2px, transparent 1.2px);
     background-size: 20px 20px;
     padding: 24px;
 }
@@ -552,10 +552,35 @@
     cursor: grab;
 }
 
+/* 선택 표시: 회색 톤 예외로 차분한 파랑, 얇은 선 하나만.
+   바깥에 선을 따로 그리면(outline) 컴포넌트 자체 테두리, 옆 컴포넌트 테두리와 겹쳐 이중선이 되므로
+   - 테두리가 없는 컴포넌트(입력, 버튼, Html 등)는 안쪽(패딩 영역)에 선을 긋고
+   - 테두리가 있는 컴포넌트(레이아웃/컨테이너/차트/시트/Metric)는 그 테두리 자체를 파란 실선으로 바꾼다 */
 #app-container .selected {
-    outline: 2px solid #4A90E2;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(74, 144, 226, .15);
+    outline: none;
+    box-shadow: inset 0 0 0 1px #7fa6d6;
+    background-color: rgba(127, 166, 214, .06);
+}
+
+#app-container .selected[data-type="row"],
+#app-container .selected[data-type="col"],
+#app-container .selected[data-type="card"],
+#app-container .selected[data-type="card-body"],
+#app-container .selected[data-type="form"],
+#app-container .selected[data-type="layout"],
+#app-container .selected[data-type="barline-chart"],
+#app-container .selected[data-type="pie-chart"],
+#app-container .selected[data-type="grid"],
+#app-container .selected[data-type="sheet"],
+#app-container .selected[data-type="metric"] {
+    box-shadow: none;
+    border-style: solid !important;
+    border-color: #7fa6d6 !important;
+}
+
+/* Metric 은 흰 카드 모양을 그대로 보여준다 */
+#app-container .selected[data-type="metric"] {
+    background-color: #fff;
 }
 
 #app-container .component-delete-btn {
@@ -576,7 +601,7 @@
     cursor: pointer;
     padding: 0;
     z-index: 999;
-    box-shadow: 0 2px 6px rgba(16, 24, 40, .15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
 }
 
 #app-container .component-delete-btn:hover {
@@ -587,16 +612,16 @@
    아무것도 보이지 않는 문제가 있었다. outline은 별도 폭 지정 없이도
    항상 렌더링되므로 안전하다. */
 #app-container .drop-hover {
-    outline: 2px dashed #4A90E2 !important;
-    background-color: #eef5ff !important;
+    outline: 2px dashed #9a9a9a !important;
+    background-color: #f4f4f4 !important;
 }
 
 /* .sortable-placeholder는 JS가 인라인 style로 border/background를 지정하는데
    (ViewObject.js sortable() 콜백), jQuery의 인라인 style은 !important가 아니므로
    여기서 !important로 덮어써도 안전하게 이긴다. */
 #app-container .sortable-placeholder {
-    border: 2px dashed #4A90E2 !important;
-    background: #eef5ff !important;
+    border: 2px dashed #9a9a9a !important;
+    background: #f4f4f4 !important;
     border-radius: 6px;
 }
 
@@ -639,31 +664,31 @@
 #app-container #options .form-group label {
     font-size: 11.5px;
     font-weight: 600;
-    color: #6b7280;
+    color: #6f6f6f;
     margin-bottom: 5px;
     display: block;
 }
 
 #app-container #options .form-control {
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     border-radius: 7px;
     font-size: 13px;
 }
 
 #app-container #options .form-control:focus {
-    border-color: #4A90E2;
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+    border-color: #a3a3a3;
+    box-shadow: 0 0 0 3px rgba(36, 35, 35, .08);
     outline: none;
 }
 
 #app-container #options .CodeMirror {
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     border-radius: 7px;
 }
 
 #app-container #options input[readonly] {
-    background: #f8f9fa;
-    color: #6b7280;
+    background: #f8f8f8;
+    color: #6f6f6f;
     cursor: default;
 }
 
@@ -673,11 +698,11 @@
 #app-container #options > .vb-opt-section {
     flex: 0 0 100%;
     width: 100%;
-    border: 1px solid #eef0f2;
+    border: 1px solid #ebebeb;
     border-radius: 8px;
     margin: 0 0 10px;
     overflow: hidden;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
 }
 
 #app-container #options > .vb-opt-section:last-child {
@@ -686,12 +711,12 @@
 
 #app-container .vb-opt-section-header {
     padding: 9px 12px;
-    background: #fbfbfc;
+    background: #fafafa;
     font-weight: 700;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: .04em;
-    color: #374151;
+    color: #3d3d3d;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -700,16 +725,16 @@
 }
 
 #app-container .vb-opt-section-header:hover {
-    background: #f1f3f5;
+    background: #f2f2f2;
 }
 
 #app-container .vb-opt-section-header:focus-visible {
-    outline: 2px solid #4A90E2;
+    outline: 2px solid #8a8a8a;
     outline-offset: -2px;
 }
 
 #app-container .vb-opt-section-chevron {
-    color: #9199a3;
+    color: #999999;
     font-size: 10px;
     width: 10px;
     text-align: center;
@@ -753,7 +778,7 @@
     gap: 12px;
     padding: 9px 10px;
     margin-bottom: 0;
-    border-bottom: 1px solid #f1f3f5;
+    border-bottom: 1px solid #f2f2f2;
 }
 
 #app-container #options .form-group.vb-opt-toggle-row:last-child {
@@ -764,7 +789,7 @@
     margin: 0;
     font-size: 12.5px;
     font-weight: 500;
-    color: #374151;
+    color: #3d3d3d;
 }
 
 #app-container #options .vb-opt-toggle-row .custom-control.custom-switch {
@@ -783,8 +808,8 @@
 
 /* ---- 코드에디터/시트처럼 덩치 큰 위젯을 감싸는 카드형 블록 ---- */
 #app-container #options .vb-opt-block {
-    background: #fbfbfc;
-    border: 1px solid #eef0f2;
+    background: #fafafa;
+    border: 1px solid #ebebeb;
     border-radius: 8px;
     padding: 10px;
 }
@@ -832,14 +857,14 @@
     justify-content: center;
     gap: 10px;
     padding: 60px 20px;
-    color: #9199a3;
+    color: #999999;
     text-align: center;
     width: 100%;
 }
 
 #app-container .vb-empty-hint i {
     font-size: 30px;
-    color: #d7dbe0;
+    color: #d9d9d9;
 }
 
 #app-container .vb-empty-hint p {
@@ -884,7 +909,7 @@
         bottom: 0;
         width: min(300px, 85vw);
         margin-left: 0;
-        box-shadow: 6px 0 18px rgba(16, 24, 40, .12);
+        box-shadow: 6px 0 18px rgba(0, 0, 0, .12);
         transform: translateX(0);
         visibility: visible;
         transition: transform .18s ease, visibility 0s;
@@ -906,7 +931,7 @@
         bottom: 0;
         width: min(380px, 100%);
         margin-right: 0;
-        box-shadow: -6px 0 18px rgba(16, 24, 40, .12);
+        box-shadow: -6px 0 18px rgba(0, 0, 0, .12);
         transform: translateX(100%);
         transition: transform .18s ease, visibility 0s linear .18s;
         z-index: 1002;
@@ -923,7 +948,7 @@
         display: block;
         position: absolute;
         inset: 0;
-        background: rgba(17, 24, 39, .35);
+        background: rgba(0, 0, 0, .35);
         opacity: 0;
         visibility: hidden;
         transition: opacity .18s ease, visibility 0s linear .18s;
@@ -975,8 +1000,8 @@
 
 #vb-component-picker .modal-header {
     padding: 12px 16px;
-    background: #fbfbfc;
-    border-bottom: 1px solid #eef0f2;
+    background: #fafafa;
+    border-bottom: 1px solid #ebebeb;
 }
 
 #vb-component-picker .modal-title {
@@ -985,11 +1010,11 @@
     gap: 8px;
     font-size: 14px;
     font-weight: 700;
-    color: #1f2937;
+    color: #242323;
 }
 
 #vb-component-picker .modal-title i {
-    color: #4A90E2;
+    color: #6b6b6b;
     font-size: 13px;
 }
 
@@ -1005,15 +1030,15 @@
 #vb-component-picker .vb-picker-search input {
     width: 100%;
     padding: 7px 30px 7px 10px;
-    border: 1px solid #d7dbe0;
+    border: 1px solid #d9d9d9;
     border-radius: 7px;
     font-size: 13px;
 }
 
 #vb-component-picker .vb-picker-search input:focus {
     outline: none;
-    border-color: #4A90E2;
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+    border-color: #a3a3a3;
+    box-shadow: 0 0 0 3px rgba(36, 35, 35, .08);
 }
 
 #vb-component-picker .vb-picker-search i {
@@ -1021,7 +1046,7 @@
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    color: #9199a3;
+    color: #999999;
     font-size: 12px;
     pointer-events: none;
 }
@@ -1042,7 +1067,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .03em;
-    color: #9199a3;
+    color: #999999;
     margin-bottom: 6px;
 }
 
@@ -1060,17 +1085,17 @@
     gap: 6px;
     padding: 10px 4px;
     background: #fff;
-    border: 1px solid #eef0f2;
+    border: 1px solid #ebebeb;
     border-radius: 8px;
     cursor: pointer;
-    color: #374151;
+    color: #3d3d3d;
     transition: background .12s ease, border-color .12s ease;
 }
 
 #vb-component-picker .vb-picker-item:hover,
 #vb-component-picker .vb-picker-item:focus-visible {
-    border-color: #4A90E2;
-    background: #eef5ff;
+    border-color: #8a8a8a;
+    background: #f4f4f4;
     outline: none;
 }
 
@@ -1081,8 +1106,8 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    background: #f5f7fa;
-    color: #4A90E2;
+    background: #f5f5f5;
+    color: #6b6b6b;
     font-size: 15px;
 }
 
@@ -1098,7 +1123,7 @@
 #vb-component-picker .vb-picker-empty {
     padding: 30px 10px;
     text-align: center;
-    color: #9199a3;
+    color: #999999;
     font-size: 12.5px;
 }
 

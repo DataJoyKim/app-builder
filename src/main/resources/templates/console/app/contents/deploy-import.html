@@ -1,0 +1,626 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- 스타일은 Deploy > Commit 화면(deploy-commit.html)과 같은 것을 쓰고, 이 화면에만 필요한 것만 더한다 -->
+<th:block th:fragment="style">
+<style th:replace="~{console/app/contents/deploy-commit :: style}"></style>
+<style>
+    #deploy-app .dp-import-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    #deploy-app .dp-import-form .form-group {
+        margin: 0;
+        flex: 0 1 220px;
+        min-width: 160px;
+    }
+
+    #deploy-app .dp-import-form label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #3d3d3d;
+        margin-bottom: 4px;
+    }
+
+    #deploy-app .dp-import-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+    }
+
+    #deploy-app .dp-import-note {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #6f6f6f;
+        line-height: 1.6;
+    }
+
+    #deploy-app .dp-import-note strong {
+        color: #b91c1c;
+    }
+
+    #deploy-app .dp-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-bottom: 1px solid #f2f2f2;
+        background: #fafafa;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #3d3d3d;
+        cursor: pointer;
+    }
+
+    #deploy-app .dp-group .dp-group-kind {
+        font-weight: 500;
+        color: #999999;
+        font-size: 11.5px;
+    }
+
+    #deploy-app .dp-group .dp-item-name {
+        flex: 1 1 auto;
+    }
+
+    #deploy-app .dp-group-caret {
+        width: 10px;
+        color: #a0a0a0;
+        font-size: 11px;
+    }
+
+    #deploy-app .dp-group.collapsed + .dp-group-files {
+        display: none;
+    }
+
+    #deploy-app .dp-group-files .dp-item {
+        padding-left: 34px;
+    }
+
+    #deploy-app .dp-group .dp-check {
+        margin: 0;
+        cursor: pointer;
+    }
+
+    #deploy-app .dp-group.unchecked .dp-item-name {
+        color: #a0a0a0;
+        font-weight: 500;
+    }
+
+    #deploy-app .dp-result {
+        white-space: pre-line;
+    }
+
+    #deploy-app .dp-result.is-error {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    #deploy-app .dp-result ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+        color: #92400e;
+    }
+</style>
+</th:block>
+<script th:fragment="script">
+    // 미리보기/배포는 GitHub 를 여러 번 부르므로 기본 10초로는 모자랄 수 있다
+    httpClient.timeout = 180000;
+
+    const DEPLOY_API = `/${APPLICATION_ID}/console/api/deploy`;
+    const MAX_LINE_LENGTH = 400;
+    const DIFF_CONTEXT = 3;
+    const ACTION_LABELS = {CREATE: '추가', UPDATE: '수정', DELETE: '삭제'};
+    const ACTION_BADGES = {CREATE: 'dp-badge-added', UPDATE: 'dp-badge-modified', DELETE: 'dp-badge-deleted'};
+    const FILE_LABELS = {ADDED: '추가', MODIFIED: '수정', DELETED: '삭제'};
+    const FILE_BADGES = {ADDED: 'dp-badge-added', MODIFIED: 'dp-badge-modified', DELETED: 'dp-badge-deleted'};
+
+    let SETTING = null;
+    let PREVIEW = null;
+    let SELECTED_FILE_KEY = null;
+    // 접은 메타데이터 묶음 (kind/id)
+    const COLLAPSED_GROUPS = new Set();
+    // 배포할 메타데이터 (kind/id). 미리보기할 때마다 전부 고른 상태로 시작한다
+    const CHECKED_KEYS = new Set();
+
+    $(document).ready(function() {
+        renderPreview();
+        getSetting();
+    });
+
+    function alertError(error) {
+        const message = error && error.responseJSON && error.responseJSON.message;
+        alert(message || (error && error.statusText === 'timeout' ? '요청 시간이 초과되었습니다.' : '오류가 발생했습니다.'));
+    }
+
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // ---- 저장소 연동 상태 (설정은 deploy-repository 화면) ----
+
+    function getSetting() {
+        httpClient.get(`${DEPLOY_API}/setting`, {},
+            function(response) {
+                SETTING = response;
+                renderSetting();
+            },
+            alertError
+        );
+    }
+
+    function renderSetting() {
+        const configured = SETTING && SETTING.configured;
+
+        const $status = $('#gitStatus').empty();
+        if(configured) {
+            $status.append($('<span class="dp-badge dp-badge-on"><i class="fas fa-check-circle"></i>연동됨</span>'));
+            $status.append($('<a target="_blank" rel="noopener"></a>')
+                .attr('href', SETTING.repositoryUrl || '#')
+                .text(`${SETTING.owner}/${SETTING.repository}`));
+            $status.append($('<span></span>').text(`브랜치 ${SETTING.branch}`));
+            $('#importBranch').attr('placeholder', SETTING.branch);
+        }
+        else {
+            $status.append($('<span class="dp-badge">연동 안 됨</span>'));
+            $status.append($('<span></span>').text('Deploy > Repository 에서 저장소를 연동하면 DSL 을 배포할 수 있습니다.'));
+        }
+
+        $('#importSource').attr('placeholder', APPLICATION_ID);
+        $('#btnPreview').prop('disabled', !configured);
+        updateImportButton();
+    }
+
+    // ---- 미리보기 ----
+
+    function requestBody() {
+        return {
+            branch: ($('#importBranch').val() || '').trim() || null,
+            sourceApplicationId: ($('#importSource').val() || '').trim() || null
+        };
+    }
+
+    function preview() {
+        const $btn = $('#btnPreview').prop('disabled', true);
+        httpClient.post(`${DEPLOY_API}/import/preview`, {}, requestBody(),
+            function(response) {
+                $btn.prop('disabled', false);
+                PREVIEW = response;
+                SELECTED_FILE_KEY = null;
+                CHECKED_KEYS.clear();
+                (PREVIEW.changes || []).forEach(c => CHECKED_KEYS.add(keyOf(c)));
+                renderPreview();
+            },
+            function(error) {
+                $btn.prop('disabled', false);
+                alertError(error);
+            }
+        );
+    }
+
+    function renderPreview() {
+        const $summary = $('#previewSummary').empty();
+        const $list = $('#changeList').empty();
+
+        if(!PREVIEW) {
+            $summary.append($('<span class="dp-help"></span>').text('[미리보기] 로 저장소의 DSL 과 이 애플리케이션의 메타데이터를 비교합니다.'));
+            renderIssues('#previewIssues', '#previewIssueCount', [], () => {});
+            $list.append(emptyBox('미리보기를 실행하세요.'));
+            renderEmptyViewer('#diffViewer', '#diffViewerPath', '왼쪽에서 파일을 선택하세요.');
+            updateImportButton();
+            return;
+        }
+
+        // 저장소에 있는 애플리케이션 폴더를 고를 수 있게 한다
+        const $sources = $('#sourceApplications').empty();
+        (PREVIEW.sourceApplications || []).forEach(id => $sources.append($('<option></option>').attr('value', id)));
+
+        const changes = PREVIEW.changes || [];
+        const count = action => changes.filter(c => c.action === action).length;
+
+        $summary.append($('<span class="dp-badge"></span>').text(PREVIEW.branch));
+        $summary.append($('<a target="_blank" rel="noopener"></a>')
+            .attr('href', PREVIEW.repositoryUrl ? `${PREVIEW.repositoryUrl}/tree/${PREVIEW.commitSha}/${PREVIEW.sourceApplicationId}` : '#')
+            .text(PREVIEW.commitSha.substring(0, 7)));
+        $summary.append($('<span></span>').text(`${PREVIEW.sourceApplicationId}/ · 파일 ${PREVIEW.fileCount}개`));
+        $summary.append($('<span class="dp-badge dp-badge-added"></span>').text(`추가 ${count('CREATE')}`));
+        $summary.append($('<span class="dp-badge dp-badge-modified"></span>').text(`수정 ${count('UPDATE')}`));
+        $summary.append($('<span class="dp-badge dp-badge-deleted"></span>').text(`삭제 ${count('DELETE')}`));
+
+        renderIssues('#previewIssues', '#previewIssueCount', PREVIEW.issues || [], () => {});
+
+        if(changes.length === 0) {
+            $list.append(emptyBox(PREVIEW.fileCount ? '저장소와 달라진 메타데이터가 없습니다.' : '저장소에 이 애플리케이션의 DSL 이 없습니다.'));
+        }
+        $('#changeCheckAll').prop('checked', changes.length > 0 && CHECKED_KEYS.size === changes.length)
+            .prop('indeterminate', CHECKED_KEYS.size > 0 && CHECKED_KEYS.size < changes.length)
+            .prop('disabled', changes.length === 0);
+        $('#changeSelectedCount').text(changes.length ? `${CHECKED_KEYS.size}/${changes.length}` : '');
+
+        let selectedFile = null;
+        for(const change of changes) {
+            const groupKey = keyOf(change);
+            const $group = $('<div class="dp-group"><i class="dp-group-caret fas"></i><input type="checkbox" class="dp-check" title="배포할지 선택"><span class="dp-badge"></span><span class="dp-item-name"></span><span class="dp-group-kind"></span></div>');
+            const checked = CHECKED_KEYS.has(groupKey);
+            $group.toggleClass('unchecked', !checked);
+            $group.find('.dp-check').prop('checked', checked)
+                .on('click', e => e.stopPropagation())
+                .on('change', e => {
+                    if(e.target.checked) CHECKED_KEYS.add(groupKey);
+                    else CHECKED_KEYS.delete(groupKey);
+                    renderPreview();
+                });
+            $group.find('.dp-badge').addClass(ACTION_BADGES[change.action]).text(ACTION_LABELS[change.action]);
+            $group.find('.dp-item-name').text(change.id);
+            $group.find('.dp-group-kind').text(change.kind);
+            const collapsed = COLLAPSED_GROUPS.has(groupKey);
+            $group.toggleClass('collapsed', collapsed);
+            $group.find('.dp-group-caret').addClass(collapsed ? 'fa-caret-right' : 'fa-caret-down');
+            $group.on('click', () => {
+                if(COLLAPSED_GROUPS.has(groupKey)) COLLAPSED_GROUPS.delete(groupKey);
+                else COLLAPSED_GROUPS.add(groupKey);
+                renderPreview();
+            });
+
+            const $files = $('<div class="dp-group-files"></div>');
+            for(const file of change.files) {
+                const fileKey = `${groupKey}\n${file.path}`;
+                const $item = $('<div class="dp-item"><span class="dp-badge"></span><span class="dp-item-name"></span></div>');
+                $item.find('.dp-badge').addClass(FILE_BADGES[file.status]).text(FILE_LABELS[file.status]);
+                $item.find('.dp-item-name').text(file.path).attr('title', file.path);
+                if(fileKey === SELECTED_FILE_KEY) {
+                    $item.addClass('selected');
+                    selectedFile = file;
+                }
+                $item.on('click', () => {
+                    SELECTED_FILE_KEY = fileKey;
+                    renderPreview();
+                });
+                $files.append($item);
+            }
+
+            $list.append($group).append($files);
+        }
+
+        if(selectedFile) {
+            $('#diffViewerPath').text(`${selectedFile.path}  (- 이 환경, + 저장소)`);
+            renderDiff('#diffViewer', selectedFile.before, selectedFile.after);
+        }
+        else {
+            renderEmptyViewer('#diffViewer', '#diffViewerPath', changes.length ? '왼쪽에서 파일을 선택하세요. (- 이 환경, + 저장소)' : '변경사항이 없습니다.');
+        }
+        updateImportButton();
+    }
+
+    function keyOf(change) {
+        return `${change.kind}/${change.id}`;
+    }
+
+    function checkAllChanges(checked) {
+        CHECKED_KEYS.clear();
+        if(checked && PREVIEW) {
+            (PREVIEW.changes || []).forEach(c => CHECKED_KEYS.add(keyOf(c)));
+        }
+        renderPreview();
+    }
+
+    function updateImportButton() {
+        const importable = !!(PREVIEW && PREVIEW.importable);
+        $('#btnImport').prop('disabled', !importable || CHECKED_KEYS.size === 0)
+            .find('span').text(importable && CHECKED_KEYS.size ? `배포 (${CHECKED_KEYS.size})` : '배포');
+
+        let hint = '';
+        if(PREVIEW && !importable) {
+            hint = '배포할 변경사항이 없습니다.';
+        }
+        else if(PREVIEW && CHECKED_KEYS.size === 0) {
+            hint = '배포할 메타데이터를 골라주세요.';
+        }
+        else if(PREVIEW) {
+            const errors = (PREVIEW.issues || []).filter(i => i.level === 'ERROR').length;
+            if(errors) {
+                hint = `저장소 DSL 에 검증 오류가 ${errors}건 있습니다. 오류와 관계없는 메타데이터만 골라 배포할 수 있습니다.`;
+            }
+        }
+        $('#importHint').text(hint);
+    }
+
+    // ---- 배포 ----
+
+    function importDsl() {
+        if(!PREVIEW || !PREVIEW.importable) {
+            return;
+        }
+
+        const changes = (PREVIEW.changes || []).filter(c => CHECKED_KEYS.has(keyOf(c)));
+        if(changes.length === 0) {
+            return;
+        }
+        const total = (PREVIEW.changes || []).length;
+        const count = action => changes.filter(c => c.action === action).length;
+        const deletes = changes.filter(c => c.action === 'DELETE').map(c => `  - ${c.kind} ${c.id}`);
+
+        let message = `저장소(${PREVIEW.branch} @ ${PREVIEW.commitSha.substring(0, 7)})의 '${PREVIEW.sourceApplicationId}' DSL 을\n`
+            + `이 애플리케이션(${APPLICATION_ID})에 배포합니다.\n\n`
+            + (changes.length === total ? '바뀐 메타데이터 전체: ' : `바뀐 ${total}건 중 고른 ${changes.length}건: `)
+            + `추가 ${count('CREATE')} · 수정 ${count('UPDATE')} · 삭제 ${count('DELETE')}\n`;
+        if(deletes.length) {
+            message += `\n저장소에 없어서 삭제되는 메타데이터:\n${deletes.slice(0, 15).join('\n')}${deletes.length > 15 ? `\n  ... 외 ${deletes.length - 15}건` : ''}\n`;
+        }
+        message += '\n계속할까요?';
+        if(!confirm(message)) {
+            return;
+        }
+
+        $('#btnImport').prop('disabled', true);
+        $('#btnPreview').prop('disabled', true);
+        const body = {branch: PREVIEW.branch, sourceApplicationId: PREVIEW.sourceApplicationId, commitSha: PREVIEW.commitSha,
+            keys: changes.map(keyOf)};
+        httpClient.post(`${DEPLOY_API}/import/apply`, {}, body,
+            function(result) {
+                renderResult(result);
+                // 반영한 뒤 다시 비교해 남은 차이가 없는지 보여준다
+                preview();
+            },
+            function(error) {
+                $('#btnPreview').prop('disabled', false);
+                const message = error && error.responseJSON && error.responseJSON.message;
+                $('#importResult').addClass('is-error').text((message || '배포하지 못했습니다.') + '\n(아무것도 바뀌지 않았습니다)').show();
+                updateImportButton();
+            }
+        );
+    }
+
+    function renderResult(result) {
+        const $result = $('#importResult').removeClass('is-error').empty();
+        $result.append($('<div></div>').text(
+            `배포했습니다. ${result.sourceApplicationId} @ ${result.commitSha.substring(0, 7)} — 추가 ${result.created} · 수정 ${result.updated} · 삭제 ${result.deleted}`));
+        if(result.warnings && result.warnings.length) {
+            const $ul = $('<ul></ul>');
+            result.warnings.forEach(w => $ul.append($('<li></li>').text(w)));
+            $result.append($ul);
+        }
+        $result.show();
+    }
+
+    // ---- 아래는 deploy-commit.html 과 같은 표시 도구 ----
+
+    function emptyBox(message) {
+        const $empty = $('<div class="dp-empty"><i class="fas fa-inbox"></i><span></span></div>');
+        $empty.find('span').text(message);
+        return $empty;
+    }
+
+    function issueLevelByPath(issues) {
+        const levels = {};
+        for(const issue of issues) {
+            if(levels[issue.path] !== 'ERROR') levels[issue.path] = issue.level;
+        }
+        return levels;
+    }
+
+    function appendIssueBadge($item, level) {
+        if(level === 'ERROR') $item.append('<span class="dp-badge dp-badge-error" title="검증 오류"><i class="fas fa-times-circle"></i></span>');
+        else if(level === 'WARNING') $item.append('<span class="dp-badge dp-badge-warning" title="검증 경고"><i class="fas fa-exclamation-triangle"></i></span>');
+    }
+
+    function renderIssues(listSelector, countSelector, issues, onSelect) {
+        const errors = issues.filter(i => i.level === 'ERROR').length;
+        const warnings = issues.length - errors;
+
+        const $count = $(countSelector).empty();
+        $count.append($('<span class="dp-badge"></span>').addClass(errors ? 'dp-badge-error' : '').text(`오류 ${errors}`));
+        $count.append($('<span class="dp-badge"></span>').addClass(warnings ? 'dp-badge-warning' : '').text(`경고 ${warnings}`));
+
+        const $list = $(listSelector).empty();
+        if(issues.length === 0) {
+            $list.append($('<div class="dp-issue"><i class="fas fa-check-circle" style="color:#16a34a"></i><span>검증 결과 문제가 없습니다.</span></div>'));
+            return;
+        }
+
+        const sorted = [...issues].sort((a, b) => (a.level === b.level ? 0 : (a.level === 'ERROR' ? -1 : 1)));
+        for(const issue of sorted) {
+            const $issue = $('<div class="dp-issue"><span class="dp-badge"></span><span class="dp-issue-path"></span><span class="dp-issue-message"></span></div>');
+            $issue.find('.dp-badge').addClass(issue.level === 'ERROR' ? 'dp-badge-error' : 'dp-badge-warning').text(issue.level === 'ERROR' ? '오류' : '경고');
+            $issue.find('.dp-issue-path').text(issue.path.substring(issue.path.indexOf('/') + 1)).attr('title', issue.path)
+                .on('click', () => onSelect(issue.path));
+            $issue.find('.dp-issue-message').text(issue.message);
+            $list.append($issue);
+        }
+    }
+
+    function renderEmptyViewer(viewerSelector, pathSelector, message) {
+        $(pathSelector).text('');
+        $(viewerSelector).empty().append(emptyBox(message));
+    }
+
+    function lineHtml(text) {
+        if(text.length <= MAX_LINE_LENGTH) return escapeHtml(text);
+        return escapeHtml(text.substring(0, MAX_LINE_LENGTH)) + `<span class="dp-cut"> … (${text.length.toLocaleString()}자 중 일부)</span>`;
+    }
+
+    function splitLines(text) {
+        if(text == null) return [];
+        const lines = text.split('\n');
+        if(lines.length && lines[lines.length - 1] === '') lines.pop();
+        return lines;
+    }
+
+    function renderPlain(viewerSelector, content) {
+        const rows = splitLines(content).map((line, index) =>
+            `<tr><td class="dp-ln">${index + 1}</td><td>${lineHtml(line)}</td></tr>`);
+        $(viewerSelector).html(`<table>${rows.join('')}</table>`);
+    }
+
+    /**
+     * before -> after 줄 단위 비교 (LCS). 같은 줄이 길게 이어지는 구간은 앞뒤 DIFF_CONTEXT 줄만 남기고 접는다.
+     */
+    function renderDiff(viewerSelector, before, after) {
+        const ops = diffLines(splitLines(before), splitLines(after));
+
+        const rows = [];
+        let i = 0;
+        while(i < ops.length) {
+            if(ops[i].type !== 'same') {
+                rows.push(diffRow(ops[i]));
+                i++;
+                continue;
+            }
+
+            let end = i;
+            while(end < ops.length && ops[end].type === 'same') end++;
+
+            const run = end - i;
+            const keepHead = i === 0 ? 0 : DIFF_CONTEXT;
+            const keepTail = end === ops.length ? 0 : DIFF_CONTEXT;
+
+            if(run > keepHead + keepTail + 1) {
+                for(let k = i; k < i + keepHead; k++) rows.push(diffRow(ops[k]));
+                rows.push(`<tr class="dp-fold"><td colspan="4">⋯ 같은 내용 ${run - keepHead - keepTail}줄 ⋯</td></tr>`);
+                for(let k = end - keepTail; k < end; k++) rows.push(diffRow(ops[k]));
+            }
+            else {
+                for(let k = i; k < end; k++) rows.push(diffRow(ops[k]));
+            }
+            i = end;
+        }
+
+        $(viewerSelector).html(`<table>${rows.join('')}</table>`);
+    }
+
+    function diffRow(op) {
+        const cls = op.type === 'add' ? 'dp-add' : (op.type === 'del' ? 'dp-del' : '');
+        const sign = op.type === 'add' ? '+' : (op.type === 'del' ? '-' : ' ');
+        return `<tr class="${cls}"><td class="dp-ln">${op.oldNo || ''}</td><td class="dp-ln">${op.newNo || ''}</td><td class="dp-sign">${sign}</td><td>${lineHtml(op.text)}</td></tr>`;
+    }
+
+    function diffLines(a, b) {
+        // 앞뒤의 같은 줄은 표를 만들기 전에 떼어낸다
+        let start = 0;
+        while(start < a.length && start < b.length && a[start] === b[start]) start++;
+        let endA = a.length, endB = b.length;
+        while(endA > start && endB > start && a[endA - 1] === b[endB - 1]) { endA--; endB--; }
+
+        const ops = [];
+        for(let k = 0; k < start; k++) ops.push({ type: 'same', text: a[k], oldNo: k + 1, newNo: k + 1 });
+
+        const midA = a.slice(start, endA), midB = b.slice(start, endB);
+        const n = midA.length, m = midB.length;
+
+        if(n * m > 4000000) {
+            // 너무 크면 줄 맞춤 없이 지운 줄, 추가한 줄 순서로 보여준다
+            midA.forEach((text, k) => ops.push({ type: 'del', text: text, oldNo: start + k + 1 }));
+            midB.forEach((text, k) => ops.push({ type: 'add', text: text, newNo: start + k + 1 }));
+        }
+        else {
+            const width = m + 1;
+            const lcs = new Uint32Array((n + 1) * width);
+            for(let x = n - 1; x >= 0; x--) {
+                for(let y = m - 1; y >= 0; y--) {
+                    lcs[x * width + y] = midA[x] === midB[y]
+                        ? lcs[(x + 1) * width + y + 1] + 1
+                        : Math.max(lcs[(x + 1) * width + y], lcs[x * width + y + 1]);
+                }
+            }
+
+            let x = 0, y = 0;
+            while(x < n || y < m) {
+                if(x < n && y < m && midA[x] === midB[y]) {
+                    ops.push({ type: 'same', text: midA[x], oldNo: start + x + 1, newNo: start + y + 1 });
+                    x++; y++;
+                }
+                else if(y < m && (x >= n || lcs[x * width + y + 1] >= lcs[(x + 1) * width + y])) {
+                    ops.push({ type: 'add', text: midB[y], newNo: start + y + 1 });
+                    y++;
+                }
+                else {
+                    ops.push({ type: 'del', text: midA[x], oldNo: start + x + 1 });
+                    x++;
+                }
+            }
+        }
+
+        for(let k = 0; k < a.length - endA; k++) {
+            ops.push({ type: 'same', text: a[endA + k], oldNo: endA + k + 1, newNo: endB + k + 1 });
+        }
+        return ops;
+    }
+</script>
+<div id="deploy-app" th:fragment="view">
+
+    <!-- 저장소 연동 상태. 연동 설정은 Deploy > Repository 화면에서 한다 -->
+    <section class="dp-panel">
+        <div class="dp-panel-header">
+            <div class="dp-connection" id="gitStatus"></div>
+            <div class="dp-tools">
+                <a class="dp-btn" th:href="|/${applicationId}/console/deploy-repository|"><i class="fab fa-github"></i>저장소 설정</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="dp-panel">
+        <div class="dp-panel-header">
+            <h3><i class="fas fa-rocket"></i> 저장소 DSL 배포
+                <span class="help-icon" tabindex="0" role="button" aria-label="도움말">?<span class="help-content">GitHub 저장소 브랜치의 <b>{애플리케이션}/</b> 폴더 DSL 을 이 애플리케이션의 메타데이터 DB 에 반영(배포)합니다. 바뀐 메타데이터 중 원하는 것만 골라 배포할 수 있고, 고른 것만 반영했을 때 참조가 깨지면(예: 새 워크플로우가 고르지 않은 새 쿼리를 가리킴) 배포를 막습니다. 데이터소스, 워크플로우(쿼리/엔티티/REST 클라이언트/알림/메시지 프로세서), REST API, 스케줄러, 화면, 메뉴, 사이트, 공통코드가 대상이고, 회사·이미지·사용자·사용자그룹은 바뀌지 않습니다. 다른 애플리케이션 폴더를 고르면 그 DSL 을 이 애플리케이션에 배포합니다(예: 개발 → 운영).</span></span>
+            </h3>
+            <div class="dp-summary" id="previewSummary"></div>
+        </div>
+        <div class="dp-body">
+            <div class="dp-import-form">
+                <div class="form-group">
+                    <label for="importBranch">브랜치</label>
+                    <input type="text" class="form-control form-control-sm" id="importBranch" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="form-group">
+                    <label for="importSource">배포할 애플리케이션 폴더</label>
+                    <input type="text" class="form-control form-control-sm" id="importSource" list="sourceApplications" autocomplete="off" spellcheck="false">
+                    <datalist id="sourceApplications"></datalist>
+                </div>
+                <div class="dp-import-actions">
+                    <button type="button" class="dp-btn" id="btnPreview" onclick="preview()" disabled><i class="fas fa-search"></i>미리보기</button>
+                    <button type="button" class="dp-btn dp-btn-primary" id="btnImport" onclick="importDsl()" disabled><i class="fas fa-rocket"></i><span>배포</span></button>
+                </div>
+            </div>
+            <div class="dp-import-note">
+                <span class="dp-help" id="importHint"></span>
+                고른 메타데이터를 저장소의 DSL 과 똑같이 맞추므로, 삭제로 표시된 것을 고르면 <strong>이 환경에서 삭제</strong>됩니다. 한 번에 반영되고, 하나라도 실패하면 아무것도 바뀌지 않습니다.
+                데이터베이스 비밀번호와 알림 제공자의 비밀값은 DSL 에 없으므로 이 환경의 값을 그대로 둡니다.
+            </div>
+            <div class="dp-result" id="importResult"></div>
+        </div>
+    </section>
+
+    <section class="dp-panel">
+        <div class="dp-panel-header">
+            <h3><i class="fas fa-clipboard-check"></i> 검증 결과</h3>
+            <div class="dp-tools" id="previewIssueCount"></div>
+        </div>
+        <div class="dp-issues" id="previewIssues"></div>
+    </section>
+
+    <div class="dp-split">
+        <aside class="dp-panel dp-side">
+            <div class="dp-panel-header">
+                <h3><i class="fas fa-list"></i> 바뀌는 메타데이터 <span class="dp-badge" id="changeSelectedCount"></span></h3>
+                <div class="dp-tools">
+                    <label class="dp-check-all" title="배포할 메타데이터 전체 선택/해제"><input type="checkbox" id="changeCheckAll" onchange="checkAllChanges(this.checked)">전체</label>
+                </div>
+            </div>
+            <div class="dp-list" id="changeList"></div>
+        </aside>
+
+        <section class="dp-panel dp-main">
+            <div class="dp-panel-header">
+                <span class="dp-viewer-path" id="diffViewerPath"></span>
+            </div>
+            <div class="dp-code" id="diffViewer"></div>
+        </section>
+    </div>
+</div>
+</html>

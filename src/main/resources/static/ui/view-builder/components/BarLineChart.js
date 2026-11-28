@@ -208,38 +208,38 @@ class BarLineChart extends ViewObject {
     styleBuilder() {
         return `
             .vb-item[data-type="${this.componentId()}"] {
-                background-color: #fafbfc;
+                background-color: #fafafa;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 border-radius: 10px;
-                border: 2px dashed #c7cbd1;
+                border: 2px dashed #cacaca;
                 transition: border-color .12s ease, background-color .12s ease;
             }
             .vb-item[data-type="${this.componentId()}"]:hover {
-                border-color: #4A90E2;
-                background-color: #eef5ff;
+                border-color: #9a9a9a;
+                background-color: #f4f4f4;
             }
             .vb-item[data-type="${this.componentId()}"] .vb-builder-placeholder {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 gap: 6px;
-                color: #9199a3;
+                color: #999999;
                 pointer-events: none;
             }
             .vb-item[data-type="${this.componentId()}"] .vb-builder-placeholder i {
                 font-size: 28px;
-                color: #4A90E2;
+                color: #a0a0a0;
             }
             .vb-item[data-type="${this.componentId()}"] .vb-builder-placeholder span {
                 font-size: 14px;
                 font-weight: 600;
-                color: #374151;
+                color: #3d3d3d;
             }
             .vb-item[data-type="${this.componentId()}"] .vb-builder-placeholder small {
                 font-size: 11px;
-                color: #9199a3;
+                color: #999999;
             }
         `;
     }

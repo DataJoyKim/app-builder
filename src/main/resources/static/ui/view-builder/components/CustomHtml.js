@@ -58,8 +58,8 @@ class CustomHtml extends ViewObject {
                 transition: outline-color .12s ease, background-color .12s ease;
             }
             .vb-item[data-type="${this.componentId()}"]:hover {
-                outline-color: #c7cbd1;
-                background-color: #fafbfc;
+                outline-color: #cacaca;
+                background-color: #fafafa;
             }
         `;
     }

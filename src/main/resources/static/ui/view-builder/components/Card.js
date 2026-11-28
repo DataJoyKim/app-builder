@@ -88,14 +88,14 @@ class Card extends ViewObject {
                 width: auto;
                 min-height: 34px;
                 height: auto;
-                border: 1px dashed #c7cbd1;
+                border: 1px dashed #cacaca;
                 border-radius: 6px;
-                background-color: #fafbfc;
+                background-color: #fafafa;
                 transition: border-color .12s ease, background-color .12s ease;
             }
             .vb-item[data-type="${this.componentId()}"] .card-tools:hover {
-                border-color: #4A90E2;
-                background-color: #eef5ff;
+                border-color: #9a9a9a;
+                background-color: #f4f4f4;
             }
         `;
     }

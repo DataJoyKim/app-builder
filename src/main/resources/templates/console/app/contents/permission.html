@@ -2,9 +2,9 @@
 <style th:fragment="style">
     #permission-app {
         padding: 16px;
-        background: #f7f8fa;
+        background: #f7f7f7;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        color: #1f2937;
+        color: #242323;
     }
 
     #permission-app .ds-layout {
@@ -16,7 +16,7 @@
     #permission-app .ds-list-panel,
     #permission-app .ds-detail-panel {
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e6e6e6;
         border-radius: 12px;
         overflow: hidden;
     }
@@ -38,8 +38,8 @@
         justify-content: space-between;
         gap: 10px;
         padding: 12px 16px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
         flex-wrap: wrap;
     }
 
@@ -47,14 +47,14 @@
         margin: 0;
         font-size: 14px;
         font-weight: 700;
-        color: #1f2937;
+        color: #242323;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
     #permission-app .ds-panel-header h3 i {
-        color: #4A90E2;
+        color: #6b6b6b;
     }
 
     #permission-app .ds-panel-tools {
@@ -67,9 +67,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         background: #fff;
-        color: #374151;
+        color: #3d3d3d;
         border-radius: 7px;
         font-size: 12px;
         padding: 5px 10px;
@@ -78,17 +78,17 @@
     }
 
     #permission-app .ds-btn:hover {
-        background: #f1f3f5;
+        background: #f2f2f2;
     }
 
     #permission-app .ds-btn-primary {
-        background: #4A90E2;
-        border-color: #4A90E2;
+        background: #242323;
+        border-color: #242323;
         color: #fff;
     }
 
     #permission-app .ds-btn-primary:hover {
-        background: #3d7fce;
+        background: #3a3939;
     }
 
     #permission-app .ds-btn-danger {
@@ -103,7 +103,7 @@
     #permission-app .ds-list-search {
         position: relative;
         padding: 10px 12px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #permission-app .ds-list-search i {
@@ -111,7 +111,7 @@
         left: 22px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9199a3;
+        color: #999999;
         font-size: 12px;
         pointer-events: none;
     }
@@ -120,14 +120,14 @@
         width: 100%;
         box-sizing: border-box;
         padding: 7px 10px 7px 28px;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         font-size: 12.5px;
     }
 
     #permission-app .ds-list-search input:focus {
-        border-color: #4A90E2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        border-color: #a3a3a3;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.07);
         outline: none;
     }
 
@@ -142,19 +142,19 @@
         align-items: center;
         gap: 10px;
         padding: 11px 16px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
         border-left: 3px solid transparent;
         cursor: pointer;
         transition: background-color .12s ease;
     }
 
     #permission-app .ds-list-item:hover {
-        background: #fafbfc;
+        background: #fafafa;
     }
 
     #permission-app .ds-list-item.selected {
-        background: #eef5ff;
-        border-left-color: #4A90E2;
+        background: #f2f2f2;
+        border-left-color: #555555;
     }
 
     #permission-app .ds-list-item-main {
@@ -168,19 +168,19 @@
     #permission-app .ds-list-item-name {
         font-size: 13px;
         font-weight: 600;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     #permission-app .ds-list-item.selected .ds-list-item-name {
-        color: #1d4ed8;
+        color: #242323;
     }
 
     #permission-app .ds-list-item-code {
         font-size: 11px;
-        color: #9199a3;
+        color: #999999;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -193,14 +193,14 @@
         justify-content: center;
         gap: 8px;
         padding: 50px 16px;
-        color: #9199a3;
+        color: #999999;
         font-size: 12.5px;
         text-align: center;
     }
 
     #permission-app .ds-list-empty i {
         font-size: 22px;
-        color: #d7dbe0;
+        color: #d9d9d9;
     }
 
     /* ---- 탭 ---- */
@@ -208,8 +208,8 @@
         display: flex;
         gap: 2px;
         padding: 8px 16px 0;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #permission-app .ds-tabs .nav-link {
@@ -218,14 +218,14 @@
         padding: 8px 16px;
         font-size: 12.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         background: transparent;
     }
 
     #permission-app .ds-tabs .nav-link.active {
         background: #fff;
-        color: #1d4ed8;
-        box-shadow: inset 0 -2px 0 #4A90E2;
+        color: #242323;
+        box-shadow: inset 0 -2px 0 #242323;
     }
 
     #permission-app .ds-tab-toolbar {
@@ -234,14 +234,14 @@
         justify-content: space-between;
         gap: 10px;
         padding: 12px 16px;
-        border-bottom: 1px solid #eef0f2;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #permission-app .ds-tab-toolbar h4 {
         margin: 0;
         font-size: 12.5px;
         font-weight: 700;
-        color: #374151;
+        color: #3d3d3d;
         text-transform: uppercase;
         letter-spacing: .03em;
     }
@@ -264,7 +264,7 @@
     #permission-app .ds-section-grid label {
         font-size: 11.5px;
         font-weight: 600;
-        color: #6b7280;
+        color: #6f6f6f;
         margin-bottom: 5px;
         display: block;
     }
@@ -272,17 +272,17 @@
     #permission-app .ds-section-grid .form-control {
         width: 100%;
         box-sizing: border-box;
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         border-radius: 7px;
         font-size: 13px;
         padding: 6px 10px;
         background: #fff;
-        color: #1f2937;
+        color: #242323;
     }
 
     #permission-app .ds-section-grid .form-control:focus {
-        border-color: #4A90E2;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, .12);
+        border-color: #a3a3a3;
+        box-shadow: 0 0 0 3px rgba(36, 35, 35, 0.07);
         outline: none;
     }
 
@@ -292,7 +292,7 @@
     }
 
     #permission-app .rel-list {
-        border: 1px solid #eef0f2;
+        border: 1px solid #ebebeb;
         border-radius: 8px;
         overflow: hidden;
     }
@@ -302,7 +302,7 @@
         align-items: center;
         gap: 10px;
         padding: 9px 12px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
     }
 
     #permission-app .rel-row:last-child {
@@ -310,7 +310,7 @@
     }
 
     #permission-app .rel-row:hover {
-        background: #fafbfc;
+        background: #fafafa;
     }
 
     #permission-app .rel-row-main {
@@ -328,13 +328,13 @@
 
     #permission-app .rel-field-label {
         font-size: 10px;
-        color: #9199a3;
+        color: #999999;
         text-transform: uppercase;
         letter-spacing: .03em;
     }
 
     #permission-app .rel-field-value {
-        color: #1f2937;
+        color: #242323;
         font-weight: 600;
         font-size: 12.5px;
     }
@@ -346,7 +346,7 @@
     }
 
     #permission-app .rel-icon-btn {
-        border: 1px solid #d7dbe0;
+        border: 1px solid #d9d9d9;
         background: #fff;
         border-radius: 6px;
         width: 26px;
@@ -355,12 +355,12 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: #374151;
+        color: #3d3d3d;
         font-size: 11px;
     }
 
     #permission-app .rel-icon-btn:hover {
-        background: #f1f3f5;
+        background: #f2f2f2;
     }
 
     #permission-app .rel-icon-btn.danger {
@@ -374,7 +374,7 @@
     #permission-app .rel-empty {
         padding: 24px;
         text-align: center;
-        color: #9199a3;
+        color: #999999;
         font-size: 12.5px;
     }
 
@@ -394,7 +394,7 @@
 
     #permission-app .ma-column {
         min-width: 0;
-        border: 1px solid #eef0f2;
+        border: 1px solid #ebebeb;
         border-radius: 8px;
         overflow: hidden;
         background: #fff;
@@ -406,14 +406,14 @@
         gap: 8px;
         min-height: 50px;
         padding: 8px 12px;
-        background: #fbfbfc;
-        border-bottom: 1px solid #eef0f2;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
     }
 
     #permission-app .ma-column-title {
         font-size: 12.5px;
         font-weight: 600;
-        color: #374151;
+        color: #3d3d3d;
     }
 
     #permission-app .ma-column-head .ds-list-search {
@@ -438,7 +438,7 @@
         align-items: center;
         gap: 10px;
         padding: 8px 12px;
-        border-bottom: 1px solid #f1f3f5;
+        border-bottom: 1px solid #f2f2f2;
     }
 
     #permission-app .gp-row:last-child {
@@ -456,7 +456,7 @@
     #permission-app .gp-name {
         font-size: 12.5px;
         font-weight: 600;
-        color: #1f2937;
+        color: #242323;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -465,13 +465,13 @@
     #permission-app .gp-name em {
         font-style: normal;
         font-weight: 400;
-        color: #9199a3;
+        color: #999999;
         margin-left: 4px;
     }
 
     #permission-app .gp-path {
         font-size: 11px;
-        color: #9199a3;
+        color: #999999;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
